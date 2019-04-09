@@ -40,7 +40,8 @@ if __name__ == "__main__":
         install_requires=[
             "typing",
             "requests",
-            "bokkichat"
+            "bokkichat",
+            "kudubot"
         ],
         test_suite='nose.collector',
         tests_require=['nose'],
