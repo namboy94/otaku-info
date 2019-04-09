@@ -2,6 +2,7 @@ stages:
   - test
   - stats
   - release
+  - deploy
 
 stylecheck:
   stage: test
