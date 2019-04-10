@@ -50,12 +50,15 @@ deploy_bot:
   tags:
     - python3
   script:
-    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - python3 -m venv aniremind-venv && source virtual/bin/activate && python setup.py install
+    - mkdir -p ~/bots
+    - rm -rf ~/bots/aniremind
+    - mv aniremind-venv ~/bots/aniremind
     - mkdir -p ~/.config/aniremind
     - echo $TELEGRAM_SETTINGS > ~/.config/aniremind/settings.json
     - mkdir -p ~/.config/systemd/user
     - rm -f ~/.config/systemd/user/aniremind.service
-    - cp systemd/aniremind.service ~/.config/systemd/user/aniremind.service
+    - cp systemd/aniremind-venv.service ~/.config/systemd/user/aniremind.service
     - systemctl --user daemon-reload
     - systemctl --user restart aniremind.service
 

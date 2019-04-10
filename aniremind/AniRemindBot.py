@@ -17,6 +17,10 @@ You should have received a copy of the GNU General Public License
 along with aniremind.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import time
+import json
+import requests
+from typing import Dict
 from kudubot.Bot import Bot
 from kudubot.db.Address import Address
 from kudubot.exceptions import ParseError
@@ -85,7 +89,14 @@ class AniRemindBot(Bot):
             "Storing show {} for address {}".format(show_name, address.address)
         )
 
-        reminder = Reminder(address_id=address.id, show_name=show_name)
+        latest_episodes = self.load_newest_episodes()
+        last_episode = latest_episodes.get(show_name.lower(), 0)
+
+        reminder = Reminder(
+            address_id=address.id,
+            show_name=show_name,
+            last_episode=last_episode
+        )
         self.db_session.add(reminder)
         self.db_session.commit()
         return reminder
@@ -102,3 +113,60 @@ class AniRemindBot(Bot):
         if reminder is not None:
             self.db_session.delete(reminder)
             self.db_session.commit()
+
+    def run_in_bg(self):
+        """
+        Periodically checks for new reminders to update
+        :return: None
+        """
+        db_session = self.create_db_session()
+        while True:
+
+            self.logger.info("Start looking for due reminders")
+            latest = self.load_newest_episodes()
+
+            for reminder in db_session.query(Reminder).all():
+
+                self.logger.debug(
+                    "Checking if reminder {} is due".format(reminder)
+                )
+
+                latest_episode = latest.get(reminder.show_name.lower(), 0)
+
+                if reminder.last_episode < latest_episode:
+                    self.logger.info("Found due reminder {}".format(reminder))
+                    message = TextMessage(
+                        self.connection.address,
+                        reminder.address,
+                        "Episode {} of '{}' has aired.".format(
+                            latest_episode, reminder.show_name
+                        )
+                    )
+                    self.connection.send(message)
+                    reminder.last_episode = latest_episode
+                    db_session.commit()
+
+            time.sleep(60)
+
+    @staticmethod
+    def load_newest_episodes() -> Dict[str, int]:
+        """
+        Loads the newest episode numbers on /r/anime's /u/autolovepon's page
+        :return: The show names mapped to the latest episode number
+        """
+        url = "https://old.reddit.com/user/AutoLovepon.json"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers)
+        data = json.loads(response.text)
+
+        latest = {}
+        entries = data["data"]["children"]
+
+        for entry in entries:
+            title = entry["data"]["title"].lower()
+
+            name = title.split(" - episode ")[0].lower()
+            episode = title.split(" - episode ")[1].split(" discussion")[0]
+
+            latest[name] = max(latest.get(name, 0), int(episode))
+        return latest

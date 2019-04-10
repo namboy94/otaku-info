@@ -1,0 +1,8 @@
+[Unit]
+Description=My Thing
+
+[Service]
+ExecStart=%h/.config/venvs/aniremind/bin/aniremind
+
+[Install]
+WantedBy=default.target
