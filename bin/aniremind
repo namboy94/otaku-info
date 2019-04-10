@@ -17,8 +17,37 @@ You should have received a copy of the GNU General Public License
 along with aniremind.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from aniremind.main import main
+import os
+import argparse
+from kudubot.exceptions import ConfigurationError
+from aniremind.AniRemindBot import AniRemindBot
+from bokkichat.connection.impl.TelegramBotConnection import \
+    TelegramBotConnection
 
+
+def main():
+    """
+    The main method of this program
+    :return: None
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--initialize", action="store_true",
+                        help="Initializes the aniremind bot")
+
+    config_path = os.path.join(
+        os.path.expanduser("~"),
+        ".config/aniremind"
+    )
+
+    if parser.parse_args().initialize:
+        AniRemindBot.create_config(TelegramBotConnection, config_path)
+
+    else:
+        try:
+            bot = AniRemindBot.load(TelegramBotConnection, config_path)
+            bot.start()
+        except ConfigurationError as e:
+            print("Invalid Configuration: {}".format(e))
 
 if __name__ == "__main__":
     main()
