@@ -19,6 +19,7 @@ LICENSE"""
 
 import os
 import argparse
+import logging
 from kudubot.exceptions import ConfigurationError
 from aniremind.AniRemindBot import AniRemindBot
 from bokkichat.connection.impl.TelegramBotConnection import \
@@ -30,16 +31,26 @@ def main():
     The main method of this program
     :return: None
     """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--initialize", action="store_true",
-                        help="Initializes the aniremind bot")
-
-    config_path = os.path.join(
+    default_config_path = os.path.join(
         os.path.expanduser("~"),
         ".config/aniremind"
     )
 
-    if parser.parse_args().initialize:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--initialize", action="store_true",
+                        help="Initializes the aniremind bot")
+    parser.add_argument("--verbose", "-v", action="store_true",
+                        help="Shows more output")
+    parser.add_argument("--custom-dir", default=default_config_path,
+                        help="Specifies a custom configuration directory")
+    args = parser.parse_args()
+
+    config_path = args.custom_dir
+
+    if args.verbose:
+        logging.basicConfig(level=logging.INFO)
+
+    if args.initialize:
         AniRemindBot.create_config(TelegramBotConnection, config_path)
 
     else:
@@ -50,4 +61,7 @@ def main():
             print("Invalid Configuration: {}".format(e))
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

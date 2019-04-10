@@ -41,7 +41,8 @@ if __name__ == "__main__":
             "typing",
             "requests",
             "bokkichat",
-            "kudubot"
+            "kudubot",
+            "sqlalchemy"
         ],
         test_suite='nose.collector',
         tests_require=['nose'],
