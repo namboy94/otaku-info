@@ -70,11 +70,12 @@ class AniRemindBot(Bot):
             reply.body = "\n".join(reminders)
 
         elif command == "DELETE":
-            self.delete(args["id"])
-            reply.body = "Reminder #{} was deleted".format(args["id"])
-
-        else:
-            return
+            deleted = self.delete(args["id"], address)
+            if deleted:
+                reply.body = "Reminder #{} was deleted".format(args["id"])
+            else:
+                reply.body = "Reminder #{} could not be deleted"\
+                    .format(args["id"])
 
         self.connection.send(reply)
 
@@ -101,18 +102,24 @@ class AniRemindBot(Bot):
         self.db_session.commit()
         return reminder
 
-    def delete(self, _id: int):
+    def delete(self, _id: int, address: Address) -> bool:
         """
         Deletes a reminder
         :param _id: The ID of the reminder to remove
-        :return: None
+        :param address: The address of the user requesting the deletion
+        :return: Whether or not the reminder was deleted
         """
         self.logger.info("Removing Reminder #{}".format(_id))
 
-        reminder = self.db_session.query(Reminder).filter_by(id=_id).first()
+        reminder = self.db_session.query(Reminder)\
+            .filter_by(id=_id, address_id=address.id).first()
+
         if reminder is not None:
             self.db_session.delete(reminder)
             self.db_session.commit()
+            return True
+        else:
+            return False
 
     def run_in_bg(self):
         """
