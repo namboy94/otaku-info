@@ -2,7 +2,7 @@
 Description=My Thing
 
 [Service]
-ExecStart=%h/.config/venvs/aniremind/bin/aniremind
+ExecStart=%h/.config/bots/aniremind/bin/aniremind
 
 [Install]
 WantedBy=default.target

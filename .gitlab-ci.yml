@@ -53,9 +53,9 @@ deploy_bot:
     - python3 -m venv aniremind-venv
     - source aniremind-venv/bin/activate
     - python setup.py install
-    - mkdir -p ~/bots
-    - rm -rf ~/bots/aniremind
-    - mv aniremind-venv ~/bots/aniremind
+    - mkdir -p ~/.config/bots
+    - rm -rf ~/.config/bots/aniremind
+    - mv aniremind-venv ~/.config/bots/aniremind
     - mkdir -p ~/.config/aniremind
     - echo $TELEGRAM_SETTINGS > ~/.config/aniremind/settings.json
     - mkdir -p ~/.config/systemd/user
