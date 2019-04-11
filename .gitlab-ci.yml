@@ -50,7 +50,9 @@ deploy_bot:
   tags:
     - python3
   script:
-    - python3 -m venv aniremind-venv && source virtual/bin/activate && python setup.py install
+    - python3 -m venv aniremind-venv
+    - source aniremind-venv/bin/activate
+    - python setup.py install
     - mkdir -p ~/bots
     - rm -rf ~/bots/aniremind
     - mv aniremind-venv ~/bots/aniremind
