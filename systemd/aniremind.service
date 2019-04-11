@@ -1,8 +1,0 @@
-[Unit]
-Description=My Thing
-
-[Service]
-ExecStart=%h/.local/bin/aniremind
-
-[Install]
-WantedBy=default.target

@@ -59,7 +59,12 @@ deploy_bot:
     - source ~/.config/bots/aniremind/bin/activate
     - python setup.py install
     - echo $TELEGRAM_SETTINGS > ~/.config/aniremind/settings.json
-    - cp systemd/aniremind-venv.service ~/.config/systemd/user/aniremind.service
+    - echo "[Unit]" >> ~/.config/systemd/user/aniremind.service
+    - echo "Description=aniremind" >> ~/.config/systemd/user/aniremind.service
+    - echo "[Service]" >> ~/.config/systemd/user/aniremind.service
+    - echo "ExecStart=$HOME/.config/bots/aniremind/bin/aniremind" >> ~/.config/systemd/user/aniremind.service
+    - echo "[Install]" >> ~/.config/systemd/user/aniremind.service
+    - echo "WantedBy=default.target" >> ~/.config/systemd/user/aniremind.service
     - systemctl --user daemon-reload
     - systemctl --user restart aniremind.service
 
