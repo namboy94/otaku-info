@@ -3,7 +3,7 @@
 |:----:|:-----:|
 |[![build status](https://gitlab.namibsun.net/namibsun/python/aniremind/badges/master/build.svg)](https://gitlab.namibsun.net/namibsun/python/aniremind/commits/master)|[![build status](https://gitlab.namibsun.net/namibsun/python/aniremind/badges/develop/build.svg)](https://gitlab.namibsun.net/namibsun/python/aniremind/commits/develop)|
 
-![Logo](resources/logo/logo-readme.png)
+![Logo](resources/logo-readme.png)
 
 A telegram bot that reminds a user of new episodes for an anime series.
 
