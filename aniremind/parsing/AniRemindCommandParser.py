@@ -38,3 +38,10 @@ class AniRemindCommandParser(CommandParser):
             Command("LIST", []),
             Command("DELETE", [("id", int)])
         ]
+
+    @property
+    def name(self) -> str:
+        """
+        :return: The name of the parser
+        """
+        return "aniremind"

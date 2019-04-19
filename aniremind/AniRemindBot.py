@@ -20,10 +20,11 @@ LICENSE"""
 import time
 import json
 import requests
-from typing import Dict
+from typing import Dict, List
 from kudubot.Bot import Bot
 from kudubot.db.Address import Address
 from kudubot.exceptions import ParseError
+from kudubot.parsing.CommandParser import CommandParser
 from bokkichat.entities.message.Message import Message
 from bokkichat.entities.message.TextMessage import TextMessage
 from aniremind.db.Reminder import Reminder
@@ -67,7 +68,7 @@ class AniRemindBot(Bot):
             reminders = self.db_session.query(Reminder)\
                 .filter_by(address=address).all()
             reminders = list(map(lambda x: str(x), reminders))
-            reply.body = "\n".join(reminders)
+            reply.body = "List of reminders:\n" + "\n".join(reminders)
 
         elif command == "DELETE":
             deleted = self.delete(args["id"], address)
@@ -78,6 +79,20 @@ class AniRemindBot(Bot):
                     .format(args["id"])
 
         self.connection.send(reply)
+
+    @property
+    def name(self) -> str:
+        """
+        :return: The name of the bot
+        """
+        return "aniremind"
+
+    @property
+    def parsers(self) -> List[CommandParser]:
+        """
+        :return: A list of parser the bot supports for commands
+        """
+        return [AniRemindCommandParser()]
 
     def register(self, show_name: str, address: Address) -> Reminder:
         """
