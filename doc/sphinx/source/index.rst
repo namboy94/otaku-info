@@ -1,12 +1,12 @@
-Welcome to aniremind's documentation!
-=====================================
+Welcome to otaku-info-bot's documentation!
+==========================================
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-   aniremind.rst
+   otaku_info_bot.rst
    modules.rst
 
 Indices and tables

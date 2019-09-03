@@ -51,22 +51,22 @@ deploy_bot:
     - python3
   script:
     - mkdir -p ~/.config/bots
-    - mkdir -p ~/.config/aniremind
+    - mkdir -p ~/.config/otaku_info_bot
     - mkdir -p ~/.config/systemd/user
-    - rm -rf ~/.config/bots/aniremind
-    - rm -f ~/.config/systemd/user/aniremind.service
-    - python3 -m venv ~/.config/bots/aniremind
-    - source ~/.config/bots/aniremind/bin/activate
+    - rm -rf ~/.config/bots/otaku_info_bot
+    - rm -f ~/.config/systemd/user/otaku_info_bot.service
+    - python3 -m venv ~/.config/bots/otaku_info_bot
+    - source ~/.config/bots/otaku_info_bot/bin/activate
     - python setup.py install
-    - echo $TELEGRAM_SETTINGS > ~/.config/aniremind/settings.json
-    - echo "[Unit]" >> ~/.config/systemd/user/aniremind.service
-    - echo "Description=aniremind" >> ~/.config/systemd/user/aniremind.service
-    - echo "[Service]" >> ~/.config/systemd/user/aniremind.service
-    - echo "ExecStart=$HOME/.config/bots/aniremind/bin/aniremind" >> ~/.config/systemd/user/aniremind.service
-    - echo "[Install]" >> ~/.config/systemd/user/aniremind.service
-    - echo "WantedBy=default.target" >> ~/.config/systemd/user/aniremind.service
+    - echo $TELEGRAM_SETTINGS > ~/.config/otaku_info_bot/settings.json
+    - echo "[Unit]" >> ~/.config/systemd/user/otaku_info_bot.service
+    - echo "Description=otaku_info_bot" >> ~/.config/systemd/user/otaku_info_bot.service
+    - echo "[Service]" >> ~/.config/systemd/user/otaku_info_bot.service
+    - echo "ExecStart=$HOME/.config/bots/otaku_info_bot/bin/otaku_info_bot" >> ~/.config/systemd/user/otaku_info_bot.service
+    - echo "[Install]" >> ~/.config/systemd/user/otaku_info_bot.service
+    - echo "WantedBy=default.target" >> ~/.config/systemd/user/otaku_info_bot.service
     - systemctl --user daemon-reload
-    - systemctl --user restart aniremind.service
+    - systemctl --user restart otaku_info_bot.service
 
 gitstats:
   stage: stats

@@ -2,27 +2,27 @@
 """LICENSE
 Copyright 2019 Hermann Krumrey <hermann@krumreyh.com>
 
-This file is part of aniremind.
+This file is part of otaku-info-bot.
 
-aniremind is free software: you can redistribute it and/or modify
+otaku-info-bot is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-aniremind is distributed in the hope that it will be useful,
+otaku-info-bot is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with aniremind.  If not, see <http://www.gnu.org/licenses/>.
+along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import os
 import argparse
 import logging
 from kudubot.exceptions import ConfigurationError
-from aniremind.AniRemindBot import AniRemindBot
+from otaku_info_bot.OtakuInfoBot import OtakuInfoBot
 from bokkichat.connection.impl.TelegramBotConnection import \
     TelegramBotConnection
 
@@ -34,12 +34,12 @@ def main():
     """
     default_config_path = os.path.join(
         os.path.expanduser("~"),
-        ".config/aniremind"
+        ".config/otaku_info_bot"
     )
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--initialize", action="store_true",
-                        help="Initializes the aniremind bot")
+                        help="Initializes the otaku-info-bot bot")
     parser.add_argument("--verbose", "-v", action="store_true",
                         help="Shows more output")
     parser.add_argument("--custom-dir", default=default_config_path,
@@ -52,11 +52,11 @@ def main():
         logging.basicConfig(level=logging.INFO)
 
     if args.initialize:
-        AniRemindBot.create_config(TelegramBotConnection, config_path)
+        OtakuInfoBot.create_config(TelegramBotConnection, config_path)
 
     else:
         try:
-            bot = AniRemindBot.load(TelegramBotConnection, config_path)
+            bot = OtakuInfoBot.load(TelegramBotConnection, config_path)
             bot.start()
         except ConfigurationError as e:
             print("Invalid Configuration: {}".format(e))

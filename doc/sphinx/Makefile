@@ -217,6 +217,6 @@ pseudoxml:
 
 
 buildsource:
-	sphinx-apidoc -f ../../aniremind -o source
+	sphinx-apidoc -f ../../otaku_info_bot -o source
 	@echo "Auto-generation of API documentation finished. " \
 		"The generated files are in 'source/'"

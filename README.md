@@ -1,17 +1,18 @@
-# aniremind
+# otaku0info-bot
 |master|develop|
 |:----:|:-----:|
-|[![build status](https://gitlab.namibsun.net/namibsun/python/aniremind/badges/master/build.svg)](https://gitlab.namibsun.net/namibsun/python/aniremind/commits/master)|[![build status](https://gitlab.namibsun.net/namibsun/python/aniremind/badges/develop/build.svg)](https://gitlab.namibsun.net/namibsun/python/aniremind/commits/develop)|
+|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info-bot/badges/master/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info-bot/commits/master)|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info-bot/badges/develop/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info-bot/commits/develop)|
 
 ![Logo](resources/logo-readme.png)
 
-A telegram bot that reminds a user of new episodes for an anime series.
+A telegram bot that sends various information about Japanese media
+(manga, anime, light novels and visual novels) releases.
 
 ## Further Information
 
 * [Changelog](CHANGELOG)
 * [License (GPLv3)](LICENSE)
-* [Gitlab](https://gitlab.namibsun.net/namibsun/python/aniremind)
-* [Github](https://github.com/namboy94/aniremind)
-* [Progstats](https://progstats.namibsun.net/projects/aniremind)
-* [PyPi](https://pypi.org/project/aniremind)
+* [Gitlab](https://gitlab.namibsun.net/namibsun/python/otaku-info-bot)
+* [Github](https://github.com/namboy94/otaku-info-bot)
+* [Progstats](https://progstats.namibsun.net/projects/otaku-info-bot)
+* [PyPi](https://pypi.org/project/otaku-info-bot)

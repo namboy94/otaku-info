@@ -1,20 +1,20 @@
 """LICENSE
 Copyright 2019 Hermann Krumrey <hermann@krumreyh.com>
 
-This file is part of aniremind.
+This file is part of otaku-info-bot.
 
-aniremind is free software: you can redistribute it and/or modify
+otaku-info-bot is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-aniremind is distributed in the hope that it will be useful,
+otaku-info-bot is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with aniremind.  If not, see <http://www.gnu.org/licenses/>.
+along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import os
@@ -23,7 +23,7 @@ from setuptools import setup, find_packages
 if __name__ == "__main__":
 
     setup(
-        name="aniremind",
+        name="otaku-info-bot",
         version=open("version", "r").read(),
         description="An anime episode reminder",
         long_description=open("README.md", "r").read(),
@@ -33,7 +33,7 @@ if __name__ == "__main__":
         classifiers=[
             "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
         ],
-        url="https://gitlab.namibsun.net/namibsun/python/aniremind",
+        url="https://gitlab.namibsun.net/namibsun/python/otaku-info-bot",
         license="GNU GPL3",
         packages=find_packages(),
         scripts=list(map(lambda x: os.path.join("bin", x), os.listdir("bin"))),
@@ -42,7 +42,8 @@ if __name__ == "__main__":
             "requests",
             "bokkichat",
             "kudubot",
-            "sqlalchemy"
+            "sqlalchemy",
+            "bs4"
         ],
         test_suite='nose.collector',
         tests_require=['nose'],
