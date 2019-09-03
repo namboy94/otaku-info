@@ -39,7 +39,7 @@ class OtakuInfoCommandParser(CommandParser):
             Command("delete_anime_reminders", [("id", int)]),
             Command("list_ln_releases", []),
             Command("list_ln_releases", [("year", int)]),
-            Command("list_ln_releases", [("year", int), ("month", str)])
+            Command("list_ln_releases", [("year", int), ("month", str)]),
         ]
 
     @property

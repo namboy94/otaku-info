@@ -19,6 +19,7 @@ LICENSE"""
 
 import time
 from typing import Dict, List, Any
+from datetime import datetime
 from kudubot.Bot import Bot
 from kudubot.db.Address import Address
 from kudubot.parsing.CommandParser import CommandParser
@@ -27,6 +28,7 @@ from sqlalchemy.orm import Session
 from otaku_info_bot.db.Reminder import Reminder
 from otaku_info_bot.OtakuInfoCommandParser import OtakuInfoCommandParser
 from otaku_info_bot.fetching.anime import load_newest_episodes
+from otaku_info_bot.fetching.ln import load_ln_releases
 
 
 class OtakuInfoBot(Bot):
@@ -74,6 +76,8 @@ class OtakuInfoBot(Bot):
             self._handle_list_anime_reminders(sender, db_session)
         elif command == "delete_anime_reminder":
             self._handle_delete_anime_reminder(sender, args, db_session)
+        elif command == "list_ln_releases":
+            self._handle_list_ln_releases(sender, args)
 
     def _handle_register_anime_reminder(
             self,
@@ -131,6 +135,13 @@ class OtakuInfoBot(Bot):
             args: Dict[str, Any],
             db_session: Session
     ):
+        """
+        Handles deleting an anime reminder
+        :param address: The user that requested the deletion
+        :param args: The arguments for which reminder to delete
+        :param db_session: The database session to use
+        :return: None
+        """
         _id = args["id"]
         self.logger.info("Removing Reminder #{}".format(_id))
 
@@ -143,6 +154,38 @@ class OtakuInfoBot(Bot):
             body = "Reminder #{} was deleted".format(args["id"])
         else:
             body = "Reminder #{} could not be deleted".format(args["id"])
+        self.send_txt(address, body)
+
+    def _handle_list_ln_releases(
+            self,
+            address: Address,
+            args: Dict[str, Any]
+    ):
+        """
+        Handles listing current light novel releases
+        :param address: The user that sent this request
+        :param args: The arguments to use
+        :return: None
+        """
+        year = args.get("year")
+        month = args.get("month")
+
+        now = datetime.utcnow()
+
+        if year is None:
+            year = now.year
+        if month is None:
+            month = now.strftime("%B")
+
+        releases = load_ln_releases(year, month)
+        body = "Light Novel Releases {} {}\n\n".format(month, year)
+
+        for entry in releases.get(year, {}).get(month, []):
+            body += "{}: {} {}".format(
+                entry["day"],
+                entry["title"],
+                entry["volume"]
+            )
         self.send_txt(address, body)
 
     def run_in_bg(self):
