@@ -186,7 +186,6 @@ class OtakuInfoBot(Bot):
                 entry["title"],
                 entry["volume"]
             )
-        body = body.replace("*", "\\*")  # TODO remove once bokkichat update
         self.send_txt(address, body)
 
     def run_in_bg(self):
