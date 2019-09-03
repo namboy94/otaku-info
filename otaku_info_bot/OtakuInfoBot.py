@@ -37,15 +37,15 @@ class OtakuInfoBot(Bot):
     functionality.
     """
 
-    @property
-    def name(self) -> str:
+    @classmethod
+    def name(cls) -> str:
         """
         :return: The name of the bot
         """
-        return "otaku_info_bot"
+        return "otaku-info-bot"
 
-    @property
-    def parsers(self) -> List[CommandParser]:
+    @classmethod
+    def parsers(cls) -> List[CommandParser]:
         """
         :return: A list of parser the bot supports for commands
         """

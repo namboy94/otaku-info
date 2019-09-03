@@ -1,3 +1,7 @@
+V 0.2.0:
+  - Now uses docker for Ci
+  - Integrated new kudubot features
+  - Added light novel release listing feature
 V 0.1.0:
   - Initial Release
 V 0.0.1:

@@ -1,88 +1,80 @@
 stages:
+  - mirror
   - test
   - stats
   - release
   - deploy
 
+default:
+  image: namboy94/ci-docker-environment:0.6.0
+  before_script:
+    - echo "$SERVER_ACCESS_KEY" > ~/.ssh/id_rsa
+    - chmod 0600 ~/.ssh/id_rsa
+
+github_mirror:
+  stage: mirror
+  tags: [docker]
+  only: [master, develop]
+  before_script:
+    - echo "$GITHUB_SSH_KEY" > ~/.ssh/id_rsa
+    - chmod 0600 ~/.ssh/id_rsa
+  script:
+    - git-mirror-pusher
+      git@github.com:namboy94/otaku-info-bot.git
+      master develop
+
 stylecheck:
   stage: test
-  tags:
-    - python3
+  tags: [docker]
   script:
-    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
     - python-codestyle-check
 
 unittest:
   stage: test
-  tags:
-    - python3
-    - progstats
+  tags: [docker]
   script:
-    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
     - python-unittest
+
+gitstats:
+  stage: stats
+  tags: [docker]
+  script:
+    - gitstats-gen
+
+docgen:
+  stage: stats
+  tags: [docker]
+  script:
+    - pip install flask
+    - sphinx-docgen
 
 release_upload:
   stage: release
-  only:
-    - master
-  tags:
-    - python3
+  only: [master]
+  tags: [docker]
   script:
-    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
     - github-release-upload $(cat version) "$(changelog-reader)"
     - gitlab-release-upload $(cat version) "$(changelog-reader)"
 
 pypi_upload:
   stage: release
-  only:
-    - master
-  tags:
-    - python3
+  only: [master]
+  tags: [docker]
   script:
-    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
     - pypi-upload
 
-deploy_bot:
+run_bot:
   stage: deploy
-  only:
-    - master
-    - develop
-  tags:
-    - python3
+  tags: [privileged]
+  only: [master, develop]
+  before_script: []
   script:
-    - mkdir -p ~/.config/bots
-    - mkdir -p ~/.config/otaku_info_bot
-    - mkdir -p ~/.config/systemd/user
-    - rm -rf ~/.config/bots/otaku_info_bot
-    - rm -f ~/.config/systemd/user/otaku_info_bot.service
-    - python3 -m venv ~/.config/bots/otaku_info_bot
-    - source ~/.config/bots/otaku_info_bot/bin/activate
-    - python setup.py install
-    - echo $TELEGRAM_SETTINGS > ~/.config/otaku_info_bot/settings.json
-    - echo "[Unit]" >> ~/.config/systemd/user/otaku_info_bot.service
-    - echo "Description=otaku_info_bot" >> ~/.config/systemd/user/otaku_info_bot.service
-    - echo "[Service]" >> ~/.config/systemd/user/otaku_info_bot.service
-    - echo "ExecStart=$HOME/.config/bots/otaku_info_bot/bin/otaku_info_bot" >> ~/.config/systemd/user/otaku_info_bot.service
-    - echo "[Install]" >> ~/.config/systemd/user/otaku_info_bot.service
-    - echo "WantedBy=default.target" >> ~/.config/systemd/user/otaku_info_bot.service
-    - systemctl --user daemon-reload
-    - systemctl --user restart otaku_info_bot.service
-
-gitstats:
-  stage: stats
-  tags:
-    - python3
-    - gitstats
-    - progstats
-  script:
-    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
-    - gitstats-gen
-
-docgen:
-  stage: stats
-  tags:
-    - python3
-    - progstats
-  script:
-    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
-    - sphinx-docgen
+    - docker build -t otaku-info-bot . --no-cache
+    - docker stop otaku-info-bot-instance || true
+    - docker rm otaku-info-bot-instance || true
+    - echo $TELEGRAM_API_KEY | docker run --rm -i -v
+      /home/hermann/.config/otaku-info-bot:/root/.config/otaku-info-bot
+      otaku-info-bot --initialize
+    - docker run -d --restart always --name otaku-info-bot-instance -v
+      /home/hermann/.config/otaku-info-bot:/root/.config/otaku-info-bot
+      otaku-info-bot
