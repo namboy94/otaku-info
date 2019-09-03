@@ -27,8 +27,8 @@ class OtakuInfoCommandParser(CommandParser):
     Parser for the otaku-info-bot bot
     """
 
-    @property
-    def commands(self) -> List[Command]:
+    @classmethod
+    def commands(cls) -> List[Command]:
         """
         Defines the commands the parser supports
         :return: The list of commands
@@ -42,8 +42,8 @@ class OtakuInfoCommandParser(CommandParser):
             Command("list_ln_releases", [("year", int), ("month", str)]),
         ]
 
-    @property
-    def name(self) -> str:
+    @classmethod
+    def name(cls) -> str:
         """
         :return: The name of the parser
         """

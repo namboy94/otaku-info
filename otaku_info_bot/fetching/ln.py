@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 
 
 def load_ln_releases(year: Optional[int] = None, month: Optional[str] = None) \
-        -> Dict[str, Dict[str, List[Dict[str, str]]]]:
+        -> Dict[int, Dict[str, List[Dict[str, str]]]]:
     """
     Loads the currently available light novel releases from reddit's
     /r/lightnovels subreddit.
@@ -41,18 +41,18 @@ def load_ln_releases(year: Optional[int] = None, month: Optional[str] = None) \
     years = soup.find_all("h2")
     years = years[5:]
     years = years[:-1]
-    years = list(map(lambda x: x.text, years))
+    years = list(map(lambda x: int(x.text), years))
 
     months = [
-        "January", "February", "March", "April",
-        "May", "June", "July", "August",
-        "September", "October", "November", "December"
+        "january", "february", "march", "april",
+        "may", "june", "july", "august",
+        "september", "october", "november", "december"
     ]
 
-    for year in years:
-        releases[year] = {}
-        for month in months:
-            releases[year][month] = []
+    for _year in years:
+        releases[_year] = {}
+        for _month in months:
+            releases[_year][_month] = []
 
     tables = soup.find_all("tbody")
     tables = tables[2:-1]
@@ -72,14 +72,15 @@ def load_ln_releases(year: Optional[int] = None, month: Optional[str] = None) \
             except ValueError:
                 pass
 
-            month, day = parts[0].text.split(" ", 1)
+            _month, day = parts[0].text.split(" ", 1)
+            _month = _month.lower()
             volume = parts[2].text
 
             if first_entry and month == "January" and not first_table:
                 current_year = years.pop(0)
             first_entry = False
 
-            releases[current_year][month].append({
+            releases[current_year][_month].append({
                 "title": title,
                 "volume": volume,
                 "day": day
@@ -88,7 +89,7 @@ def load_ln_releases(year: Optional[int] = None, month: Optional[str] = None) \
         first_table = False
 
     if year is not None:
-        releases = {str(year): releases.get(str(year), {})}
+        releases = {year: releases.get(year, {})}
     if month is not None:
         _releases = {}
         for year, data in releases.items():

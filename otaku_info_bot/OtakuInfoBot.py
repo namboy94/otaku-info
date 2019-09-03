@@ -177,15 +177,16 @@ class OtakuInfoBot(Bot):
         if month is None:
             month = now.strftime("%B")
 
-        releases = load_ln_releases(year, month)
+        releases = load_ln_releases().get(year, {}).get(month.lower(), [])
         body = "Light Novel Releases {} {}\n\n".format(month, year)
 
-        for entry in releases.get(year, {}).get(month, []):
-            body += "{}: {} {}".format(
+        for entry in releases:
+            body += "{}: {} {}\n".format(
                 entry["day"],
                 entry["title"],
                 entry["volume"]
             )
+        body = body.replace("*", "\\*")  # TODO remove once bokkichat update
         self.send_txt(address, body)
 
     def run_in_bg(self):
