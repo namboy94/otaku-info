@@ -77,4 +77,4 @@ run_bot:
       otaku-info-bot --initialize
     - docker run -d --restart always --name otaku-info-bot-instance -v
       /home/hermann/.config/otaku-info-bot:/root/.config/otaku-info-bot
-      otaku-info-bot
+      otaku-info-bot -v
