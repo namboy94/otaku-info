@@ -70,7 +70,9 @@ class OtakuInfoBot(Bot):
         :param db_session: The database session to use
         :return: None
         """
-        if command == "register_anime_reminder":
+        if command == "list_anime_series_names":
+            self._handle_list_anime_series_names(sender)
+        elif command == "register_anime_reminder":
             self._handle_register_anime_reminder(sender, args, db_session)
         elif command == "list_anime_reminders":
             self._handle_list_anime_reminders(sender, db_session)
@@ -78,6 +80,17 @@ class OtakuInfoBot(Bot):
             self._handle_delete_anime_reminder(sender, args, db_session)
         elif command == "list_ln_releases":
             self._handle_list_ln_releases(sender, args)
+
+    def _handle_list_anime_series_names(self, address: Address):
+        """
+        Handles listing anime series names
+        :return: None
+        """
+        series = load_newest_episodes()
+        series_str = ""
+        for name in series:
+            series_str += name + "\n"
+        self.send_txt(address, series_str, "Anime IDs")
 
     def _handle_register_anime_reminder(
             self,
@@ -93,6 +106,7 @@ class OtakuInfoBot(Bot):
         :return: None
         """
         show_name = args["show_name"]
+
         self.logger.info(
             "Storing show {} for address {}".format(show_name, address.address)
         )

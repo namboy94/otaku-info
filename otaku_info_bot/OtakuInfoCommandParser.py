@@ -34,9 +34,10 @@ class OtakuInfoCommandParser(CommandParser):
         :return: The list of commands
         """
         return [
+            Command("list_anime_series_names", []),
             Command("register_anime_reminder", [("show_name", str)]),
             Command("list_anime_reminders", []),
-            Command("delete_anime_reminders", [("id", int)]),
+            Command("delete_anime_reminder", [("id", int)]),
             Command("list_ln_releases", []),
             Command("list_ln_releases", [("year", int)]),
             Command("list_ln_releases", [("year", int), ("month", str)]),
