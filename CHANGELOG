@@ -1,3 +1,5 @@
+V 0.3.0:
+  - Integrated manga updates
 V 0.2.0:
   - Now uses docker for Ci
   - Integrated new kudubot features

@@ -41,6 +41,10 @@ class OtakuInfoCommandParser(CommandParser):
             Command("list_ln_releases", []),
             Command("list_ln_releases", [("year", int)]),
             Command("list_ln_releases", [("year", int), ("month", str)]),
+            Command("activate_manga_updates", [
+                ("anilist-username", str), ("custom-list", str)
+            ]),
+            Command("deactivate_manga_updates", [])
         ]
 
     @classmethod
