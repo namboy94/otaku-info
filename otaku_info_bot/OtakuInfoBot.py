@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-import time
 import json
 import math
 import requests
@@ -415,43 +414,38 @@ class OtakuInfoBot(Bot):
 
         return best_guess
 
-    def run_in_bg(self):
+    def bg_iteration(self, iteration: int, db_session: Session):
         """
         Periodically checks for new reminders to update and manga updates
-        :return: None
+        :param iteration: The iteration count
+        :param db_session: The database session to use
+        :return:
         """
-        counter = 0
-        while True:
-            db_session = self.sessionmaker()
+        self.logger.info("Start looking for due reminders")
+        latest = load_newest_episodes()
 
-            self.logger.info("Start looking for due reminders")
-            latest = load_newest_episodes()
+        for reminder in db_session.query(Reminder).all():
 
-            for reminder in db_session.query(Reminder).all():
+            self.logger.debug(
+                "Checking if reminder {} is due".format(reminder)
+            )
 
-                self.logger.debug(
-                    "Checking if reminder {} is due".format(reminder)
-                )
+            latest_episode = latest.get(reminder.show_name.lower(), 0)
 
-                latest_episode = latest.get(reminder.show_name.lower(), 0)
-
-                if reminder.last_episode < latest_episode:
-                    self.logger.info("Found due reminder {}".format(reminder))
-                    message = TextMessage(
-                        self.connection.address,
-                        reminder.address,
-                        "Episode {} of '{}' has aired.".format(
-                            latest_episode, reminder.show_name
-                        )
+            if reminder.last_episode < latest_episode:
+                self.logger.info("Found due reminder {}".format(reminder))
+                message = TextMessage(
+                    self.connection.address,
+                    reminder.address,
+                    "Episode {} of '{}' has aired.".format(
+                        latest_episode, reminder.show_name
                     )
-                    self.connection.send(message)
-                    reminder.last_episode = latest_episode
-                    db_session.commit()
+                )
+                self.connection.send(message)
+                reminder.last_episode = latest_episode
+                db_session.commit()
+        self.logger.info("Finished looking for due reminders")
 
-            if counter % 10 == 0:
-                self._update_manga_entries(db_session)
-                self._send_manga_updates(db_session)
-
-            self.sessionmaker.remove()
-            time.sleep(60)
-            counter += 1
+        if iteration % 10 == 0:
+            self._update_manga_entries(db_session)
+            self._send_manga_updates(db_session)
