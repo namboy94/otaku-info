@@ -57,41 +57,7 @@ class OtakuInfoBot(Bot):
         """
         return [OtakuInfoCommandParser()]
 
-    def on_command(
-            self,
-            message: TextMessage,
-            parser: CommandParser,
-            command: str,
-            args: Dict[str, Any],
-            sender: Address,
-            db_session: Session
-    ):
-        """
-        Handles incoming command messages
-        :param message: The incoming message
-        :param parser: The parser that matches the message
-        :param command: The command that matches the message
-        :param args: The arguments that match the message
-        :param sender: The sender of the message
-        :param db_session: The database session to use
-        :return: None
-        """
-        if command == "list_anime_series_names":
-            self._handle_list_anime_series_names(sender)
-        elif command == "register_anime_reminder":
-            self._handle_register_anime_reminder(sender, args, db_session)
-        elif command == "list_anime_reminders":
-            self._handle_list_anime_reminders(sender, db_session)
-        elif command == "delete_anime_reminder":
-            self._handle_delete_anime_reminder(sender, args, db_session)
-        elif command == "list_ln_releases":
-            self._handle_list_ln_releases(sender, args)
-        elif command == "activate_manga_updates":
-            self._handle_activate_manga_updates(sender, args, db_session)
-        elif command == "deactivate_manga_updates":
-            self._handle_deactivate_manga_updates(sender, db_session)
-
-    def _handle_list_anime_series_names(self, address: Address):
+    def _on_list_anime_series_names(self, address: Address, _, __):
         """
         Handles listing anime series names
         :return: None
@@ -102,7 +68,7 @@ class OtakuInfoBot(Bot):
             series_str += name + "\n"
         self.send_txt(address, series_str, "Anime IDs")
 
-    def _handle_register_anime_reminder(
+    def _on_register_anime_reminder(
             self,
             address: Address,
             args: Dict[str, Any],
@@ -133,9 +99,10 @@ class OtakuInfoBot(Bot):
         db_session.commit()
         self.send_txt(address, "{} registered".format(reminder))
 
-    def _handle_list_anime_reminders(
+    def _on_list_anime_reminders(
             self,
             address: Address,
+            _,
             db_session: Session
     ):
         """
@@ -153,7 +120,7 @@ class OtakuInfoBot(Bot):
         body = "List of reminders:\n" + "\n".join(reminders)
         self.send_txt(address, body)
 
-    def _handle_delete_anime_reminder(
+    def _on_delete_anime_reminder(
             self,
             address: Address,
             args: Dict[str, Any],
@@ -180,10 +147,11 @@ class OtakuInfoBot(Bot):
             body = "Reminder #{} could not be deleted".format(args["id"])
         self.send_txt(address, body)
 
-    def _handle_list_ln_releases(
+    def _on_list_ln_releases(
             self,
             address: Address,
-            args: Dict[str, Any]
+            args: Dict[str, Any],
+            _
     ):
         """
         Handles listing current light novel releases
@@ -212,7 +180,7 @@ class OtakuInfoBot(Bot):
             )
         self.send_txt(address, body)
 
-    def _handle_activate_manga_updates(
+    def _on_activate_manga_updates(
             self,
             address: Address,
             args: Dict[str, Any],
@@ -248,9 +216,10 @@ class OtakuInfoBot(Bot):
         self._update_manga_entries(db_session)
         self._send_manga_updates(db_session)
 
-    def _handle_deactivate_manga_updates(
+    def _on_deactivate_manga_updates(
             self,
             address: Address,
+            _,
             db_session: Session
     ):
         """
