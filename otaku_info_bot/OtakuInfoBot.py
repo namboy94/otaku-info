@@ -212,9 +212,6 @@ class OtakuInfoBot(Bot):
 
         self.send_txt(address, "Manga Updates Activated", "Activated")
 
-        self._update_manga_entries(db_session)
-        self._send_manga_updates(db_session)
-
     def _on_deactivate_manga_updates(
             self,
             address: Address,
@@ -231,7 +228,13 @@ class OtakuInfoBot(Bot):
             .filter_by(address=address).first()
         if existing is not None:
             db_session.delete(existing)
+
+            for update in db_session.query(MangaUpdate)\
+                    .filter_by(address=address).all():
+                db_session.delete(update)
+
             db_session.commit()
+
         self.send_txt(address, "Deactivated Manga Updates", "Deactivated")
 
     def on_list_new_manga_chapters(
@@ -288,8 +291,13 @@ class OtakuInfoBot(Bot):
                 config.anilist_username, config.custom_list
             )
 
+            anilist_ids = []
+
             for entry in anilist:
+
                 anilist_id = entry["media"]["id"]
+                anilist_ids.append(anilist_id)
+
                 name = entry["media"]["title"]["english"]
                 if name is None:
                     name = entry["media"]["title"]["romaji"]
@@ -326,6 +334,12 @@ class OtakuInfoBot(Bot):
                     )
                     db_session.add(manga_update)
 
+            # Purge stale entries
+            for existing in db_session.query(MangaUpdate)\
+                    .filter_by(address=config.address).all():
+                if existing.entry.id not in anilist_ids:
+                    db_session.delete(existing)
+
         db_session.commit()
         self.logger.info("Finished updating manga entries")
 
@@ -339,7 +353,11 @@ class OtakuInfoBot(Bot):
         for config in configs:  # type: MangaUpdateConfig
             updates = db_session.query(MangaUpdate)\
                 .filter_by(address=config.address).all()
+
             self._send_manga_update_messages(config.address, updates)
+
+            for update in list(filter(lambda x: x.diff > 0, updates)):
+                update.last_update = update.entry.latest_chapter
 
         db_session.commit()
         self.logger.info("Finished Sending Manga Updates")
@@ -505,5 +523,4 @@ class OtakuInfoBot(Bot):
                     update.entry.name,
                     update.entry.latest_chapter
                 )
-                update.last_update = update.entry.latest_chapter
             self.send_txt(address, message, "Manga Updates")
