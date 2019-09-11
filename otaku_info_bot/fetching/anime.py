@@ -22,10 +22,10 @@ import requests
 from typing import Dict
 
 
-def load_newest_episodes() -> Dict[str, int]:
+def load_newest_episodes() -> Dict[int, int]:
     """
     Loads the newest episode numbers on /r/anime's /u/autolovepon's page
-    :return: The show names mapped to the latest episode number
+    :return: The show's anilist ID mapped to the latest episode number
     """
     url = "https://old.reddit.com/user/AutoLovepon.json"
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -37,9 +37,13 @@ def load_newest_episodes() -> Dict[str, int]:
 
     for entry in entries:
         title = entry["data"]["title"].lower()
-
         name = title.split(" - episode ")[0].lower()
         episode = title.split(" - episode ")[1].split(" discussion")[0]
 
-        latest[name] = max(latest.get(name, 0), int(episode))
+        text = entry["data"]["selftext"].lower()
+        anilist_id = text.split("https://anilist.co/anime/")[1].split(")")[0]
+        anilist_id = int(anilist_id)
+
+        latest[anilist_id] = max(latest.get(name, 0), int(episode))
+
     return latest

@@ -18,47 +18,37 @@ along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from kudubot.db import Base
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String
 
 
-class Reminder(Base):
+class AnimeEntry(Base):
     """
-    Models a reminder
+    Models an anime entry
     """
 
-    __tablename__ = "reminders"
+    __tablename__ = "anime_entries"
     """
     The table name
     """
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True)
     """
-    The ID of the reminder
-    """
-
-    address_id = Column(Integer, ForeignKey("addressbook.id"))
-    """
-    The ID of the associated address
+    The anilist ID of the anime entry
     """
 
-    address = relationship("Address")
+    name = Column(String(255), nullable=False)
     """
-    The associated address
-    """
-
-    show_name = Column(String(255), nullable=False)
-    """
-    The name of the show
+    The name of the anime series
     """
 
-    last_episode = Column(Integer, default=0, nullable=False)
+    latest_episode = Column(Integer, default=0, nullable=False)
     """
-    The last episode the user was reminded of
+    The most recently released episode
     """
 
-    def __str__(self):
+    @property
+    def anilist_url(self) -> str:
         """
-        :return: A string representing the reminder
+        :return: The URL to the anilist page
         """
-        return "{}: {}".format(self.id, self.show_name)
+        return "https://anilist.co/anime/" + str(self.id)
