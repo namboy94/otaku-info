@@ -44,7 +44,8 @@ class OtakuInfoCommandParser(CommandParser):
             Command("activate_manga_updates", [
                 ("anilist-username", str), ("custom-list", str)
             ]),
-            Command("deactivate_manga_updates", [])
+            Command("deactivate_manga_updates", []),
+            Command("list_new_manga_chapters", [])
         ]
 
     @classmethod

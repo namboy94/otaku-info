@@ -45,3 +45,10 @@ class MangaEntry(Base):
     """
     The most recently released chapter
     """
+
+    @property
+    def anilist_url(self) -> str:
+        """
+        :return: The URL to the anilist page
+        """
+        return "https://anilist.co/manga/" + str(self.id)

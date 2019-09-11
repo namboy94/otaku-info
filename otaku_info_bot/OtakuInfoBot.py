@@ -234,6 +234,43 @@ class OtakuInfoBot(Bot):
             db_session.commit()
         self.send_txt(address, "Deactivated Manga Updates", "Deactivated")
 
+    def on_list_new_manga_chapters(
+            self,
+            address: Address,
+            _,
+            db_session: Session
+    ):
+        """
+        Handles list_manga_updates command
+        :param address: The address that requested this
+        :param _: The arguments
+        :param db_session: The database session to use
+        :return: None
+        """
+        config = db_session.query(MangaUpdateConfig) \
+            .filter_by(address=address).first()
+        if config is None:
+            self.send_txt(address, "No updates configured", "Not configured")
+            return
+
+        user_entries = self._load_user_anilist(
+            config.anilist_username, config.custom_list
+        )
+        progress = {}
+        for entry in user_entries:
+            anilist_id = entry["media"]["id"]
+            chapter = entry["progress"]
+            progress[anilist_id] = chapter
+
+        updates = db_session.query(MangaUpdate)\
+            .filter_by(address=address).all()
+
+        for update in updates:
+            update.last_update = progress[update.entry.id]
+
+        self._send_manga_update_messages(address, updates)
+        db_session.rollback()
+
     def _update_manga_entries(self, db_session: Session):
         """
         Updates the internal database of the manga entries with the newest
@@ -300,31 +337,9 @@ class OtakuInfoBot(Bot):
         self.logger.info("Sending Manga Updates")
         configs = db_session.query(MangaUpdateConfig).all()
         for config in configs:  # type: MangaUpdateConfig
-
-            due = []
-
             updates = db_session.query(MangaUpdate)\
                 .filter_by(address=config.address).all()
-
-            for update in updates:  # type: MangaUpdate
-                if update.diff > 0:
-                    due.append(update)
-
-            if len(due) == 0:
-                continue
-
-            due.sort(key=lambda x: x.diff, reverse=True)
-
-            message = "New Manga Updates:\n\n"
-            for update in due:
-                message += "\\[{}] {} Chapter {}\n".format(
-                    update.diff,
-                    update.entry.name,
-                    update.entry.latest_chapter
-                )
-                update.last_update = update.entry.latest_chapter
-
-            self.send_txt(config.address, message, "Manga Updates")
+            self._send_manga_update_messages(config.address, updates)
 
         db_session.commit()
         self.logger.info("Finished Sending Manga Updates")
@@ -414,10 +429,10 @@ class OtakuInfoBot(Bot):
 
         return best_guess
 
-    def bg_iteration(self, iteration: int, db_session: Session):
+    def bg_iteration(self, _: int, db_session: Session):
         """
         Periodically checks for new reminders to update and manga updates
-        :param iteration: The iteration count
+        :param _: The iteration count
         :param db_session: The database session to use
         :return:
         """
@@ -446,6 +461,49 @@ class OtakuInfoBot(Bot):
                 db_session.commit()
         self.logger.info("Finished looking for due reminders")
 
-        if iteration % 10 == 0:
-            self._update_manga_entries(db_session)
-            self._send_manga_updates(db_session)
+        self._update_manga_entries(db_session)
+        self._send_manga_updates(db_session)
+
+    def _send_manga_update_messages(
+            self,
+            address: Address,
+            updates: List[MangaUpdate],
+            send_if_none_due: bool = False
+    ):
+        """
+        Sends manga update messages.
+        :param address: The address to send the message(s) to.
+        :param updates: The updates to send
+        :param send_if_none_due: If True, will always send a message
+        :return: None
+        """
+        updates.sort(key=lambda x: x.diff, reverse=True)
+        due = []
+        for update in updates:  # type: MangaUpdate
+            if update.diff > 0:
+                due.append(update)
+
+        if len(due) == 0:
+            if send_if_none_due:
+                self.send_txt(address, "No New Updates", "No New Updates")
+            return
+
+        if len(due) <= 10:
+            for update in due:
+                message = "\\[{}] {} Chapter {}\n{}".format(
+                    update.diff,
+                    update.entry.name,
+                    update.entry.latest_chapter,
+                    update.entry.anilist_url
+                )
+                self.send_txt(address, message, "Manga Updates")
+        else:
+            message = "New Manga Updates:\n\n"
+            for update in due:
+                message += "\\[{}] {} Chapter {}\n".format(
+                    update.diff,
+                    update.entry.name,
+                    update.entry.latest_chapter
+                )
+                update.last_update = update.entry.latest_chapter
+            self.send_txt(address, message, "Manga Updates")
