@@ -18,7 +18,7 @@ along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from kudubot.db import Base
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
 
@@ -69,4 +69,3 @@ class AnimeReminder(Base):
         :return: The difference
         """
         return self.entry.latest_episode - self.last_update
-
