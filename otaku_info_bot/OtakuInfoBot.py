@@ -17,8 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-import time
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from datetime import datetime
 from kudubot.Bot import Bot
 from kudubot.db.Address import Address
@@ -27,14 +26,12 @@ from sqlalchemy.orm import Session
 from otaku_info_bot.OtakuInfoCommandParser import OtakuInfoCommandParser
 from otaku_info_bot.fetching.anime import load_newest_episodes
 from otaku_info_bot.fetching.ln import load_ln_releases
-from otaku_info_bot.db.AnimeEntry import AnimeEntry
-from otaku_info_bot.db.AnimeReminder import AnimeReminder
-from otaku_info_bot.db.AnimeReminderConfig import AnimeReminderConfig
-from otaku_info_bot.db.MangaEntry import MangaEntry
-from otaku_info_bot.db.MangaUpdate import MangaUpdate
-from otaku_info_bot.db.MangaUpdateConfig import MangaUpdateConfig
-from otaku_info_bot.fetching.anilist import load_user_manga_list, \
-    guess_latest_manga_chapter, load_user_anime_list
+from otaku_info_bot.db.AnilistEntry import AnilistEntry
+from otaku_info_bot.db.Notification import Notification
+from otaku_info_bot.db.config import NotificationConfig, \
+    MangaNotificationConfig, AnimeNotificationConfig
+from otaku_info_bot.fetching.anilist import guess_latest_manga_chapter, \
+    load_anilist
 
 
 class OtakuInfoBot(Bot):
@@ -57,169 +54,336 @@ class OtakuInfoBot(Bot):
         """
         return [OtakuInfoCommandParser()]
 
-    @property
-    def bg_pause(self) -> int:
+    def activate_config(
+            self,
+            address: Address,
+            args: Dict[str, Any],
+            db_session: Session,
+            config_cls: type(NotificationConfig)
+    ):
         """
-        :return: 30 seconds
+        Activates a configuration for a user
+        :param address: The user's address
+        :param args: The command arguments
+        :param db_session: The database session
+        :param config_cls: The configuration class
+        :return: None
         """
-        return 30
+        exists = db_session.query(config_cls)\
+            .filter_by(address=address).first() is not None
 
-    # Anime ------------------------------------------------------------------
+        if exists:
+            msg = "Configuration already activated"
+            self.send_txt(address, msg, "Already Active")
 
-    def _on_activate_anime_reminders(
+        else:
+            username = args["anilist-username"]
+            default_list_name = config_cls.default_list_name()
+            config = config_cls(
+                anilist_username=username,
+                address=address,
+                list_name=args.get("custom-list", default_list_name)
+            )
+            db_session.add(config)
+            db_session.commit()
+
+            self.send_txt(address, "Configuration Activated", "Activated")
+
+    def deactivate_config(
+            self,
+            address: Address,
+            db_session: Session,
+            config_cls: type(NotificationConfig)
+    ):
+        """
+        Deactivates an anilist configuration for a user
+        :param address: The address for which to deactivate the config
+        :param db_session: The database session to use
+        :param config_cls: The configuration class to use
+        :return: None
+        """
+        existing = db_session.query(config_cls) \
+            .filter_by(address=address).first()
+
+        if existing is not None:
+            db_session.delete(existing)
+
+            for notification in db_session.query(Notification)\
+                    .filter_by(address=address).all():
+                if notification.entry.media_type == config_cls.media_type():
+                    db_session.delete(notification)
+
+            db_session.commit()
+
+        self.send_txt(address, "Deactivated Configuration", "Deactivated")
+
+    def _update_anilist_entries(self, db_session: Session):
+        """
+        Updates anilist entries in the database
+        :param db_session: The database session to use
+        :return: None
+        """
+        self.logger.info("Updating anilist entries")
+
+        newest_anime_episodes = load_newest_episodes()
+        manga_progress = {}
+
+        for config_cls in [AnimeNotificationConfig, MangaNotificationConfig]:
+
+            media_type = config_cls.media_type()
+
+            for config in db_session.query(config_cls).all():
+                anilist = load_anilist(
+                    config.anilist_username,
+                    media_type,
+                    config.list_name
+                )
+
+                anilist_ids = []
+                for entry in anilist:
+
+                    anilist_id = entry["media"]["id"]
+                    anilist_ids.append(anilist_id)
+
+                    romaji_name = entry["media"]["title"]["romaji"]
+                    english_name = entry["media"]["title"]["english"]
+                    name = romaji_name
+                    if media_type == "manga" and english_name is not None:
+                        name = english_name
+
+                    user_progress = entry["progress"]
+
+                    if media_type == "anime":
+                        latest = newest_anime_episodes.get(anilist_id)
+                        if latest is None:
+                            next_ep = entry["media"]["nextAiringEpisode"]
+                            if next_ep is not None:
+                                latest = next_ep["episode"] - 1
+                        if latest is None:
+                            latest = entry["media"]["episodes"]
+                    else:  # media_type == "manga":
+                        latest = entry["media"]["chapters"]
+                        if latest is None:
+                            latest = manga_progress.get(anilist_id)
+                        if latest is None:
+                            latest = guess_latest_manga_chapter(anilist_id)
+                        manga_progress[anilist_id] = latest
+
+                    db_entry = db_session.query(AnilistEntry).filter_by(
+                        anilist_id=anilist_id, media_type=media_type
+                    ).first()
+                    if db_entry is None:
+                        db_entry = AnilistEntry(
+                            anilist_id=anilist_id,
+                            name=name,
+                            latest=latest,
+                            media_type=media_type
+                        )
+                        db_session.add(db_entry)
+                    elif latest != 0:
+                        db_entry.latest = latest
+
+                    notification = db_session.query(Notification).filter_by(
+                        entry=db_entry, address=config.address
+                    ).first()
+
+                    if notification is None:
+                        notification = Notification(
+                            address=config.address,
+                            entry=db_entry,
+                            user_progress=user_progress,
+                            last_update=user_progress
+                        )
+                        db_session.add(notification)
+                    else:
+                        notification.user_progress = user_progress
+
+                # Purge stale entries
+                for existing in db_session.query(Notification) \
+                        .filter_by(address=config.address).all():
+                    if existing.entry.anilist_id not in anilist_ids:
+                        db_session.delete(existing)
+
+        db_session.commit()
+        self.logger.info("Finished updating anilist entries")
+
+    def _send_notifications(
+            self,
+            db_session: Session,
+            address_limit: Optional[Address] = None,
+            use_user_progress: bool = False,
+            media_type_limit: Optional[str] = None
+    ):
+        """
+        Sends out any due notifications
+        :param db_session: The database session to use
+        :param address_limit: Can be set to limit this to a single user
+        :param use_user_progress: Instead of looking at the last time a
+                                  notification was sent out, look at the user's
+                                  progress
+        :param media_type_limit: Limits the media type of the notifications to
+                                 be sent
+        :return: None
+        """
+        self.logger.info("Sending Notifications")
+
+        due = {}
+
+        for notification in db_session.query(Notification).all():
+
+            address_id = notification.address_id
+            if address_limit is not None and address_limit.id != address_id:
+                continue
+
+            if address_id not in due:
+                due[address_id] = {
+                    "address": notification.address,
+                    "anime": [],
+                    "manga": []
+                }
+
+            if notification.diff > 0 or \
+                    (use_user_progress and notification.user_diff > 0):
+                media_type = notification.entry.media_type
+                due[address_id][media_type].append(notification)
+
+        for _, data in due.items():
+            address = data["address"]
+
+            for media_type in ["manga", "anime"]:
+
+                if media_type_limit is not None \
+                        and media_type != media_type_limit:
+                    continue
+
+                notifications = data[media_type]
+                notifications.sort(key=lambda x: x.user_diff, reverse=True)
+
+                media_name = media_type[0].upper() + media_type[1:]
+                unit_type = "Episode" if media_type == "anime" else "Chapter"
+
+                if len(notifications) <= 5:
+                    for notification in notifications:
+                        message = "{} {} {} was released\n\n"
+                        message += "Current Progress: {}/{} (+{})\n\n{}"
+                        message = message.format(
+                            notification.entry.name,
+                            unit_type,
+                            notification.entry.latest,
+                            notification.user_progress,
+                            notification.entry.latest,
+                            notification.user_diff,
+                            notification.entry.anilist_url
+                        )
+                        self.send_txt(address, message, "Notification")
+                else:
+                    message = "New {} {}:\n\n".format(media_name, unit_type)
+                    for notification in notifications:
+                        message += "\\[+{}] {} {} {}\n".format(
+                            notification.user_diff,
+                            notification.entry.name,
+                            unit_type,
+                            notification.entry.latest
+                        )
+                    self.send_txt(address, message, "Notifications")
+
+                for notification in notifications:
+                    notification.last_update = notification.entry.latest
+
+        db_session.commit()
+        self.logger.info("Finished Sending Notifications")
+
+    def _on_activate_anime_notifications(
             self,
             address: Address,
             args: Dict[str, Any],
             db_session: Session
     ):
         """
-        Activates anime reminder for a user
+        Activates anime notifications for a user
         :param address: The user's address
         :param args: The arguments, containing the anilist username
         :param db_session: The database session to use
         :return: None
         """
-        exists = db_session.query(AnimeReminderConfig)\
-            .filter_by(address=address).first() is not None
-        if exists:
-            self.send_txt(
-                address, "Anime Reminder already activated", "Already Active"
-            )
-            return
-
-        username = args["anilist-username"]
-        config = AnimeReminderConfig(
-            anilist_username=username,
-            address=address
+        self.activate_config(
+            address, args, db_session, AnimeNotificationConfig
         )
-        db_session.add(config)
-        db_session.commit()
 
-        self.send_txt(address, "Anime Reminders Activated", "Activated")
-
-    def _on_deactivate_anime_reminders(
+    def _on_deactivate_anime_notifications(
             self,
             address: Address,
             _,
             db_session: Session
     ):
         """
-        Deactivates anime reminders for a user
+        Deactivates anime notifications for a user
         :param address: The user's address
         :param db_session: The database session to use
         :return: None
         """
-        existing = db_session.query(AnimeReminderConfig) \
-            .filter_by(address=address).first()
-        if existing is not None:
-            db_session.delete(existing)
+        self.deactivate_config(address, db_session, AnimeNotificationConfig)
 
-            for reminder in db_session.query(AnimeReminder) \
-                    .filter_by(address=address).all():
-                db_session.delete(reminder)
-
-            db_session.commit()
-
-        self.send_txt(address, "Deactivated Anime Reminders", "Deactivated")
-
-    def _update_anime_entries(self, db_session: Session):
+    def on_list_new_anime_episodes(
+            self,
+            address: Address,
+            _,
+            db_session: Session
+    ):
         """
-        Updates anime entries
+        Handles listing new episodes for a user
+        :param address: The address that requested this
+        :param _: The arguments
         :param db_session: The database session to use
         :return: None
         """
-        self.logger.info("Updating anime entries")
-        newest_episodes = load_newest_episodes()
+        self._send_notifications(db_session, address, True, "anime")
 
-        for config in db_session.query(AnimeReminderConfig).all():
-            anilist = load_user_anime_list(config.anilist_username, "Watching")
-
-            anilist_ids = []
-            for entry in anilist:
-
-                anilist_id = entry["media"]["id"]
-                anilist_ids.append(anilist_id)
-
-                name = entry["media"]["title"]["romaji"]
-                user_episodes = entry["progress"]
-
-                latest_episode = newest_episodes.get(anilist_id, 0)
-
-                anime_entry = db_session.query(AnimeEntry) \
-                    .filter_by(id=anilist_id).first()
-                anime_reminder = db_session.query(AnimeReminder) \
-                    .filter_by(entry_id=anilist_id, address=config.address) \
-                    .first()
-
-                if anime_entry is None:
-                    anime_entry = AnimeEntry(
-                        id=anilist_id,
-                        name=name,
-                        latest_episode=latest_episode
-                    )
-                    db_session.add(anime_entry)
-                elif latest_episode != 0:
-                    anime_entry.latest_episode = latest_episode
-
-                if anime_reminder is None:
-                    anime_reminder = AnimeReminder(
-                        address=config.address,
-                        entry=anime_entry,
-                        last_update=user_episodes
-                    )
-                    db_session.add(anime_reminder)
-
-            # Purge stale entries
-            for existing in db_session.query(AnimeReminder) \
-                    .filter_by(address=config.address).all():
-                if existing.entry.id not in anilist_ids:
-                    db_session.delete(existing)
-
-        db_session.commit()
-        self.logger.info("Finished updating anime entries")
-
-    def _send_anime_reminders(self, db_session: Session):
+    def _on_activate_manga_notifications(
+            self,
+            address: Address,
+            args: Dict[str, Any],
+            db_session: Session
+    ):
         """
-        Sends out any due anime reminders
-        :param db_session: The database session
+        Handles activating manga notifications for a user using anilist
+        :param address: The user that sent this request
+        :param args: The arguments to use
+        :param db_session: The database session to use
         :return: None
         """
+        self.activate_config(
+            address, args, db_session, MangaNotificationConfig
+        )
 
-        self.logger.info("Sending Anime Reminders")
+    def _on_deactivate_manga_notifications(
+            self,
+            address: Address,
+            _,
+            db_session: Session
+    ):
+        """
+        Handles deactivating manga notifications for a user using anilist
+        :param address: The user that sent this request
+        :param db_session: The database session to use
+        :return: None
+        """
+        self.deactivate_config(address, db_session, MangaNotificationConfig)
 
-        for config in db_session.query(AnimeReminderConfig).all():
-            due = []
-            for reminder in db_session.query(AnimeReminder)\
-                    .filter_by(address=config.address).all():
-                if reminder.diff > 0:
-                    due.append(reminder)
-
-            if len(due) <= 10:
-                for reminder in due:
-                    message = "\\[{}] {} Episode {}\n{}".format(
-                        reminder.diff,
-                        reminder.entry.name,
-                        reminder.entry.latest_episode,
-                        reminder.entry.anilist_url
-                    )
-                    self.send_txt(config.address, message, "Anime Reminders")
-            else:
-                message = "New Anime Episodes:\n\n"
-                for reminder in due:
-                    message += "\\[{}] {} Episode {}\n".format(
-                        reminder.diff,
-                        reminder.entry.name,
-                        reminder.entry.latest_episode
-                    )
-                self.send_txt(config.address, message, "Anime Reminders")
-
-            for reminder in due:
-                reminder.last_update = reminder.entry.latest_episode
-
-        db_session.commit()
-        self.logger.info("Finished Sending Anime Reminders")
-
-    # Light Novels -----------------------------------------------------------
+    def on_list_new_manga_chapters(
+            self,
+            address: Address,
+            _,
+            db_session: Session
+    ):
+        """
+        Handles listing new manga chapters for a user
+        :param address: The address that requested this
+        :param _: The arguments
+        :param db_session: The database session to use
+        :return: None
+        """
+        self._send_notifications(db_session, address, True, "manga")
 
     def _on_list_ln_releases(
             self,
@@ -254,245 +418,12 @@ class OtakuInfoBot(Bot):
             )
         self.send_txt(address, body)
 
-    # Manga -----------------------------------------------------------------
-
-    def _on_activate_manga_updates(
-            self,
-            address: Address,
-            args: Dict[str, Any],
-            db_session: Session
-    ):
-        """
-        Handles activating manga updates for a user using anilist
-        :param address: The user that sent this request
-        :param args: The arguments to use
-        :param db_session: The database session to use
-        :return: None
-        """
-        exists = db_session.query(MangaUpdateConfig.id)\
-            .filter_by(address=address).first() is not None
-        if exists:
-            self.send_txt(
-                address, "Manga Updates already activated", "Already Active"
-            )
-            return
-
-        username = args["anilist-username"]
-        custom_list = args["custom-list"]
-        config = MangaUpdateConfig(
-            anilist_username=username,
-            custom_list=custom_list,
-            address=address
-        )
-        db_session.add(config)
-        db_session.commit()
-
-        self.send_txt(address, "Manga Updates Activated", "Activated")
-
-    def _on_deactivate_manga_updates(
-            self,
-            address: Address,
-            _,
-            db_session: Session
-    ):
-        """
-        Handles listing current light novel releases
-        :param address: The user that sent this request
-        :param db_session: The database session to use
-        :return: None
-        """
-        existing = db_session.query(MangaUpdateConfig)\
-            .filter_by(address=address).first()
-        if existing is not None:
-            db_session.delete(existing)
-
-            for update in db_session.query(MangaUpdate)\
-                    .filter_by(address=address).all():
-                db_session.delete(update)
-
-            db_session.commit()
-
-        self.send_txt(address, "Deactivated Manga Updates", "Deactivated")
-
-    def on_list_new_manga_chapters(
-            self,
-            address: Address,
-            _,
-            db_session: Session
-    ):
-        """
-        Handles list_manga_updates command
-        :param address: The address that requested this
-        :param _: The arguments
-        :param db_session: The database session to use
-        :return: None
-        """
-        config = db_session.query(MangaUpdateConfig) \
-            .filter_by(address=address).first()
-        if config is None:
-            self.send_txt(address, "No updates configured", "Not configured")
-            return
-
-        user_entries = load_user_manga_list(
-            config.anilist_username, config.custom_list
-        )
-        progress = {}
-        for entry in user_entries:
-            anilist_id = entry["media"]["id"]
-            chapter = entry["progress"]
-            progress[anilist_id] = chapter
-
-        updates = db_session.query(MangaUpdate)\
-            .filter_by(address=address).all()
-
-        for update in updates:
-            update.last_update = progress[update.entry.id]
-
-        self._send_manga_update_messages(address, updates)
-        db_session.rollback()
-
-    def _update_manga_entries(self, db_session: Session):
-        """
-        Updates the internal database of the manga entries with the newest
-        information
-        :param db_session: The database session to use
-        :return: None
-        """
-        self.logger.info("Updating Manga Entries")
-        configs = db_session.query(MangaUpdateConfig).all()
-
-        manga_progress = {}
-
-        for config in configs:  # type: MangaUpdateConfig
-            anilist = load_user_manga_list(
-                config.anilist_username, config.custom_list
-            )
-
-            anilist_ids = []
-
-            for entry in anilist:
-
-                anilist_id = entry["media"]["id"]
-                anilist_ids.append(anilist_id)
-
-                name = entry["media"]["title"]["english"]
-                if name is None:
-                    name = entry["media"]["title"]["romaji"]
-                user_chapters = entry["progress"]
-
-                chapters = entry["media"]["chapters"]
-                if chapters is None:
-                    chapters = manga_progress.get(anilist_id)
-                if chapters is None:
-                    chapters = guess_latest_manga_chapter(anilist_id)
-                manga_progress[anilist_id] = chapters
-
-                manga_entry = db_session.query(MangaEntry)\
-                    .filter_by(id=anilist_id).first()
-                manga_update = db_session.query(MangaUpdate)\
-                    .filter_by(entry_id=anilist_id, address=config.address)\
-                    .first()
-
-                if manga_entry is None:
-                    manga_entry = MangaEntry(
-                        id=anilist_id,
-                        name=name,
-                        latest_chapter=chapters
-                    )
-                    db_session.add(manga_entry)
-                else:
-                    manga_entry.latest_chapter = chapters
-
-                if manga_update is None:
-                    manga_update = MangaUpdate(
-                        address=config.address,
-                        entry=manga_entry,
-                        last_update=user_chapters
-                    )
-                    db_session.add(manga_update)
-
-            # Purge stale entries
-            for existing in db_session.query(MangaUpdate)\
-                    .filter_by(address=config.address).all():
-                if existing.entry.id not in anilist_ids:
-                    db_session.delete(existing)
-
-        db_session.commit()
-        self.logger.info("Finished updating manga entries")
-
-    def _send_manga_updates(self, db_session: Session):
-        """
-        Sends manga updates to the users with activated manga updates
-        :return: None
-        """
-        self.logger.info("Sending Manga Updates")
-        configs = db_session.query(MangaUpdateConfig).all()
-        for config in configs:  # type: MangaUpdateConfig
-            updates = db_session.query(MangaUpdate)\
-                .filter_by(address=config.address).all()
-
-            self._send_manga_update_messages(config.address, updates)
-
-            for update in list(filter(lambda x: x.diff > 0, updates)):
-                update.last_update = update.entry.latest_chapter
-
-        db_session.commit()
-        self.logger.info("Finished Sending Manga Updates")
-
-    def _send_manga_update_messages(
-            self,
-            address: Address,
-            updates: List[MangaUpdate],
-            send_if_none_due: bool = False
-    ):
-        """
-        Sends manga update messages.
-        :param address: The address to send the message(s) to.
-        :param updates: The updates to send
-        :param send_if_none_due: If True, will always send a message
-        :return: None
-        """
-        updates.sort(key=lambda x: x.diff, reverse=True)
-        due = []
-        for update in updates:  # type: MangaUpdate
-            if update.diff > 0:
-                due.append(update)
-
-        if len(due) == 0:
-            if send_if_none_due:
-                self.send_txt(address, "No New Updates", "No New Updates")
-            return
-
-        if len(due) <= 10:
-            for update in due:
-                message = "\\[{}] {} Chapter {}\n{}".format(
-                    update.diff,
-                    update.entry.name,
-                    update.entry.latest_chapter,
-                    update.entry.anilist_url
-                )
-                self.send_txt(address, message, "Manga Updates")
-        else:
-            message = "New Manga Updates:\n\n"
-            for update in due:
-                message += "\\[{}] {} Chapter {}\n".format(
-                    update.diff,
-                    update.entry.name,
-                    update.entry.latest_chapter
-                )
-            self.send_txt(address, message, "Manga Updates")
-
     def bg_iteration(self, _: int, db_session: Session):
         """
-        Periodically checks for new reminders to update and manga updates
+        Periodically checks for new notifications and sends them out
         :param _: The iteration count
         :param db_session: The database session to use
-        :return:
+        :return: None
         """
-        self._update_anime_entries(db_session)
-        self._send_anime_reminders(db_session)
-
-        time.sleep(30)
-
-        self._update_manga_entries(db_session)
-        self._send_manga_updates(db_session)
+        self._update_anilist_entries(db_session)
+        self._send_notifications(db_session)

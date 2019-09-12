@@ -21,29 +21,39 @@ from kudubot.db import Base
 from sqlalchemy import Column, Integer, String
 
 
-class MangaEntry(Base):
+class AnilistEntry(Base):
     """
-    Models a manga entry
-    """
-
-    __tablename__ = "manga_entries"
-    """
-    The table name
+    Models an anilist entry
     """
 
-    id = Column(Integer, primary_key=True)
+    __tablename__ = "anilist_entries"
     """
-    The anilist ID of the manga entry
+    The name of the database table
+    """
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    """
+    The ID of the entry
+    """
+
+    anilist_id = Column(Integer, nullable=False)
+    """
+    The anilist ID of the entry
     """
 
     name = Column(String(255), nullable=False)
     """
-    The name of the manga series
+    The name of the series
     """
 
-    latest_chapter = Column(Integer, default=0, nullable=False)
+    media_type = Column(String(5), nullable=False)
     """
-    The most recently released chapter
+    The media type of the entry
+    """
+
+    latest = Column(Integer, default=0, nullable=False)
+    """
+    The most recently released episode/chapter
     """
 
     @property
@@ -51,4 +61,6 @@ class MangaEntry(Base):
         """
         :return: The URL to the anilist page
         """
-        return "https://anilist.co/manga/" + str(self.id)
+        return "https://anilist.co/{}/{}".format(
+            self.media_type, self.anilist_id
+        )

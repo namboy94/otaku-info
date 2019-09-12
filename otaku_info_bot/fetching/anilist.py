@@ -20,86 +20,55 @@ LICENSE"""
 import math
 import json
 import requests
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
-def load_user_manga_list(username: str, custom_list: str) \
-        -> List[Dict[str, Any]]:
+def load_anilist(
+        username: str,
+        media_type: str,
+        list_name: Optional[str] = None
+) -> List[Dict[str, Any]]:
     """
-    Loads the manga anilist for a user
+    Loads the anilist for a user
     :param username: The username
-    :param custom_list: The custom list to load
-    :return: The manga anilist
+    :param media_type: The media type, either MANGA or ANIME
+    :param list_name: Optionalyy restrict to a specific list
+    :return: The anilist
     """
+    graphql = GraphQlClient("https://graphql.anilist.co")
     query = """
-        query ($username: String) {
-            MediaListCollection(userName: $username, type: MANGA) {
-                lists {
-                    name
-                    entries {
-                        progress
-                        media {
-                            id
-                            chapters
-                            title {
-                                english
-                                romaji
-                            }
+    query ($username: String, $media_type: MediaType) {
+        MediaListCollection(userName: $username, type: $media_type) {
+            lists {
+                name
+                entries {
+                    progress
+                    media {
+                        id
+                        chapters
+                        episodes
+                        title {
+                            english
+                            romaji
+                        }
+                        nextAiringEpisode {
+                          episode
                         }
                     }
                 }
             }
         }
-        """
-    user_lists = json.loads(requests.post(
-        "https://graphql.anilist.co",
-        json={"query": query, "variables": {"username": username}}
-    ).text)["data"]["MediaListCollection"]["lists"]
+    }
+    """
+    user_lists = graphql.query(query, {
+        "username": username,
+        "media_type": media_type.upper()
+    })
+    user_lists = user_lists["data"]["MediaListCollection"]["lists"]
 
     entries = []
     for _list in user_lists:
-        if _list["name"] == custom_list:
-            entries += _list["entries"]
-
-    return entries
-
-
-def load_user_anime_list(username: str, custom_list: str) \
-        -> List[Dict[str, Any]]:
-    """
-    Loads the anime anilist for a user
-    :param username: The username
-    :param custom_list: The custom list to load
-    :return: The anime anilist
-    """
-    query = """
-        query ($username: String) {
-            MediaListCollection(userName: $username, type: ANIME) {
-                lists {
-                    name
-                    entries {
-                        progress
-                        media {
-                            id
-                            episodes
-                            title {
-                                english
-                                romaji
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        """
-    user_lists = json.loads(requests.post(
-        "https://graphql.anilist.co",
-        json={"query": query, "variables": {"username": username}}
-    ).text)["data"]["MediaListCollection"]["lists"]
-
-    entries = []
-    for _list in user_lists:
-        if _list["name"] == custom_list:
+        if list_name is None or _list["name"] == list_name:
             entries += _list["entries"]
 
     return entries
@@ -111,6 +80,7 @@ def guess_latest_manga_chapter(anilist_id: int) -> int:
     :param anilist_id: The anilist ID to check
     :return: The latest chapter number
     """
+    graphql = GraphQlClient("https://graphql.anilist.co")
     query = """
     query ($id: Int) {
       Page(page: 1) {
@@ -123,11 +93,8 @@ def guess_latest_manga_chapter(anilist_id: int) -> int:
       }
     }
     """
-    resp = requests.post(
-        "https://graphql.anilist.co",
-        json={"query": query, "variables": {"id": anilist_id}}
-    )
-    data = json.loads(resp.text)["data"]["Page"]["activities"]
+    resp = graphql.query(query, {"id": anilist_id})
+    data = resp["data"]["Page"]["activities"]
 
     progresses = []
     for entry in data:
@@ -147,3 +114,39 @@ def guess_latest_manga_chapter(anilist_id: int) -> int:
                 best_guess = progresses[1]
 
     return best_guess
+
+
+class GraphQlClient:
+    """
+    A simple API wrapper for GraphQL APIs
+    """
+
+    def __init__(self, api_url: str):
+        """
+        Initializes the GraphQL API wrapper
+        :param api_url: The API endpoint URL
+        """
+        self.api_url = api_url
+
+    def query(
+            self,
+            query_string: str,
+            variables: Optional[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Executes a GraphQL query
+        :param query_string: The query string to use
+        :param variables: The variables to send
+        :return: The response JSON, or None if an error occurred.
+        """
+        if variables is None:
+            variables = {}
+
+        resp = requests.post(self.api_url, json={
+            "query": query_string,
+            "variables": variables
+        })
+        if not resp.status_code < 300:
+            return None
+        else:
+            return json.loads(resp.text)

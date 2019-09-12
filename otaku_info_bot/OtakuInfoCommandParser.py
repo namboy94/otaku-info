@@ -34,12 +34,20 @@ class OtakuInfoCommandParser(CommandParser):
         :return: The list of commands
         """
         return [
-            Command("activate_anime_reminders", [("anilist-username", str)]),
-            Command("deactivate_anime_reminders", []),
-            Command("activate_manga_updates",
+            Command("activate_anime_notifications",
+                    [("anilist-username", str)]),
+            Command("activate_anime_notifications",
                     [("anilist-username", str), ("custom-list", str)]),
-            Command("deactivate_manga_updates", []),
+            Command("deactivate_anime_notifications", []),
+            Command("list_new_anime_episodes", []),
+
+            Command("activate_manga_notifications",
+                    [("anilist-username", str)]),
+            Command("activate_manga_notifications",
+                    [("anilist-username", str), ("custom-list", str)]),
+            Command("deactivate_manga_notifications", []),
             Command("list_new_manga_chapters", []),
+
             Command("list_ln_releases", []),
             Command("list_ln_releases", [("year", int)]),
             Command("list_ln_releases", [("year", int), ("month", str)]),

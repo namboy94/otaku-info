@@ -18,23 +18,23 @@ along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from kudubot.db import Base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
 
-class MangaUpdateConfig(Base):
+class Notification(Base):
     """
-    Models manga update configurations
+    Models a generic Notification
     """
 
-    __tablename__ = "manga_update_config"
+    __tablename__ = "notifications"
     """
-    The table name
+    The name of the database table
     """
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     """
-    The ID of the config
+    The ID of the notification
     """
 
     address_id = Column(Integer, ForeignKey("addressbook.id"))
@@ -47,12 +47,38 @@ class MangaUpdateConfig(Base):
     The associated address
     """
 
-    anilist_username = Column(String(255), nullable=False)
+    entry_id = Column(Integer, ForeignKey("anilist_entries.id"))
     """
-    The anilist username to use
+    The ID of the associated anilist entry
     """
 
-    custom_list = Column(String(255), nullable=False)
+    entry = relationship("AnilistEntry")
     """
-    The custom anilist list
+    The associated anilist entry
     """
+
+    user_progress = Column(Integer, default=0, nullable=False)
+    """
+    The user's current progress
+    """
+
+    last_update = Column(Integer, default=0, nullable=False)
+    """
+    The last notification update
+    """
+
+    @property
+    def diff(self) -> int:
+        """
+        The difference between the last update and the current entry value
+        :return: The difference
+        """
+        return self.entry.latest - self.last_update
+
+    @property
+    def user_diff(self) -> bool:
+        """
+        :return: The difference between the user's progress and the latest
+                 entry value
+        """
+        return self.entry.latest - self.user_progress

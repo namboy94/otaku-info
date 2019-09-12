@@ -1,5 +1,6 @@
 V 0.3.0:
-  - Integrated manga updates
+  - Integrated manga notifications
+  - Made anime notifications more user-friendly
 V 0.2.0:
   - Now uses docker for Ci
   - Integrated new kudubot features
