@@ -30,14 +30,20 @@ from otaku_info_bot.db.AnilistEntry import AnilistEntry
 from otaku_info_bot.db.Notification import Notification
 from otaku_info_bot.db.config import NotificationConfig, \
     MangaNotificationConfig, AnimeNotificationConfig
-from otaku_info_bot.fetching.anilist import guess_latest_manga_chapter, \
-    load_anilist
+from otaku_info_bot.fetching.anilist import load_anilist
+from otaku_info_bot.db.MangaChapterGuess import MangaChapterGuess
 
 
 class OtakuInfoBot(Bot):
     """
     The OtakuInfo Bot class that defines the anime reminder
     functionality.
+    """
+
+    cache_delay_count = 0
+    """
+    Used to stagger out cache stores of manga chapter guesses
+    so that they don't all occur at the same time
     """
 
     @classmethod
@@ -176,7 +182,9 @@ class OtakuInfoBot(Bot):
                         if latest is None:
                             latest = manga_progress.get(anilist_id)
                         if latest is None:
-                            latest = guess_latest_manga_chapter(anilist_id)
+                            latest = self.get_cached_manga_chapter_guess(
+                                anilist_id, db_session
+                            )
                         manga_progress[anilist_id] = latest
 
                     db_entry = db_session.query(AnilistEntry).filter_by(
@@ -305,6 +313,52 @@ class OtakuInfoBot(Bot):
 
         db_session.commit()
         self.logger.info("Finished Sending Notifications")
+
+    def get_cached_manga_chapter_guess(
+            self,
+            anilist_id: int,
+            db_session: Session
+    ) -> int:
+        """
+        Uses manga chapter guesses from the database to reduce requests to
+        anilist servers and generally reduce loading times
+        :param anilist_id: The anilist ID for which to get the chapter guess
+        :param db_session: The database session to use
+        :return: The manga chapter guess
+        """
+        cached = db_session.query(MangaChapterGuess)\
+            .filter_by(id=anilist_id).first()
+
+        if cached is None:
+
+            self.logger.debug("Creating new manga chapter guess cache"
+                              .format(anilist_id))
+
+            # This delay makes sure that chapter guesses aren't all updated
+            # at the same time
+            delay = self.cache_delay_count * 60
+            if self.cache_delay_count % 60 == 0:
+                self.cache_delay_count = 0
+            self.cache_delay_count += 1
+
+            cached = MangaChapterGuess(id=anilist_id, last_check=0)
+            db_session.add(cached)
+
+            cached.update()
+            cached.last_check += delay
+
+        was_updated = cached.update()
+
+        if was_updated:
+            self.logger.debug("Cached chapter guess value for {} updated"
+                              .format(anilist_id))
+        else:
+            self.logger.debug("Using cached chapter guess for {}"
+                              .format(anilist_id))
+
+        db_session.commit()
+
+        return cached.guess
 
     def _on_activate_anime_notifications(
             self,
