@@ -201,7 +201,9 @@ class OtakuInfoBot(Bot):
                 # Purge stale entries
                 for existing in db_session.query(Notification) \
                         .filter_by(address=config.address).all():
-                    if existing.entry.anilist_id not in anilist_ids:
+                    if existing.entry.media_type != media_type:
+                        continue
+                    elif existing.entry.anilist_id not in anilist_ids:
                         db_session.delete(existing)
 
         db_session.commit()
@@ -242,9 +244,10 @@ class OtakuInfoBot(Bot):
                     "manga": []
                 }
 
-            if notification.diff > 0 or \
-                    (use_user_progress and notification.user_diff > 0):
-                media_type = notification.entry.media_type
+            media_type = notification.entry.media_type
+            if notification.diff > 0:
+                due[address_id][media_type].append(notification)
+            elif use_user_progress and notification.user_diff > 0:
                 due[address_id][media_type].append(notification)
 
         for _, data in due.items():
@@ -277,7 +280,7 @@ class OtakuInfoBot(Bot):
                         )
                         self.send_txt(address, message, "Notification")
                 else:
-                    message = "New {} {}:\n\n".format(media_name, unit_type)
+                    message = "New {} {}s:\n\n".format(media_name, unit_type)
                     for notification in notifications:
                         message += "\\[+{}] {} {} {}\n".format(
                             notification.user_diff,
