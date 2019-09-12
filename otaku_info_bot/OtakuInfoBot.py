@@ -339,7 +339,7 @@ class OtakuInfoBot(Bot):
 
         if cached is None:
 
-            self.logger.debug("Creating new manga chapter guess cache"
+            self.logger.debug("Creating new manga chapter guess cache for {}"
                               .format(anilist_id))
 
             # This delay makes sure that chapter guesses aren't all updated

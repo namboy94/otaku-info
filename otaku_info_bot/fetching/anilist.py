@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-import math
 import json
 import requests
 from typing import List, Dict, Any, Optional
@@ -103,15 +102,9 @@ def guess_latest_manga_chapter(anilist_id: int) -> int:
             progress = entry["progress"].split(" - ")[-1]
             progresses.append(int(progress))
 
-    progresses.sort(reverse=True)
+    progresses.sort(key=lambda x: progresses.count(x), reverse=True)
+    progresses = sorted(progresses, key=progresses.count, reverse=True)
     best_guess = progresses[0]
-
-    if len(progresses) > 2:
-        diff = progresses[0] - progresses[1]
-        inverse_diff = 1 + math.ceil(50 / (diff + 1))
-        if len(progresses) >= inverse_diff:
-            if progresses[1] == progresses[inverse_diff]:
-                best_guess = progresses[1]
 
     return best_guess
 
