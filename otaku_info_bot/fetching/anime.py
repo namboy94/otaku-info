@@ -43,7 +43,8 @@ def load_newest_episodes() -> Dict[int, int]:
 
             text = entry["data"]["selftext"].lower()
 
-            anilist_id = text.split("https://anilist.co/anime/")[1].split(")")[0]
+            anilist_id = \
+                text.split("https://anilist.co/anime/")[1].split(")")[0]
             anilist_id = int(anilist_id)
 
             latest[anilist_id] = max(latest.get(name, 0), int(episode))
