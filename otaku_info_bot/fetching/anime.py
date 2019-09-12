@@ -36,14 +36,19 @@ def load_newest_episodes() -> Dict[int, int]:
     entries = data["data"]["children"]
 
     for entry in entries:
-        title = entry["data"]["title"].lower()
-        name = title.split(" - episode ")[0].lower()
-        episode = title.split(" - episode ")[1].split(" discussion")[0]
+        try:
+            title = entry["data"]["title"].lower()
+            name = title.split(" - episode ")[0].lower()
+            episode = title.split(" - episode ")[1].split(" discussion")[0]
 
-        text = entry["data"]["selftext"].lower()
-        anilist_id = text.split("https://anilist.co/anime/")[1].split(")")[0]
-        anilist_id = int(anilist_id)
+            text = entry["data"]["selftext"].lower()
 
-        latest[anilist_id] = max(latest.get(name, 0), int(episode))
+            anilist_id = text.split("https://anilist.co/anime/")[1].split(")")[0]
+            anilist_id = int(anilist_id)
+
+            latest[anilist_id] = max(latest.get(name, 0), int(episode))
+
+        except IndexError:
+            pass
 
     return latest
