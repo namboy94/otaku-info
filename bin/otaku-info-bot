@@ -18,14 +18,14 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import sentry_sdk
 from kudubot.helper import cli_bot_start
 from otaku_info_bot.OtakuInfoBot import OtakuInfoBot
+from otaku_info_bot import sentry_dsn, version
 from bokkichat.connection.impl.TelegramBotConnection import \
     TelegramBotConnection
 
 
 if __name__ == "__main__":
-    try:
-        cli_bot_start(OtakuInfoBot, TelegramBotConnection)
-    except KeyboardInterrupt:
-        pass
+    sentry_sdk.init(sentry_dsn, release="otaku_info_bot-" + version)
+    cli_bot_start(OtakuInfoBot, TelegramBotConnection)

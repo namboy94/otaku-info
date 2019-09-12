@@ -43,7 +43,8 @@ if __name__ == "__main__":
             "bokkichat",
             "kudubot",
             "sqlalchemy",
-            "bs4"
+            "bs4",
+            "sentry-sdk"
         ],
         test_suite='nose.collector',
         tests_require=['nose'],
