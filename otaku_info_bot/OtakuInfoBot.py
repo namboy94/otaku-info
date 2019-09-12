@@ -153,14 +153,24 @@ class OtakuInfoBot(Bot):
 
                     user_progress = entry["progress"]
 
+                    db_entry = db_session.query(AnilistEntry).filter_by(
+                        anilist_id=anilist_id, media_type=media_type
+                    ).first()
+
+                    # Calculate newest
                     if media_type == "anime":
                         latest = newest_anime_episodes.get(anilist_id)
-                        if latest is None:
-                            next_ep = entry["media"]["nextAiringEpisode"]
-                            if next_ep is not None:
-                                latest = next_ep["episode"] - 1
-                        if latest is None:
-                            latest = entry["media"]["episodes"]
+                        if db_entry is None:
+
+                            if latest is None:
+                                next_ep = entry["media"]["nextAiringEpisode"]
+                                if next_ep is not None:
+                                    latest = next_ep["episode"] - 1
+                            if latest is None:
+                                latest = entry["media"]["episodes"]
+                        elif latest is None:
+                            latest = db_entry.latest
+
                     else:  # media_type == "manga":
                         latest = entry["media"]["chapters"]
                         if latest is None:
