@@ -428,6 +428,5 @@ class OtakuInfoBot(Bot):
         :param db_session: The database session to use
         :return: None
         """
-        1/0
         self._update_anilist_entries(db_session)
         self._send_notifications(db_session)
