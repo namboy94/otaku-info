@@ -23,6 +23,7 @@ from kudubot.Bot import Bot
 from kudubot.db.Address import Address
 from kudubot.parsing.CommandParser import CommandParser
 from sqlalchemy.orm import Session
+from otaku_info_bot import version
 from otaku_info_bot.OtakuInfoCommandParser import OtakuInfoCommandParser
 from otaku_info_bot.fetching.anime import load_newest_episodes
 from otaku_info_bot.fetching.ln import load_ln_releases
@@ -52,6 +53,13 @@ class OtakuInfoBot(Bot):
         :return: The name of the bot
         """
         return "otaku-info-bot"
+
+    @classmethod
+    def version(cls) -> str:
+        """
+        :return: The current version of the bot
+        """
+        return version
 
     @classmethod
     def parsers(cls) -> List[CommandParser]:
