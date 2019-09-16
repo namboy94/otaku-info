@@ -32,7 +32,7 @@ def load_newest_episodes() -> Dict[int, int]:
     response = requests.get(url, headers=headers)
     data = json.loads(response.text)
 
-    latest = {}
+    latest = {}  # type: Dict[int, int]
     entries = data["data"]["children"]
 
     for entry in entries:

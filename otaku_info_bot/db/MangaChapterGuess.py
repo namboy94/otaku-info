@@ -55,8 +55,12 @@ class MangaChapterGuess(Base):
         :return: Whether or not the value was updated
         """
         if time.time() - self.last_check > 3600:
-            self.guess = guess_latest_manga_chapter(self.id)
-            self.last_check = time.time()
-            return True
+            guess = guess_latest_manga_chapter(self.id)
+            if guess is None:
+                return False
+            else:
+                self.guess = guess
+                self.last_check = time.time()
+                return True
         else:
             return False

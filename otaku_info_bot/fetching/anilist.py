@@ -59,13 +59,15 @@ def load_anilist(
         }
     }
     """
-    user_lists = graphql.query(query, {
+    resp = graphql.query(query, {
         "username": username,
         "media_type": media_type.upper()
     })
-    user_lists = user_lists["data"]["MediaListCollection"]["lists"]
+    if resp is None:
+        return []
+    user_lists = resp["data"]["MediaListCollection"]["lists"]
 
-    entries = []
+    entries = []  # type: List[Dict[str, Any]]
     for _list in user_lists:
         if list_name is None or _list["name"] == list_name:
             entries += _list["entries"]
@@ -73,7 +75,7 @@ def load_anilist(
     return entries
 
 
-def guess_latest_manga_chapter(anilist_id: int) -> int:
+def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
     """
     Guesses the latest chapter number based on anilist user activity
     :param anilist_id: The anilist ID to check
@@ -93,6 +95,9 @@ def guess_latest_manga_chapter(anilist_id: int) -> int:
     }
     """
     resp = graphql.query(query, {"id": anilist_id})
+    if resp is None:
+        return None
+
     data = resp["data"]["Page"]["activities"]
 
     progresses = []

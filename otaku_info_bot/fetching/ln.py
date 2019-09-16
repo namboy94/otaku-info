@@ -31,7 +31,7 @@ def load_ln_releases(year: Optional[int] = None, month: Optional[str] = None) \
     :param month: Limits releases to a specific month
     :return: The releases, categorized by year and month
     """
-    releases = {}
+    releases = {}  # type: Dict[int, Dict[str, List[Dict[str, str]]]]
 
     page = "https://old.reddit.com/r/LightNovels/wiki/upcomingreleases"
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -91,9 +91,9 @@ def load_ln_releases(year: Optional[int] = None, month: Optional[str] = None) \
     if year is not None:
         releases = {year: releases.get(year, {})}
     if month is not None:
-        _releases = {}
+        _releases = {}  # type: Dict[int, Dict[str, List[Dict[str, str]]]]
         for year, data in releases.items():
-            _releases[year] = {month: data.get(month, {})}
+            _releases[year] = {month: data.get(month, [])}
         releases = _releases
 
     return releases

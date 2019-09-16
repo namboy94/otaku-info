@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Type
 from datetime import datetime
 from kudubot.Bot import Bot
 from kudubot.db.Address import Address
@@ -73,7 +73,7 @@ class OtakuInfoBot(Bot):
             address: Address,
             args: Dict[str, Any],
             db_session: Session,
-            config_cls: type(NotificationConfig)
+            config_cls: Any  # Type[NotificationConfig]
     ):
         """
         Activates a configuration for a user
@@ -93,6 +93,7 @@ class OtakuInfoBot(Bot):
         else:
             username = args["anilist-username"]
             default_list_name = config_cls.default_list_name()
+            # noinspection PyArgumentList
             config = config_cls(
                 anilist_username=username,
                 address=address,
@@ -107,7 +108,7 @@ class OtakuInfoBot(Bot):
             self,
             address: Address,
             db_session: Session,
-            config_cls: type(NotificationConfig)
+            config_cls: Type[NotificationConfig]
     ):
         """
         Deactivates an anilist configuration for a user
@@ -140,7 +141,7 @@ class OtakuInfoBot(Bot):
         self.logger.info("Updating anilist entries")
 
         newest_anime_episodes = load_newest_episodes()
-        manga_progress = {}
+        manga_progress = {}  # type: Dict[int, int]
 
         for config_cls in [AnimeNotificationConfig, MangaNotificationConfig]:
 
@@ -255,7 +256,7 @@ class OtakuInfoBot(Bot):
         """
         self.logger.info("Sending Notifications")
 
-        due = {}
+        due = {}  # type: Dict[int, Dict[str, Any]]
 
         for notification in db_session.query(Notification).all():
 
