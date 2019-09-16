@@ -47,6 +47,8 @@ class OtakuInfoCommandParser(CommandParser):
                     [("anilist-username", str), ("custom-list", str)]),
             Command("deactivate_manga_notifications", []),
             Command("list_new_manga_chapters", []),
+            Command("list_new_releasing_manga_chapters", []),
+            Command("list_new_completed_manga_chapters", []),
 
             Command("list_ln_releases", []),
             Command("list_ln_releases", [("year", int)]),

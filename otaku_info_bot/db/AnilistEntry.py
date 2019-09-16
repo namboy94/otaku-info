@@ -18,7 +18,7 @@ along with otaku-info-bot.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from kudubot.db import Base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 
 
 class AnilistEntry(Base):
@@ -54,6 +54,16 @@ class AnilistEntry(Base):
     latest = Column(Integer, default=0, nullable=False)
     """
     The most recently released episode/chapter
+    """
+
+    releasing = Column(Boolean, default=True, nullable=False)
+    """
+    Whether or not the series is currently being released
+    """
+
+    completed = Column(Boolean, default=False, nullable=False)
+    """
+    Whether or not the series is already completed
     """
 
     @property

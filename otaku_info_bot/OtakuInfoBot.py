@@ -160,6 +160,9 @@ class OtakuInfoBot(Bot):
                     anilist_id = entry["media"]["id"]
                     anilist_ids.append(anilist_id)
 
+                    releasing = entry["media"]["status"] == "RELEASING"
+                    completed = entry["media"]["status"] == "COMPLETED"
+
                     romaji_name = entry["media"]["title"]["romaji"]
                     english_name = entry["media"]["title"]["english"]
                     name = romaji_name
@@ -204,11 +207,15 @@ class OtakuInfoBot(Bot):
                             anilist_id=anilist_id,
                             name=name,
                             latest=latest,
-                            media_type=media_type
+                            media_type=media_type,
+                            releasing=releasing,
+                            completed=completed
                         )
                         db_session.add(db_entry)
                     elif latest != 0:
                         db_entry.latest = latest
+                        db_entry.releasing = releasing
+                        db_entry.completed = completed
 
                     notification = db_session.query(Notification).filter_by(
                         entry=db_entry, address=config.address
@@ -241,7 +248,9 @@ class OtakuInfoBot(Bot):
             db_session: Session,
             address_limit: Optional[Address] = None,
             use_user_progress: bool = False,
-            media_type_limit: Optional[str] = None
+            media_type_limit: Optional[str] = None,
+            send_completed: bool = True,
+            send_releasing: bool = True,
     ):
         """
         Sends out any due notifications
@@ -252,6 +261,10 @@ class OtakuInfoBot(Bot):
                                   progress
         :param media_type_limit: Limits the media type of the notifications to
                                  be sent
+        :param send_completed: Whether to send notifications fore completed
+                               series
+        :param send_releasing: Whether to send notifications for currently
+                               releasing series
         :return: None
         """
         self.logger.info("Sending Notifications")
@@ -259,6 +272,11 @@ class OtakuInfoBot(Bot):
         due = {}  # type: Dict[int, Dict[str, Any]]
 
         for notification in db_session.query(Notification).all():
+
+            if notification.entry.releasing and not send_releasing:
+                continue
+            elif notification.entry.completed and not send_completed:
+                continue
 
             address_id = notification.address_id
             if address_limit is not None and address_limit.id != address_id:
@@ -415,6 +433,42 @@ class OtakuInfoBot(Bot):
         """
         self._send_notifications(db_session, address, True, "anime")
 
+    def on_list_new_releasing_anime_episodes(
+            self,
+            address: Address,
+            _,
+            db_session: Session
+    ):
+        """
+        Handles listing new episodes for a user
+        Only sends notifications for currently releasing anime series
+        :param address: The address that requested this
+        :param _: The arguments
+        :param db_session: The database session to use
+        :return: None
+        """
+        self._send_notifications(
+            db_session, address, True, "anime", send_completed=False
+        )
+
+    def on_list_new_completed_anime_episodes(
+            self,
+            address: Address,
+            _,
+            db_session: Session
+    ):
+        """
+        Handles listing new episodes for a user
+        Only sends notifications for completed anime series
+        :param address: The address that requested this
+        :param _: The arguments
+        :param db_session: The database session to use
+        :return: None
+        """
+        self._send_notifications(
+            db_session, address, True, "anime", send_releasing=False
+        )
+
     def _on_activate_manga_notifications(
             self,
             address: Address,
@@ -460,6 +514,42 @@ class OtakuInfoBot(Bot):
         :return: None
         """
         self._send_notifications(db_session, address, True, "manga")
+
+    def on_list_new_releasing_manga_chapters(
+            self,
+            address: Address,
+            _,
+            db_session: Session
+    ):
+        """
+        Handles listing new manga chapters for a user.
+        Only sends notifications for currently releasing manga
+        :param address: The address that requested this
+        :param _: The arguments
+        :param db_session: The database session to use
+        :return: None
+        """
+        self._send_notifications(
+            db_session, address, True, "manga", send_completed=False
+        )
+
+    def on_list_new_completed_manga_chapters(
+            self,
+            address: Address,
+            _,
+            db_session: Session
+    ):
+        """
+        Handles listing new manga chapters for a user
+        Only sends notifications for currently completed manga series
+        :param address: The address that requested this
+        :param _: The arguments
+        :param db_session: The database session to use
+        :return: None
+        """
+        self._send_notifications(
+            db_session, address, True, "manga", send_releasing=False
+        )
 
     def _on_list_ln_releases(
             self,

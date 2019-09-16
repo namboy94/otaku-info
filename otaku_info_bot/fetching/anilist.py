@@ -46,6 +46,7 @@ def load_anilist(
                         id
                         chapters
                         episodes
+                        status
                         title {
                             english
                             romaji
