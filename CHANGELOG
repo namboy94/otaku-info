@@ -3,6 +3,8 @@ V 0.3.0:
   - Made anime notifications more user-friendly
   - Added sentry error logging
   - Caches manga chapter guesses to not get rate limited by anilist
+  - Integrated mypy static type checking
+  - Added ways to filter between releasing and completed series notifications
 V 0.2.0:
   - Now uses docker for Ci
   - Integrated new kudubot features
