@@ -161,7 +161,7 @@ class OtakuInfoBot(Bot):
                     anilist_ids.append(anilist_id)
 
                     releasing = entry["media"]["status"] == "RELEASING"
-                    completed = entry["media"]["status"] == "COMPLETED"
+                    completed = entry["media"]["status"] == "FINISHED"
 
                     romaji_name = entry["media"]["title"]["romaji"]
                     english_name = entry["media"]["title"]["english"]
@@ -433,7 +433,7 @@ class OtakuInfoBot(Bot):
         """
         self._send_notifications(db_session, address, True, "anime")
 
-    def on_list_new_releasing_anime_episodes(
+    def on_list_new_releasing_episodes(
             self,
             address: Address,
             _,
@@ -451,7 +451,7 @@ class OtakuInfoBot(Bot):
             db_session, address, True, "anime", send_completed=False
         )
 
-    def on_list_new_completed_anime_episodes(
+    def on_list_new_completed_episodes(
             self,
             address: Address,
             _,
@@ -515,7 +515,7 @@ class OtakuInfoBot(Bot):
         """
         self._send_notifications(db_session, address, True, "manga")
 
-    def on_list_new_releasing_manga_chapters(
+    def on_list_new_releasing_chapters(
             self,
             address: Address,
             _,
@@ -533,7 +533,7 @@ class OtakuInfoBot(Bot):
             db_session, address, True, "manga", send_completed=False
         )
 
-    def on_list_new_completed_manga_chapters(
+    def on_list_new_completed_chapters(
             self,
             address: Address,
             _,
