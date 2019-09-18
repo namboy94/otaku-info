@@ -108,6 +108,7 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
             progress = entry["progress"].split(" - ")[-1]
             progresses.append(int(progress))
 
+    progresses = progresses[0:20]
     progresses.sort(key=lambda x: progresses.count(x), reverse=True)
     progresses = sorted(progresses, key=progresses.count, reverse=True)
     best_guess = progresses[0]
