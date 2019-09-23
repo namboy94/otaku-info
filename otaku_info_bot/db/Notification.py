@@ -82,3 +82,13 @@ class Notification(Base):
                  entry value
         """
         return self.entry.latest - self.user_progress
+
+    def __str__(self) -> str:
+        return "({})[{}]: {} (diff:{} [{}/{}])".format(
+            self.id,
+            self.address.address,
+            self.entry.name,
+            self.diff,
+            self.last_update,
+            self.entry.latest
+        )
