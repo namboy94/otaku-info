@@ -291,7 +291,7 @@ class OtakuInfoBot(Bot):
 
             media_type = notification.entry.media_type
             if notification.diff > 0:
-                self.logger.debug("Notification due: " + notification)
+                self.logger.debug("Notification due: " + str(notification))
                 due[address_id][media_type].append(notification)
             elif use_user_progress and notification.user_diff > 0:
                 due[address_id][media_type].append(notification)
