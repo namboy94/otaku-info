@@ -29,5 +29,6 @@ if __name__ == "__main__":
     cli_bot_start(
         OtakuInfoBot,
         TelegramBotConnection,
-        sentry_dsn
+        sentry_dsn,
+        "otaku_info_bot"
     )
