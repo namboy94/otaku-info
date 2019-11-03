@@ -83,7 +83,8 @@ def load_ln_releases(year: Optional[int] = None, month: Optional[str] = None) \
             releases[current_year][_month].append({
                 "title": title,
                 "volume": volume,
-                "day": day
+                "day": day,
+                "release_type": parts[4].text
             })
 
         first_table = False

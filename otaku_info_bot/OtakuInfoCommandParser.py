@@ -41,6 +41,7 @@ class OtakuInfoCommandParser(CommandParser):
             Command("deactivate_anime_notifications", []),
             Command("list_new_anime_episodes", []),
             Command("list_new_releasing_episodes", []),
+            Command("list_new_releasing_episodes", [("mincount", int)]),
             Command("list_new_completed_episodes", []),
 
             Command("activate_manga_notifications",
@@ -50,6 +51,7 @@ class OtakuInfoCommandParser(CommandParser):
             Command("deactivate_manga_notifications", []),
             Command("list_new_manga_chapters", []),
             Command("list_new_releasing_chapters", []),
+            Command("list_new_releasing_chapters", [("mincount", int)]),
             Command("list_new_completed_chapters", []),
 
             Command("list_ln_releases", []),

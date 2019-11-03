@@ -251,6 +251,7 @@ class OtakuInfoBot(Bot):
             media_type_limit: Optional[str] = None,
             send_completed: bool = True,
             send_releasing: bool = True,
+            mincount: int = 1
     ):
         """
         Sends out any due notifications
@@ -265,6 +266,8 @@ class OtakuInfoBot(Bot):
                                series
         :param send_releasing: Whether to send notifications for currently
                                releasing series
+        :param mincount: The minimum amount of chapters/episodes the user needs
+                         to be behind for the notification message to trigger
         :return: None
         """
         self.logger.info("Sending Notifications")
@@ -291,9 +294,9 @@ class OtakuInfoBot(Bot):
 
             media_type = notification.entry.media_type
             if notification.diff > 0:
-                self.logger.debug("Notification due: " + str(notification))
+                self.logger.debug("Notification updated: " + str(notification))
                 due[address_id][media_type].append(notification)
-            elif use_user_progress and notification.user_diff > 0:
+            elif use_user_progress and notification.user_diff >= mincount:
                 due[address_id][media_type].append(notification)
 
         for _, data in due.items():
@@ -306,6 +309,7 @@ class OtakuInfoBot(Bot):
                     continue
 
                 notifications = data[media_type]
+                notifications.sort(key=lambda x: x.entry.name)
                 notifications.sort(key=lambda x: x.user_diff, reverse=True)
 
                 media_name = media_type[0].upper() + media_type[1:]
@@ -388,7 +392,7 @@ class OtakuInfoBot(Bot):
 
         return cached.guess
 
-    def _on_activate_anime_notifications(
+    def on_activate_anime_notifications(
             self,
             address: Address,
             args: Dict[str, Any],
@@ -405,7 +409,7 @@ class OtakuInfoBot(Bot):
             address, args, db_session, AnimeNotificationConfig
         )
 
-    def _on_deactivate_anime_notifications(
+    def on_deactivate_anime_notifications(
             self,
             address: Address,
             _,
@@ -414,6 +418,7 @@ class OtakuInfoBot(Bot):
         """
         Deactivates anime notifications for a user
         :param address: The user's address
+        :param _: The arguments
         :param db_session: The database session to use
         :return: None
         """
@@ -437,19 +442,24 @@ class OtakuInfoBot(Bot):
     def on_list_new_releasing_episodes(
             self,
             address: Address,
-            _,
+            args: Dict[str, Any],
             db_session: Session
     ):
         """
         Handles listing new episodes for a user
         Only sends notifications for currently releasing anime series
         :param address: The address that requested this
-        :param _: The arguments
+        :param args: The arguments provided by the user
         :param db_session: The database session to use
         :return: None
         """
         self._send_notifications(
-            db_session, address, True, "anime", send_completed=False
+            db_session,
+            address,
+            True,
+            "anime",
+            send_completed=False,
+            mincount=args.get("mincount", 1)
         )
 
     def on_list_new_completed_episodes(
@@ -470,7 +480,7 @@ class OtakuInfoBot(Bot):
             db_session, address, True, "anime", send_releasing=False
         )
 
-    def _on_activate_manga_notifications(
+    def on_activate_manga_notifications(
             self,
             address: Address,
             args: Dict[str, Any],
@@ -487,7 +497,7 @@ class OtakuInfoBot(Bot):
             address, args, db_session, MangaNotificationConfig
         )
 
-    def _on_deactivate_manga_notifications(
+    def on_deactivate_manga_notifications(
             self,
             address: Address,
             _,
@@ -496,6 +506,7 @@ class OtakuInfoBot(Bot):
         """
         Handles deactivating manga notifications for a user using anilist
         :param address: The user that sent this request
+        :param _: The arguments
         :param db_session: The database session to use
         :return: None
         """
@@ -519,19 +530,24 @@ class OtakuInfoBot(Bot):
     def on_list_new_releasing_chapters(
             self,
             address: Address,
-            _,
+            args: Dict[str, Any],
             db_session: Session
     ):
         """
         Handles listing new manga chapters for a user.
         Only sends notifications for currently releasing manga
         :param address: The address that requested this
-        :param _: The arguments
+        :param args: The arguments provided by the user
         :param db_session: The database session to use
         :return: None
         """
         self._send_notifications(
-            db_session, address, True, "manga", send_completed=False
+            db_session,
+            address,
+            True,
+            "manga",
+            send_completed=False,
+            mincount=args.get("mincount", 1)
         )
 
     def on_list_new_completed_chapters(
@@ -552,7 +568,7 @@ class OtakuInfoBot(Bot):
             db_session, address, True, "manga", send_releasing=False
         )
 
-    def _on_list_ln_releases(
+    def on_list_ln_releases(
             self,
             address: Address,
             args: Dict[str, Any],
@@ -562,6 +578,7 @@ class OtakuInfoBot(Bot):
         Handles listing current light novel releases
         :param address: The user that sent this request
         :param args: The arguments to use
+        :param _: The database session
         :return: None
         """
         year = args.get("year")
@@ -578,10 +595,11 @@ class OtakuInfoBot(Bot):
         body = "Light Novel Releases {} {}\n\n".format(month, year)
 
         for entry in releases:
-            body += "{}: {} {}\n".format(
+            body += "{}: {} {} ({})\n".format(
                 entry["day"],
                 entry["title"],
-                entry["volume"]
+                entry["volume"],
+                entry["release_type"]
             )
         self.send_txt(address, body)
 
