@@ -67,6 +67,11 @@ class Notification(Base):
     The last notification update
     """
 
+    user_score = Column(Integer, default=0, nullable=False)
+    """
+    Score that the user gave the entry
+    """
+
     @property
     def diff(self) -> int:
         """

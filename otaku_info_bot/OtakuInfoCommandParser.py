@@ -57,6 +57,8 @@ class OtakuInfoCommandParser(CommandParser):
             Command("list_ln_releases", []),
             Command("list_ln_releases", [("year", int)]),
             Command("list_ln_releases", [("year", int), ("month", str)]),
+
+            Command("toggle_ranked_mode", []),
         ]
 
     @classmethod

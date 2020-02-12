@@ -1,3 +1,5 @@
+V 0.5.0:
+  - Added ranked ordering option
 V 0.4.0:
   - Sort new release listings alphabetically after amount of new chapters/episodes
   - Added option to limit new release listings by amount of new chapters/episodes

@@ -33,6 +33,7 @@ from otaku_info_bot.db.config import NotificationConfig, \
     MangaNotificationConfig, AnimeNotificationConfig
 from otaku_info_bot.fetching.anilist import load_anilist
 from otaku_info_bot.db.MangaChapterGuess import MangaChapterGuess
+from otaku_info_bot.db.RankedModeSetting import RankedModeSetting
 
 
 class OtakuInfoBot(Bot):
@@ -170,6 +171,7 @@ class OtakuInfoBot(Bot):
                         name = english_name
 
                     user_progress = entry["progress"]
+                    user_score = entry["score"]
 
                     db_entry = db_session.query(AnilistEntry).filter_by(
                         anilist_id=anilist_id, media_type=media_type
@@ -226,11 +228,13 @@ class OtakuInfoBot(Bot):
                             address=config.address,
                             entry=db_entry,
                             user_progress=user_progress,
-                            last_update=user_progress
+                            last_update=user_progress,
+                            user_score=user_score
                         )
                         db_session.add(notification)
                     else:
                         notification.user_progress = user_progress
+                        notification.user_score = user_score
 
                 # Purge stale entries
                 for existing in db_session.query(Notification) \
@@ -282,6 +286,7 @@ class OtakuInfoBot(Bot):
                 continue
 
             address_id = notification.address_id
+
             if address_limit is not None and address_limit.id != address_id:
                 continue
 
@@ -302,6 +307,13 @@ class OtakuInfoBot(Bot):
         for _, data in due.items():
             address = data["address"]
 
+            ranked_setting = db_session.query(RankedModeSetting) \
+                .filter_by(address=address).first()
+            if ranked_setting is None:
+                use_ranked = False
+            else:
+                use_ranked = ranked_setting.value
+
             for media_type in ["manga", "anime"]:
 
                 if media_type_limit is not None \
@@ -311,6 +323,11 @@ class OtakuInfoBot(Bot):
                 notifications = data[media_type]
                 notifications.sort(key=lambda x: x.entry.name)
                 notifications.sort(key=lambda x: x.user_diff, reverse=True)
+
+                if use_ranked:
+                    notifications.sort(
+                        key=lambda x: x.user_score, reverse=True
+                    )
 
                 media_name = media_type[0].upper() + media_type[1:]
                 unit_type = "Episode" if media_type == "anime" else "Chapter"
@@ -332,10 +349,11 @@ class OtakuInfoBot(Bot):
                 else:
                     message = "New {} {}s:\n\n".format(media_name, unit_type)
                     for notification in notifications:
-                        message += "\\[+{}] {} {} {}\n".format(
+                        message += "\\[+{}] {} {} {}/{}\n".format(
                             notification.user_diff,
                             notification.entry.name,
                             unit_type,
+                            notification.user_progress,
                             notification.entry.latest
                         )
                     self.send_txt(address, message, "Notifications")
@@ -602,6 +620,28 @@ class OtakuInfoBot(Bot):
                 entry["release_type"]
             )
         self.send_txt(address, body)
+
+    def on_toggle_ranked_mode(
+            self,
+            address: Address,
+            _: Dict[str, Any],
+            db_session: Session
+    ):
+        """
+        Lets the user toggle "ranked" mode
+        :param address: The address of the user attempting to toggle the mode
+        :param _: The parmaters provided by the parser
+        :param db_session: The database session to use
+        :return: None
+        """
+        setting = db_session.query(RankedModeSetting)\
+            .filter_by(address=address).first()
+        if setting is None:
+            setting = RankedModeSetting(address=address, value=False)
+            db_session.add(setting)
+        setting.value = not setting.value
+        db_session.commit()
+        self.send_txt(address, f"Successfully toggled to {setting.value}")
 
     def bg_iteration(self, _: int, db_session: Session):
         """

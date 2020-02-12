@@ -42,6 +42,7 @@ def load_anilist(
                 name
                 entries {
                     progress
+                    score
                     media {
                         id
                         chapters
