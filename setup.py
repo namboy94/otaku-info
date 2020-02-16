@@ -26,13 +26,14 @@ if __name__ == "__main__":
     setup(
         name="otaku-info-web",
         version=open("version", "r").read(),
-        description="Website providing information on Japanese entertainment media",
+        description="Website providing information on "
+                    "Japanese entertainment media",
         long_description=open("README.md", "r").read(),
         long_description_content_type="text/markdown",
         classifiers=[
             "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
         ],
-        url="https://gitlab.namibsun.net/namboy94/otaku-info-web",
+        url="https://gitlab.namibsun.net/namibsun/python/otaku-info-web",
         author="Hermann Krumrey",
         author_email="hermann@krumreyh.com",
         license="GNU GPL3",

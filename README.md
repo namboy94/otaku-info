@@ -22,7 +22,7 @@ application.
 
 * [Changelog](CHANGELOG)
 * [License (GPLv3)](LICENSE)
-* [Gitlab](https://gitlab.namibsun.net/namboy94/otaku-info-web)
+* [Gitlab](https://gitlab.namibsun.net/namibsun/python/otaku-info-web)
 * [Github](namboy94/otaku-info-web)
 * [Progstats](https://progstats.namibsun.net/projects/otaku-info-web)
 * [PyPi](https://pypi.org/project/otaku-info-web)
