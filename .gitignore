@@ -1,0 +1,9 @@
+.idea/
+*.iml
+cover/
+.coverage
+*.egg-info/
+dist/
+build/
+./secrets.json
+.env
