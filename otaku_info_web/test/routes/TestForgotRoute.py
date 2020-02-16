@@ -41,8 +41,10 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("otaku_info_web.routes.user_management.send_email") as m:
-                with patch("otaku_info_web.routes.user_management.generate_random",
+            with patch("otaku_info_web.routes.user_management"
+                       ".send_email") as m:
+                with patch("otaku_info_web.routes."
+                           "user_management.generate_random",
                            lambda x: "testpass"):
                     self.assertEqual(0, m.call_count)
                     resp = self.client.post(
@@ -67,9 +69,10 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("otaku_info_web.routes.user_management.send_email") as m:
-                with patch("otaku_info_web.routes.user_management.generate_random",
-                           lambda x: "testpass"):
+            with patch("otaku_info_web.routes.user_management"
+                       ".send_email") as m:
+                with patch("otaku_info_web.routes.user_management"
+                           ".generate_random", lambda x: "testpass"):
                     self.assertEqual(0, m.call_count)
                     resp = self.client.post(
                         "/forgot",
@@ -93,9 +96,10 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("otaku_info_web.routes.user_management.send_email") as m:
-                with patch("otaku_info_web.routes.user_management.generate_random",
-                           lambda x: "testpass"):
+            with patch("otaku_info_web.routes.user_management"
+                       ".send_email") as m:
+                with patch("otaku_info_web.routes.user_management"
+                           ".generate_random", lambda x: "testpass"):
                     with patch("otaku_info_web.routes.user_management"
                                ".verify_recaptcha",
                                lambda x, y, z: False):

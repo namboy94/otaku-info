@@ -103,7 +103,8 @@ class TestConfig(_TestFramework):
             def get_json():
                 print({}["test"])
 
-        with patch("otaku_info_web.routes.api.user_management.request", Mocker):
+        with patch("otaku_info_web.routes.api.user_management.request",
+                   Mocker):
             user, password, _ = self.generate_sample_user()
             resp = self.client.post("/api/v1/key", json={
                 "username": user.username,
