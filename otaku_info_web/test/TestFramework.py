@@ -26,6 +26,7 @@ from otaku_info_web.run import app, db, init
 from otaku_info_web.config import Config
 from otaku_info_web.db.User import User
 from otaku_info_web.db.ApiKey import ApiKey
+from puffotter.env import load_env_file
 
 
 class _TestFramework(TestCase):
@@ -39,6 +40,7 @@ class _TestFramework(TestCase):
         :return: None
         """
         os.environ["FLASK_TESTING"] = "1"
+        load_env_file()
 
         self.app = app
         self.db = db
