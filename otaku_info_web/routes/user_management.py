@@ -9,6 +9,7 @@ from puffotter.smtp import send_email
 from otaku_info_web.flask import app, db
 from otaku_info_web.config import Config
 from otaku_info_web.db.User import User
+from otaku_info_web.db.ExternalUsername import ExternalUsername
 
 user_management_blueprint = Blueprint("user_management", __name__)
 
@@ -210,7 +211,13 @@ def profile() -> Union[Response, str]:
     Allows a user to edit their profile details
     :return: The response
     """
-    return render_template("user_management/profile.html")
+    external = ExternalUsername.query.filter_by(user=current_user).first()
+    if external is None:
+        external = ExternalUsername()
+    return render_template(
+        "user_management/profile.html",
+        external_usernames=external.external_usernames
+    )
 
 
 @user_management_blueprint.route("/change_password", methods=["POST"])
@@ -255,4 +262,22 @@ def delete_user() -> Union[Response, str]:
         logout_user()
         flash("User was deleted", "success")
         return redirect(url_for("static.index"))
+    return redirect(url_for("user_management.profile"))
+
+
+@user_management_blueprint.route("/external_usernames", methods=["POST"])
+@login_required
+def external_usernames() -> Union[Response, str]:
+    """
+    Allows a user to set their external usernames
+    :return: The response
+    """
+    external = ExternalUsername.query.filter_by(user=current_user).first()
+    if external is None:
+        external = ExternalUsername(user=current_user)
+        db.session.add(external)
+
+    external.external_usernames = request.form
+    db.session.commit()
+
     return redirect(url_for("user_management.profile"))

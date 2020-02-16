@@ -32,6 +32,8 @@ def create_tables(app: Flask, db: SQLAlchemy):
     from otaku_info_web.db.User import User
     # noinspection PyUnresolvedReferences
     from otaku_info_web.db.ApiKey import ApiKey
+    # noinspection PyUnresolvedReferences
+    from otaku_info_web.db.ExternalUsername import ExternalUsername
 
     with app.app_context():
         db.create_all()
