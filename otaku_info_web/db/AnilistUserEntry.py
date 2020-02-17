@@ -85,6 +85,13 @@ class AnilistUserEntry(ModelMixin, db.Model):
     The score the user gave the series
     """
 
+    @property
+    def diff(self) -> int:
+        if self.entry.latest_chapter < self.progress:
+            return 0
+        else:
+            return self.entry.latest_chapter - self.progress
+
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
         Generates a dictionary containing the information of this model

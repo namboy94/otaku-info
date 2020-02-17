@@ -19,6 +19,7 @@ LICENSE"""
 
 from flask import Flask
 from otaku_info_web.routes.static import static_blueprint
+from otaku_info_web.routes.manga import manga_blueprint
 from otaku_info_web.routes.user_management import user_management_blueprint
 from otaku_info_web.routes.api.user_management import \
     user_management_api_blueprint
@@ -33,6 +34,7 @@ def register_blueprints(app: Flask):
     for blueprint in [
         static_blueprint,
         user_management_blueprint,
-        user_management_api_blueprint
+        user_management_api_blueprint,
+        manga_blueprint
     ]:
         app.register_blueprint(blueprint)

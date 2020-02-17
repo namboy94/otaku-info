@@ -90,6 +90,18 @@ class AnilistEntry(ModelMixin, db.Model):
     """
     URL to the series' cover art image
     """
+    # TODO CHECK IF IMAGE EXISTS
+
+    @property
+    def latest_chapter(self) -> int:
+        """
+        :return: The latest chapter (or at least a good guess)
+        """
+        if self.release_state == ReleaseState.FINISHED:
+            latest = self.latest
+        else:
+            latest = self.chapter_guess
+        return 0 if latest is None else latest
 
     @property
     def name(self) -> str:
