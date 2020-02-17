@@ -34,6 +34,14 @@ def create_tables(app: Flask, db: SQLAlchemy):
     from otaku_info_web.db.ApiKey import ApiKey
     # noinspection PyUnresolvedReferences
     from otaku_info_web.db.ExternalUsername import ExternalUsername
+    # noinspection PyUnresolvedReferences
+    from otaku_info_web.db.AnilistEntry import AnilistEntry
+    # noinspection PyUnresolvedReferences
+    from otaku_info_web.db.AnilistUserEntry import AnilistUserEntry
+    # noinspection PyUnresolvedReferences
+    from otaku_info_web.db.AnilistCustomList import AnilistCustomList
+    # noinspection PyUnresolvedReferences
+    from otaku_info_web.db.AnilistCustomListItem import AnilistCustomListItem
 
     with app.app_context():
         db.create_all()

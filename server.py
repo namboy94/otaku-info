@@ -38,6 +38,7 @@ if __name__ == '__main__':
             except Exception as e:
                 app.logger.error("Encountered exception in background thread "
                                  "{} - {}".format(name, e))
+                raise e
 
         app.logger.info("Starting background task {}".format(name))
         task = BackgroundTask(delay, task_function)

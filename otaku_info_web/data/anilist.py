@@ -67,12 +67,12 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
 def load_anilist(
         username: str,
         media_type: MediaType
-) -> List[Dict[str, Any]]:
+) -> Dict[str, List[Dict[str, Any]]]:
     """
     Loads the anilist for a user
     :param username: The username
     :param media_type: The media type, either MANGA or ANIME
-    :return: The anilist
+    :return: The anilist, categorized by custom lists
     """
     graphql = GraphQlClient("https://graphql.anilist.co")
     query = """
@@ -109,11 +109,7 @@ def load_anilist(
         "media_type": media_type.value.upper()
     })
     if resp is None:
-        return []
+        return {}
     user_lists = resp["data"]["MediaListCollection"]["lists"]
 
-    entries: List[Dict[str, Any]] = []
-    for _list in user_lists:
-        entries += _list["entries"]
-
-    return entries
+    return {x["name"]: x["entries"] for x in user_lists}

@@ -19,7 +19,7 @@ LICENSE"""
 
 import time
 from typing import Dict, Any
-from otaku_info_web.flask import db
+from otaku_info_web.flask import db, app
 from otaku_info_web.enums import MediaType, ReleaseState
 from otaku_info_web.db.ModelMixin import ModelMixin
 from otaku_info_web.data.anilist import guess_latest_manga_chapter
@@ -45,7 +45,7 @@ class AnilistEntry(ModelMixin, db.Model):
     The name of the table
     """
 
-    anilist_id = db.Column(db.Integer, nullable=False, unique=True)
+    anilist_id = db.Column(db.Integer, nullable=False)
     """
     The anilist ID of the entry
     """
@@ -116,9 +116,14 @@ class AnilistEntry(ModelMixin, db.Model):
         Updates the chapter guess
         :return: None
         """
+        if self.last_chapter_guess_check:
+            print(time.time() - self.last_chapter_guess_check)
+        if self.media_type == MediaType.MANGA:
+            app.logger.debug("Checking chapter guess for {}".format(self.name))
         if self.media_type == MediaType.MANGA \
                 and self.release_state == ReleaseState.RELEASING \
                 and time.time() - self.last_chapter_guess_check > 3600:
+            app.logger.info("Updating chapter guess")
             self.chapter_guess = guess_latest_manga_chapter(self.anilist_id)
             self.last_chapter_guess_check = time.time()
 
