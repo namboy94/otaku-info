@@ -21,33 +21,47 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 {% extends "components/base_layout.html" %}
 {% block body %}
     <h1>Manga</h1>
-    <ul class="list-group">
-        <li class="list-group-item">
-            <div class="row text-center">
-                <div class="col-md-1">
-                    Image
-                </div>
-                <div class="col-md-7">
-                    Name
-                </div>
-                <div class="col-md-1">
-                    Score
-                </div>
-                <div class="col-md-1">
-                    Progress
-                </div>
-                <div class="col-md-1">
-                    Latest
-                </div>
-                <div class="col-md-1">
-                    New
-                </div>
+
+    <div id="manga-list">
+        <div class="row text-center">
+            <div class="col-md-1">
+                Image
             </div>
-        </li>
-        {% for entry in entries %}
-            {% with entry=entry %}
-                {% include "proto/user_entry.html" %}
-            {% endwith %}
-        {% endfor %}
-    </ul>
+            <div class="col-md-7">
+                <button class="sort" data-sort="name">Name</button>
+            </div>
+            <div class="col-md-1">
+                <button class="sort" data-sort="score">Score</button>
+            </div>
+            <div class="col-md-1">
+                <button class="sort" data-sort="progress">Progress</button>
+            </div>
+            <div class="col-md-1">
+                <button class="sort" data-sort="latest">Latest</button>
+            </div>
+            <div class="col-md-1">
+                <button class="sort" data-sort="diff">New</button>
+            </div>
+        </div>
+        <ul class="list-group list">
+            {% for entry in entries %}
+                {% with entry=entry %}
+                    {% include "proto/user_entry.html" %}
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        var userList = new List('manga-list', {
+          valueNames: [
+              "diff",
+              "name",
+              "score",
+              "progress",
+              "latest"
+          ]
+        });
+    </script>
+
 {% endblock %}
