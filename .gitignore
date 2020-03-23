@@ -7,3 +7,5 @@ dist/
 build/
 ./secrets.json
 .env
+.mypy_cache/
+__pycache__/

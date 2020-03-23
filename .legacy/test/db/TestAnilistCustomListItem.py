@@ -28,7 +28,7 @@ class TestAnilistCustomListItem(_TestFramework):
     """
     Class that tests anilist custom list item database items
     """
-    
+
     def test_json_representation(self):
         """
         Tests the JSON representation of the model
@@ -37,7 +37,8 @@ class TestAnilistCustomListItem(_TestFramework):
         user = self.generate_sample_user()[0]
         custom_list = AnilistCustomList(user=user, name="List")
         entry = AnilistEntry()
-        custom_item = AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
+        custom_item = \
+            AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
         self.db.session.add(custom_item)
         self.db.session.commit()
         self.assertEqual(
@@ -82,7 +83,8 @@ class TestAnilistCustomListItem(_TestFramework):
         :return: None
         """
         user = self.generate_sample_user()[0]
-        custom_item = AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
+        custom_item = \
+            AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
         self.db.session.add(custom_item)
         self.db.session.commit()
         data = custom_item.__json__()
@@ -98,7 +100,8 @@ class TestAnilistCustomListItem(_TestFramework):
         :return: None
         """
         user = self.generate_sample_user()[0]
-        custom_item = AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
+        custom_item = \
+            AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
         self.db.session.add(custom_item)
         self.db.session.commit()
 
@@ -115,8 +118,10 @@ class TestAnilistCustomListItem(_TestFramework):
         :return: None
         """
         user = self.generate_sample_user()[0]
-        custom_item = AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
-        custom_item2 = AnilistCustomListItem(user=user, anilist="def", vndb="uvw")
+        custom_item = \
+            AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
+        custom_item2 = \
+            AnilistCustomListItem(user=user, anilist="def", vndb="uvw")
         mapping = {
             custom_item: 100,
             custom_item2: 200
@@ -130,9 +135,12 @@ class TestAnilistCustomListItem(_TestFramework):
         :return: None
         """
         user = self.generate_sample_user()[0]
-        custom_item = AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
-        custom_item1 = AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
-        custom_item2 = AnilistCustomListItem(user=user, anilist="def", vndb="uvw")
+        custom_item = \
+            AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
+        custom_item1 = \
+            AnilistCustomListItem(user=user, anilist="abc", vndb="xyz")
+        custom_item2 = \
+            AnilistCustomListItem(user=user, anilist="def", vndb="uvw")
 
         self.assertEqual(custom_item, custom_item)
         self.assertEqual(custom_item, custom_item1)

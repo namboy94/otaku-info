@@ -33,8 +33,10 @@ manga_blueprint = Blueprint("manga", __name__)
 @login_required
 def manga() -> Union[Response, str]:
 
-    ubooquity_list = AnilistCustomList.query.filter_by(name="Ubooquity").first()
-    ubooquity_items = AnilistCustomListItem.query.filter_by(custom_list=ubooquity_list)
+    ubooquity_list = \
+        AnilistCustomList.query.filter_by(name="Ubooquity").first()
+    ubooquity_items = \
+        AnilistCustomListItem.query.filter_by(custom_list=ubooquity_list)
     entries = [x.user_entry for x in ubooquity_items]
 
     return render_template("proto/manga.html", entries=entries)
