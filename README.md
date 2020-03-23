@@ -4,7 +4,7 @@ Flask Application Template - For Fast Initial Project Develoment
 
 |master|develop|
 |:----:|:-----:|
-|[![build status](https://gitlab.namibsun.net/namboy94/otaku-info-web/badges/master/build.svg)](https://gitlab.namibsun.net/namboy94/otaku-info-web/commits/master)|[![build status](https://gitlab.namibsun.net/namboy94/otaku-info-web/badges/develop/build.svg)](https://gitlab.namibsun.net/namboy94/otaku-info-web/commits/develop)|
+|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/badges/master/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/commits/master)|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/badges/develop/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/commits/develop)|
 
 ![Logo](otaku_info_web/static/logo.png)
 

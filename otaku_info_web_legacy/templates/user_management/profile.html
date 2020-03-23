@@ -64,6 +64,28 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 
     <hr>
 
+    <h2>Set external usernames</h2>
+
+    <div class="container form-container">
+        <form method="post" action="{{ url_for("user_management.external_usernames") }}">
+            {% for site_name, username in external_usernames.items() %}
+            <div class="form-group">
+                <label for="old_password_input">{{ site_name }} username</label>
+                <input class="form-control"
+                       type="text"
+                       autocomplete="on"
+                       id="{{ site_name }}_input"
+                       aria-label="{{ site_name }}"
+                       value="{{ username if username is not none else "" }}"
+                       name="{{ site_name }}">
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <hr>
+
     <h2>Delete Account</h2>
 
     <div class="container form-container">

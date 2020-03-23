@@ -17,31 +17,21 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-<!--user_management/register.html-->
+<!--user_management/login.html-->
 {% extends "components/base_layout.html" %}
 {% block body %}
-    <h1>Register</h1>
+    <h1>Login</h1>
 
     <br>
 
     <div class="container form-container">
-        <form method="post" action="{{ url_for("user_management.register") }}">
-            <div class="form-group">
-                <label for="email_input">Email Address</label>
-                <input class="form-control"
-                       type="email"
-                       autocomplete="on"
-                       id="email_input"
-                       aria-label="email"
-                       placeholder="Email"
-                       name="email">
-            </div>
+        <form method="post" action="{{ url_for("user_management.login") }}">
             <div class="form-group">
                 <label for="username_input">Username</label>
                 <input class="form-control"
                        type="text"
                        autocomplete="on"
-                       id="email_input"
+                       id="username_input"
                        aria-label="username"
                        placeholder="Username"
                        name="username">
@@ -56,23 +46,23 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
                        placeholder="Password"
                        name="password">
             </div>
-            <div class="form-group">
-                <label for="password_repeat_input">Password (Repeat)</label>
-                <input class="form-control"
-                       type="password"
-                       autocomplete="on"
-                       id="password_repeat_input"
-                       aria-label="password-repeat"
-                       placeholder="Password"
-                       name="password-repeat">
-            </div>
-            <br>
-            <div data-sitekey="{{ config.RECAPTCHA_SITE_KEY }}"
-                 class="g-recaptcha">
+            <div class="form-check">
+                <input type="checkbox"
+                       class="form-check-input"
+                       id="remember_me_check"
+                       name="remember_me"
+                       checked>
+                <label class="form-check-label" for="remember_me_check">Remember Me</label>
             </div>
             <br>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
+
+    <br>
+
+    <p>
+        <a href="{{ url_for("user_management.forgot") }}">Forgot Password?</a>
+    </p>
 
 {% endblock %}

@@ -26,8 +26,8 @@ if __name__ == "__main__":
     setup(
         name="otaku-info-web",
         version=open("version", "r").read(),
-        description="Website providing information on "
-                    "Japanese entertainment media",
+        description="Website providing information on Japanese entertainment "
+                    "media",
         long_description=open("README.md", "r").read(),
         long_description_content_type="text/markdown",
         classifiers=[
@@ -44,7 +44,7 @@ if __name__ == "__main__":
             "werkzeug",
             "flask_sqlalchemy",
             "flask_login",
-            "puffotter",
+            "puffotter[flask,crypto]",
         ],
         include_package_data=True,
         zip_safe=False

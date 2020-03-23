@@ -17,21 +17,26 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Tuple, Callable
+from puffotter.env import load_env_file
+from puffotter.flask.initialize import init_flask
+from puffotter.flask.wsgi import start_server
+from otaku_info_web import sentry_dsn, root_path
+from otaku_info_web.bg_tasks import bg_tasks
+from otaku_info_web.Config import Config
 
 
-def im_alive():
+def main():
     """
-    Function that prints 'I'm alive!'.
-    Used to test if background tasks work correctly
-    :return:
+    Starts the flask application
+    :return: None
     """
-    print("I'm alive")
-
-
-bg_tasks: Dict[str, Tuple[int, Callable]] = {
-    "im_alive": (5, im_alive)
-}
-"""
-A dictionary containing background tasks for the flask application
-"""
+    load_env_file()
+    init_flask(
+        "otaku_info_web",
+        sentry_dsn,
+        root_path,
+        Config,
+        [],
+        []
+    )
+    start_server(Config, bg_tasks)

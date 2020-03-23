@@ -17,21 +17,34 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Tuple, Callable
+from unittest.mock import patch
+from otaku_info_web.test.TestFramework import _TestFramework
+from otaku_info_web.main import main
 
 
-def im_alive():
+class TestServer(_TestFramework):
     """
-    Function that prints 'I'm alive!'.
-    Used to test if background tasks work correctly
-    :return:
+    Class that tests starting the server
     """
-    print("I'm alive")
 
+    def test_starting_server(self):
+        """
+        Tests starting the server
+        :return: None
+        """
+        class Server:
+            def __init__(self, *arg, **kwargs):
+                pass
 
-bg_tasks: Dict[str, Tuple[int, Callable]] = {
-    "im_alive": (5, im_alive)
-}
-"""
-A dictionary containing background tasks for the flask application
-"""
+            def start(self):
+                raise KeyboardInterrupt()
+
+            def stop(self):
+                pass
+
+        def nop(*_, **__):
+            pass
+
+        with patch("puffotter.flask.wsgi.Server", Server):
+            with patch("puffotter.flask.wsgi.__start_background_tasks", nop):
+                main()

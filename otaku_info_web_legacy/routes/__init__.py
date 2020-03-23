@@ -16,22 +16,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
-
-from typing import Dict, Tuple, Callable
-
-
-def im_alive():
-    """
-    Function that prints 'I'm alive!'.
-    Used to test if background tasks work correctly
-    :return:
-    """
-    print("I'm alive")
-
-
-bg_tasks: Dict[str, Tuple[int, Callable]] = {
-    "im_alive": (5, im_alive)
-}
-"""
-A dictionary containing background tasks for the flask application
-"""

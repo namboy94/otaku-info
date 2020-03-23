@@ -16,3 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
+
+import os
+
+
+sentry_dsn = "https://4f6db305797046f6985fb0c2dc023423@sentry.namibsun.net/17"
+"""
+The sentry DSN used for error logging
+"""
+
+root_path: str = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+"""
+The root path of the application
+"""
