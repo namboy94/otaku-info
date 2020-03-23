@@ -6,7 +6,7 @@ Flask Application Template - For Fast Initial Project Develoment
 |:----:|:-----:|
 |[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/badges/master/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/commits/master)|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/badges/develop/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/commits/develop)|
 
-![Logo](otaku_info_web/static/logo.png)
+![Logo](resources/logo-readme.png)
 
 # Usage
 To start the web application, you can simply call ```python server.py``` after
@@ -23,6 +23,6 @@ application.
 * [Changelog](CHANGELOG)
 * [License (GPLv3)](LICENSE)
 * [Gitlab](https://gitlab.namibsun.net/namibsun/python/otaku-info-web)
-* [Github](namboy94/otaku-info-web)
+* [Github](https://github.com/otaku-info-web)
 * [Progstats](https://progstats.namibsun.net/projects/otaku-info-web)
 * [PyPi](https://pypi.org/project/otaku-info-web)
