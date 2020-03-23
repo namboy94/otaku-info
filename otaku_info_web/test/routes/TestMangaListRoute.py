@@ -18,18 +18,9 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from otaku_info_web.test.TestFramework import _TestFramework
-from otaku_info_web.bg_tasks import bg_tasks
 
 
-class TestBackgroundTasks(_TestFramework):
+class TestMangaListRoute(_TestFramework):
     """
-    Tests background tasks
+    Class that tests the manga list route
     """
-
-    def test_im_alive(self):
-        """
-        Tests the I'm alive background task
-        :return: None
-        """
-        im_alive_task = bg_tasks["im_alive"][1]
-        im_alive_task()

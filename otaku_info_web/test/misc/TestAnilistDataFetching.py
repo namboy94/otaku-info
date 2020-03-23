@@ -20,31 +20,7 @@ LICENSE"""
 from otaku_info_web.test.TestFramework import _TestFramework
 
 
-class TestStaticRoutes(_TestFramework):
+class TestAnilistDataFetching(_TestFramework):
     """
-    Class that tests static pages
+    Class that tests that data is fetched correctly from anilist.co
     """
-
-    def test_get_index(self):
-        """
-        Tests getting the index page
-        :return: None
-        """
-        resp = self.client.get("/")
-        self.assertTrue(b"<!--static/index.html-->" in resp.data)
-
-    def test_get_about(self):
-        """
-        Tests getting the about page
-        :return: None
-        """
-        resp = self.client.get("/about")
-        self.assertTrue(b"<!--static/about.html-->" in resp.data)
-
-    def test_get_privacy(self):
-        """
-        Tests getting the privacy page
-        :return: None
-        """
-        resp = self.client.get("/privacy")
-        self.assertTrue(b"<!--static/privacy.html-->" in resp.data)
