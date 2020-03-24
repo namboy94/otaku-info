@@ -17,10 +17,12 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import time
 from typing import Dict, Any
 from puffotter.flask.base import db
 from puffotter.flask.db.ModelMixin import ModelMixin
 from otaku_info_web.db.MediaId import MediaId
+from otaku_info_web.utils.anilist.api import guess_latest_manga_chapter
 
 
 class MangaChapterGuess(ModelMixin, db.Model):
@@ -62,10 +64,26 @@ class MangaChapterGuess(ModelMixin, db.Model):
     The media ID referenced by this manga chapter guess
     """
 
-    guess: int = db.Column(db.Integer, nullable=False)
+    guess: int = db.Column(db.Integer, nullable=False, default=0)
     """
     The actual guess for the most current chapter of the manga series
     """
+
+    last_update: int = db.Column(db.Integer, nullable=False, default=0)
+    """
+    Timestamp from when the guess was last updated
+    """
+
+    def update(self):
+        """
+        Updates the manga chapter guess
+        (if the latest guess is older than an hour)
+        :return: None
+        """
+        delta = time.time() - self.last_update
+        if delta > 60 * 60:
+            self.last_update = int(time.time())
+            self.guess = guess_latest_manga_chapter(self.media_id.service_id)
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
@@ -77,7 +95,8 @@ class MangaChapterGuess(ModelMixin, db.Model):
         data = {
             "id": self.id,
             "media_id_id": self.media_id,
-            "guess": self.guess
+            "guess": self.guess,
+            "last_update": self.last_update
         }
         if include_children:
             data["media_id"] = self.media_id.__json__(include_children)
