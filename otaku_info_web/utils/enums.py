@@ -28,6 +28,23 @@ class MediaType(Enum):
     MANGA = "manga"
 
 
+class MediaSubType(Enum):
+    """
+    Class that models a media subtype for media items
+    """
+    TV = "tv"
+    TV_SHORT = "tv_short"
+    MOVIE = "movie"
+    SPECIAL = "special"
+    OVA = "ova"
+    ONA = "ona"
+    MUSIC = "music"
+    MANGA = "manga"
+    NOVEL = "novel"
+    ONE_SHOT = "one_shot"
+    UNKNOWN = "unknown"
+
+
 class ListService(Enum):
     """
     Class that defines available list services
@@ -41,9 +58,20 @@ class ReleasingState(Enum):
     """
     Class that defines possible releasing states
     """
+    FINISHED = "finished"
+    RELEASING = "releasing"
+    NOT_YET_RELEASED = "not_yet_released"
+    CANCELLED = "cancelled"
+    UNKNOWN = "unknown"
 
 
 class ConsumingState(Enum):
     """
     Class that defines the possible consuming states for a user and media item
     """
+    CURRENT = "current"
+    PLANNING = "planning"
+    COMPLETED = "completed"
+    DROPPED = "dropped"
+    PAUSED = "paused"
+    REPEATING = "repeating"

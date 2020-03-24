@@ -63,6 +63,11 @@ class MediaId(ModelMixin, db.Model):
     The media item referenced by this ID
     """
 
+    service_id: int = db.Column(db.Integer, nullable=False)
+    """
+    The ID of the media item on the external service
+    """
+
     service: ListService = db.Column(db.Enum(ListService), nullable=False)
     """
     The service for which this object represents an ID
@@ -78,6 +83,7 @@ class MediaId(ModelMixin, db.Model):
         data = {
             "id": self.id,
             "media_item_id": self.media_item_id,
+            "service_id": self.service_id,
             "service": self.service.value
         }
         if include_children:

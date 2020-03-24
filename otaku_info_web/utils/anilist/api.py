@@ -20,8 +20,9 @@ LICENSE"""
 
 from typing import Optional, List
 from puffotter.graphql import GraphQlClient
-from otaku_info_web.utils.enums import MediaType
-from otaku_info_web.utils.anilist.AnilistListItem import AnilistListItem
+from otaku_info_web.utils.anilist.AnilistItem import AnilistItem
+from otaku_info_web.utils.enums \
+    import MediaType, MediaSubType, ReleasingState, ConsumingState
 
 
 def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
@@ -69,7 +70,7 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
 def load_anilist(
         username: str,
         media_type: MediaType
-) -> List[AnilistListItem]:
+) -> List[AnilistItem]:
     """
     Loads the anilist for a user
     :param username: The username
@@ -85,11 +86,13 @@ def load_anilist(
                 entries {
                     progress
                     score
+                    status
                     media {
                         id
                         chapters
                         episodes
                         status
+                        format
                         title {
                             english
                             romaji
@@ -114,20 +117,40 @@ def load_anilist(
         return []
     user_lists = resp["data"]["MediaListCollection"]["lists"]
 
-    return [
-        AnilistListItem(
-            entry["media"]["anilist_id"],
-            media_type,
-            entry["media"]["title"]["english"],
-            entry["media"]["title"]["romaji"],
-            entry["media"]["coverImage"]["large"],
-            entry["media"]["chapters"],
-            entry["media"]["episodes"],
-            entry["media"]["status"],
-            entry["score"],
-            entry["progress"],
-            list_name
-        ) for entry, list_name in [
-            (y["entries"], y["name"]) for y in user_lists
-        ]
-    ]
+    anilist_items: List[AnilistItem] = []
+    for entries, list_name in [
+        (y["entries"], y["name"]) for y in user_lists
+    ]:
+        for entry in entries:
+
+            _media_subtype = entry["media"]["format"]
+            if _media_subtype is None:
+                _media_subtype = "unknown"
+            media_subtype = MediaSubType(_media_subtype.lower())
+
+            _releasing_state = entry["media"]["status"]
+            if _releasing_state is None:
+                _releasing_state = "unknown"
+            releasing_state = ReleasingState(_releasing_state.lower())
+
+            consuming_state = ConsumingState(entry["status"].lower())
+
+            anilist_items.append(AnilistItem(
+                entry["media"]["id"],
+                media_type,
+                media_subtype,
+                entry["media"]["title"]["english"],
+                entry["media"]["title"]["romaji"],
+                entry["media"]["coverImage"]["large"].replace(
+                    "medium", "large"
+                ),
+                entry["media"]["chapters"],
+                entry["media"]["episodes"],
+                releasing_state,
+                entry["score"],
+                entry["progress"],
+                consuming_state,
+                list_name
+            ))
+
+    return anilist_items

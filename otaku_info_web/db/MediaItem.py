@@ -20,7 +20,7 @@ LICENSE"""
 from typing import Dict, Any, Optional
 from puffotter.flask.base import db
 from puffotter.flask.db.ModelMixin import ModelMixin
-from otaku_info_web.utils.enums import ReleasingState, MediaType
+from otaku_info_web.utils.enums import ReleasingState, MediaType, MediaSubType
 
 
 class MediaItem(ModelMixin, db.Model):
@@ -47,6 +47,13 @@ class MediaItem(ModelMixin, db.Model):
     The media type of the list item
     """
 
+    media_subtype: MediaSubType = db.Column(
+        db.Enum(MediaSubType), nullable=False
+    )
+    """
+    The subtype (for example, TV short, movie oneshot etc)
+    """
+
     english_title: Optional[str] = db.Column(db.String(255), nullable=True)
     """
     The English title of the media item
@@ -67,7 +74,7 @@ class MediaItem(ModelMixin, db.Model):
     The latest release chapter/episode for this media item
     """
 
-    release_state: ReleasingState = db.Column(
+    releasing_state: ReleasingState = db.Column(
         db.Enum(ReleasingState), nullable=False
     )
     """
@@ -88,6 +95,6 @@ class MediaItem(ModelMixin, db.Model):
             "romaji_title": self.romaji_title,
             "cover_url": self.cover_url,
             "latest_release": self.latest_release,
-            "release_state": self.release_state.value
+            "releasing_state": self.release_state.value
         }
         return data

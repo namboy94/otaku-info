@@ -18,19 +18,11 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Dict, Tuple, Callable
-
-
-def im_alive():
-    """
-    Function that prints 'I'm alive!'.
-    Used to test if background tasks work correctly
-    :return:
-    """
-    print("I'm alive")
+from otaku_info_web.background.anilist import fetch_anilist_data
 
 
 bg_tasks: Dict[str, Tuple[int, Callable]] = {
-    "im_alive": (5, im_alive)
+    "anilist_update": (60, fetch_anilist_data)
 }
 """
 A dictionary containing background tasks for the flask application

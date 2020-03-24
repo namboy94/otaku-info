@@ -41,4 +41,7 @@ def main():
         models,
         blueprint_generators
     )
-    start_server(Config, bg_tasks)
+    from puffotter.flask.base import app
+    with app.app_context():
+        bg_tasks["anilist_update"][1]()
+    # start_server(Config, bg_tasks)
