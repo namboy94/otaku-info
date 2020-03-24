@@ -19,8 +19,10 @@ LICENSE"""
 
 from flask.blueprints import Blueprint
 from typing import List, Tuple, Callable
+from otaku_info_web.routes.external_service import define_blueprint
 
 blueprint_generators: List[Tuple[Callable[[str], Blueprint], str]] = [
+    (define_blueprint, "external_service")
 ]
 """
 Defines the functions used to create the various blueprints

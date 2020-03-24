@@ -19,9 +19,23 @@ LICENSE"""
 
 from typing import List
 from puffotter.flask.base import db
+from otaku_info_web.db.MangaChapterGuess import MangaChapterGuess
+from otaku_info_web.db.MediaId import MediaId
+from otaku_info_web.db.MediaItem import MediaItem
+from otaku_info_web.db.MediaList import MediaList
+from otaku_info_web.db.MediaListItem import MediaListItem
+from otaku_info_web.db.MediaUserState import MediaUserState
+from otaku_info_web.db.ServiceUsername import ServiceUsername
 
 
 models: List[db.Model] = [
+    MangaChapterGuess,
+    MediaId,
+    MediaItem,
+    MediaList,
+    MediaListItem,
+    MediaUserState,
+    ServiceUsername
 ]
 """
 The database models of the application

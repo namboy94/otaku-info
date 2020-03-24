@@ -17,15 +17,23 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-import os
+from typing import Dict, Any
+from flask_login import current_user
+from otaku_info_web.utils.enums import ListService
+from otaku_info_web.db.ServiceUsername import ServiceUsername
 
 
-sentry_dsn = "https://f899b0c46d324f37b83527a3994afd8d@sentry.namibsun.net/18"
-"""
-The sentry DSN used for error logging
-"""
-
-root_path: str = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-"""
-The root path of the application
-"""
+def profile_extras() -> Dict[str, Any]:
+    """
+    Makes sure that the profile page displays service usernames
+    :return: The variables to forward to the template
+    """
+    service_usernames = {}
+    for service in ListService:
+        service_username = ServiceUsername.query.filter_by(
+            user=current_user, service=service
+        ).first()
+        service_usernames[service] = service_username
+    return {
+        "service_usernames": service_usernames
+    }

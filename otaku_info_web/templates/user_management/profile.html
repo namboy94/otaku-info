@@ -64,6 +64,31 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 
     <hr>
 
+    <h2>Set external service usernames</h2>
+
+    {% for service, username in service_usernames.items() %}
+        <div class="container form-container">
+            <form method="post" action="{{ url_for("external_service.set_service_username") }}">
+                <div class="form-group">
+                    <label for="old_password_input">{{ service.value.title() }} username</label>
+                    <input class="form-control"
+                           type="text"
+                           autocomplete="on"
+                           id="{{ site_name }}_input"
+                           aria-label="{{ site_name }}"
+                           value="{{ "" if username is none else username.username }}"
+                           name="username">
+                    <input type="hidden" value="{{ service.value }}" name="service">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    {% endfor %}
+
+
+
+    <hr>
+
     <h2>Delete Account</h2>
 
     <div class="container form-container">

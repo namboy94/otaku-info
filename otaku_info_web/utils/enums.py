@@ -33,6 +33,8 @@ class ListService(Enum):
     Class that defines available list services
     """
     ANILIST = "anilist"
+    MYANIMELIST = "myanimelist"
+    KITSU = "kitsu"
 
 
 class ReleasingState(Enum):

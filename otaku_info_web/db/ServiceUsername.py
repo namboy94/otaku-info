@@ -21,6 +21,7 @@ from typing import Dict, Any
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
 from puffotter.flask.db.ModelMixin import ModelMixin
+from otaku_info_web.utils.enums import ListService
 
 
 class ServiceUsername(ModelMixin, db.Model):
@@ -67,6 +68,11 @@ class ServiceUsername(ModelMixin, db.Model):
     The service username
     """
 
+    service: ListService = db.Column(db.Enum(ListService), nullable=False)
+    """
+    The external service this item is a username for
+    """
+
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
         Generates a dictionary containing the information of this model
@@ -77,7 +83,8 @@ class ServiceUsername(ModelMixin, db.Model):
         data = {
             "id": self.id,
             "user_id": self.user_id,
-            "username": self.username
+            "username": self.username,
+            "service": self.service.value
         }
         if include_children:
             data["user"] = self.user.__json__(include_children)

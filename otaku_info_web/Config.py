@@ -33,7 +33,7 @@ class Config(BaseConfig):
         :param parent: The base configuration
         :return: None
         """
-        parent.API_VERSION = "0"
-        parent.STRINGS.update({
-            "password_changed": "PaSsWoRd ChAnGeD SuCeSsFuLlY"
+        from otaku_info_web.template_extras import profile_extras
+        parent.TEMPLATE_EXTRAS.update({
+            "profile": profile_extras
         })
