@@ -49,6 +49,11 @@ class MangaUpdate:
         else:
             self.latest = chapter_guess.guess
 
+        if self.latest is None:
+            self.latest = 0
+        if self.progress is None:
+            self.progress = 0
+
         if self.latest < self.progress:
             self.latest = self.progress
 

@@ -91,6 +91,7 @@ def update_media_entries(
                 media_items[item_tuple] = media_item
                 updated.append(item_tuple)
             if id_tuple not in updated:
+                media_item = media_items[item_tuple]
                 media_id = update_media_id(anilist_entry, media_item, media_id)
                 media_ids[id_tuple] = media_id
                 updated.append(id_tuple)

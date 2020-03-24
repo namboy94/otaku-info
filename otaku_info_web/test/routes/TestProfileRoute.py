@@ -58,7 +58,7 @@ class TestProfileRoute(_TestFramework):
             self.assertTrue(
                 b"<!--user_management/profile.html-->" in resp.data
             )
-            self.assertTrue(b"PaSsWoRd ChAnGeD SuCeSsFuLlY" in resp.data)
+            self.assertTrue(b"Password changed successfully" in resp.data)
             self.assertFalse(user.verify_password(password))
             self.assertTrue(user.verify_password(new_pass))
 

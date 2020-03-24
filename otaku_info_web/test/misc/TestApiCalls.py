@@ -34,7 +34,7 @@ class TestConfig(_TestFramework):
         """
         api_headers = self.generate_api_key_headers("1:100")
         resp = self.client.get(
-            "/api/v0/authorize", headers=api_headers, json={}
+            "/api/v1/authorize", headers=api_headers, json={}
         )
         self.assertEqual(resp.status_code, 401)
         data = json.loads(resp.data.decode("utf-8"))
@@ -49,7 +49,7 @@ class TestConfig(_TestFramework):
         user, _, _ = self.generate_sample_user()
         _, api_key, _ = self.generate_api_key(user)
         resp = self.client.get(
-            "/api/v0/authorize",
+            "/api/v1/authorize",
             headers={"Authorization": "Basic " + api_key},
             json={}
         )
@@ -71,7 +71,7 @@ class TestConfig(_TestFramework):
 
         api_headers = self.generate_api_key_headers(api_key)
         resp = self.client.get(
-            "/api/v0/authorize", headers=api_headers, json={}
+            "/api/v1/authorize", headers=api_headers, json={}
         )
         self.assertEqual(resp.status_code, 401)
         data = json.loads(resp.data.decode("utf-8"))
@@ -84,7 +84,7 @@ class TestConfig(_TestFramework):
         :return: None
         """
         user, password, _ = self.generate_sample_user()
-        resp = self.client.post("/api/v0/key", data={
+        resp = self.client.post("/api/v1/key", data={
             "username": user.username,
             "password": password
         })
@@ -106,7 +106,7 @@ class TestConfig(_TestFramework):
         with patch("puffotter.flask.routes.api.user_management.request",
                    Mocker):
             user, password, _ = self.generate_sample_user()
-            resp = self.client.post("/api/v0/key", json={
+            resp = self.client.post("/api/v1/key", json={
                 "username": user.username,
                 "password": password
             })

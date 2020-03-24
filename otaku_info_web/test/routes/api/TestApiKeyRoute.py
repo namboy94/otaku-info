@@ -34,7 +34,7 @@ class TestApiKeyRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         self.assertEqual(len(ApiKey.query.all()), 0)
-        resp = self.client.post("/api/v0/key", json={
+        resp = self.client.post("/api/v1/key", json={
             "username": user.username,
             "password": password
         })
@@ -51,7 +51,7 @@ class TestApiKeyRoute(_TestFramework):
         self.assertTrue(api_key_obj.verify_key(api_key))
 
         resp = self.client.get(
-            "/api/v0/authorize", headers=api_headers, json={}
+            "/api/v1/authorize", headers=api_headers, json={}
         )
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.data.decode("utf-8"))
@@ -77,7 +77,7 @@ class TestApiKeyRoute(_TestFramework):
             self.assertEqual(len(ApiKey.query.all()), 0)
             params = dict(base)
             params.update(args)
-            resp = self.client.post("/api/v0/key", json=params)
+            resp = self.client.post("/api/v1/key", json=params)
             self.assertEqual(resp.status_code, 401)
             data = json.loads(resp.data.decode("utf-8"))
             self.assertEqual(data["status"], "error")
@@ -94,7 +94,7 @@ class TestApiKeyRoute(_TestFramework):
 
         self.assertEqual(len(ApiKey.query.all()), 1)
 
-        resp = self.client.delete("/api/v0/key", json={"api_key": api_key})
+        resp = self.client.delete("/api/v1/key", json={"api_key": api_key})
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.data.decode("utf-8"))
         self.assertEqual(data["status"], "ok")
@@ -116,7 +116,7 @@ class TestApiKeyRoute(_TestFramework):
         ]:
             self.assertEqual(len(ApiKey.query.all()), 1)
 
-            resp = self.client.delete("/api/v0/key", json=params)
+            resp = self.client.delete("/api/v1/key", json=params)
             self.assertEqual(resp.status_code, 401)
             data = json.loads(resp.data.decode("utf-8"))
             self.assertEqual(data["status"], "error")

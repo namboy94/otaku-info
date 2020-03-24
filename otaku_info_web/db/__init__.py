@@ -40,5 +40,3 @@ models: List[db.Model] = [
 """
 The database models of the application
 """
-
-
