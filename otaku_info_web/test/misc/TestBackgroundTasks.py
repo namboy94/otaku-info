@@ -18,7 +18,7 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from otaku_info_web.test.TestFramework import _TestFramework
-from otaku_info_web.bg_tasks import bg_tasks
+from otaku_info_web.background import bg_tasks
 
 
 class TestBackgroundTasks(_TestFramework):

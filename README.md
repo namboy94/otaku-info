@@ -1,6 +1,6 @@
 # otaku-info-web
 
-Flask Application Template - For Fast Initial Project Develoment
+Website providing information on Japanese entertainment media
 
 |master|develop|
 |:----:|:-----:|

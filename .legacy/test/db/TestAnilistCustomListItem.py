@@ -18,7 +18,7 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from otaku_info_web.test.TestFramework import _TestFramework
-from otaku_info_web.db.AnilistEntry import AnilistEntry
+from otaku_info_web.db.MediaItem import AnilistEntry
 from otaku_info_web.db.AnilistUserEntry import AnilistUserEntry
 from otaku_info_web.db.AnilistCustomList import AnilistCustomList
 from otaku_info_web.db.AnilistCustomListItem import AnilistCustomListItem

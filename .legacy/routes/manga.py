@@ -21,7 +21,7 @@ from typing import Union
 from flask import render_template, Blueprint
 from flask_login import login_required
 from werkzeug import Response
-from otaku_info_web.db.AnilistEntry import AnilistEntry
+from otaku_info_web.db.MediaItem import AnilistEntry
 from otaku_info_web.db.AnilistUserEntry import AnilistUserEntry
 from otaku_info_web.db.AnilistCustomList import AnilistCustomList
 from otaku_info_web.db.AnilistCustomListItem import AnilistCustomListItem

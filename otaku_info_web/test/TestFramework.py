@@ -17,10 +17,13 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from otaku_info_web.main import root_path
+# noinspection PyProtectedMember
 from puffotter.flask.test.TestFramework import \
     _TestFramework as __TestFrameWork
+from otaku_info_web.main import root_path
 from otaku_info_web.Config import Config
+from otaku_info_web.routes import blueprint_generators
+from otaku_info_web.db import models
 
 
 class _TestFramework(__TestFrameWork):
@@ -30,3 +33,5 @@ class _TestFramework(__TestFrameWork):
     module_name = "otaku_info_web"
     root_path = root_path
     config = Config
+    models = models
+    blueprint_generators = blueprint_generators

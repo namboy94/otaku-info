@@ -19,11 +19,11 @@ LICENSE"""
 
 from typing import Dict, Tuple, Callable, Any, List
 from otaku_info_web.flask import db, app
-from otaku_info_web.db.ExternalUsername import ExternalUsername
+from otaku_info_web.db.ServiceUsername import ExternalUsername
 from otaku_info_web.enums import MediaType
 from otaku_info_web.data.anilist import load_anilist
 from otaku_info_web.db.User import User
-from otaku_info_web.db.AnilistEntry import AnilistEntry
+from otaku_info_web.db.MediaItem import AnilistEntry
 from otaku_info_web.db.AnilistUserEntry import AnilistUserEntry
 from otaku_info_web.db.AnilistCustomList import AnilistCustomList
 from otaku_info_web.db.AnilistCustomListItem import AnilistCustomListItem

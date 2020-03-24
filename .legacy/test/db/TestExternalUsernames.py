@@ -18,7 +18,7 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from otaku_info_web.test.TestFramework import _TestFramework
-from otaku_info_web.db.ExternalUsername import ExternalUsername
+from otaku_info_web.db.ServiceUsername import ExternalUsername
 
 
 class TestUser(_TestFramework):

@@ -17,28 +17,12 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from puffotter.env import load_env_file
-from puffotter.flask.initialize import init_flask
-from puffotter.flask.wsgi import start_server
-from otaku_info_web import sentry_dsn, root_path
-from otaku_info_web.background import bg_tasks
-from otaku_info_web.Config import Config
-from otaku_info_web.routes import blueprint_generators
-from otaku_info_web.db import models
+from flask.blueprints import Blueprint
+from typing import List, Tuple, Callable
 
-
-def main():
-    """
-    Starts the flask application
-    :return: None
-    """
-    load_env_file()
-    init_flask(
-        "otaku_info_web",
-        sentry_dsn,
-        root_path,
-        Config,
-        models,
-        blueprint_generators
-    )
-    start_server(Config, bg_tasks)
+blueprint_generators: List[Tuple[Callable[[str], Blueprint], str]] = [
+]
+"""
+Defines the functions used to create the various blueprints
+as well as their names
+"""
