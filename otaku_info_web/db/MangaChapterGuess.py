@@ -64,7 +64,7 @@ class MangaChapterGuess(ModelMixin, db.Model):
     The media ID referenced by this manga chapter guess
     """
 
-    guess: int = db.Column(db.Integer, nullable=False, default=0)
+    guess: int = db.Column(db.Integer, nullable=True)
     """
     The actual guess for the most current chapter of the manga series
     """

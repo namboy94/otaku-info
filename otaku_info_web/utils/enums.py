@@ -51,7 +51,6 @@ class ListService(Enum):
     """
     ANILIST = "anilist"
     MYANIMELIST = "myanimelist"
-    KITSU = "kitsu"
 
 
 class ReleasingState(Enum):

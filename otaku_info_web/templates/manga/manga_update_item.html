@@ -1,10 +1,10 @@
 <li class="list-group-item">
     <div class="row text-center">
         <div class="col-md-1">
-            <img style="max-height: 50px" src="{{ entry.entry.image_url }}">
+            <img style="max-height: 50px" src="{{ entry.cover_url }}" alt="{{ entry.title }}">
         </div>
         <div class="col-md-7 name">
-            {{ entry.entry.name }}
+            <a href="{{ entry.url }}">{{ entry.title }}</a>
         </div>
         <div class="col-md-1 score">
             {{  entry.score }}
@@ -13,12 +13,10 @@
             {{  entry.progress }}
         </div>
         <div class="col-md-1 latest">
-            {{ entry.entry.latest_chapter }}
+            {{ entry.latest }}
         </div>
         <div class="col-md-1 diff">
             {{ entry.diff }}
         </div>
     </div>
 </li>
-
-

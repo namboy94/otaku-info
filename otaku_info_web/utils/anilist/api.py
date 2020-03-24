@@ -141,9 +141,7 @@ def load_anilist(
                 media_subtype,
                 entry["media"]["title"]["english"],
                 entry["media"]["title"]["romaji"],
-                entry["media"]["coverImage"]["large"].replace(
-                    "medium", "large"
-                ),
+                entry["media"]["coverImage"]["large"],
                 entry["media"]["chapters"],
                 entry["media"]["episodes"],
                 releasing_state,

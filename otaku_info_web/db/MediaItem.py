@@ -81,6 +81,16 @@ class MediaItem(ModelMixin, db.Model):
     The current releasing state of the media item
     """
 
+    @property
+    def title(self) -> str:
+        """
+        :return: The default title for the media item.
+        """
+        if self.english_title is not None:
+            return self.english_title
+        else:
+            return self.romaji_title
+
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
         Generates a dictionary containing the information of this model

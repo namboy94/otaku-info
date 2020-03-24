@@ -73,6 +73,19 @@ class MediaId(ModelMixin, db.Model):
     The service for which this object represents an ID
     """
 
+    @property
+    def service_url(self) -> str:
+        """
+        :return: The URL to the series for the given service
+        """
+        media_type = self.media_item.media_type.value
+        _id = self.service_id
+        return {
+            ListService.ANILIST: f"https://anilist.co/{media_type}/{_id}",
+            ListService.MYANIMELIST: f"https://myanimelist.net/"
+                                     f"{media_type}/{_id}"
+        }[self.service]
+
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
         Generates a dictionary containing the information of this model
