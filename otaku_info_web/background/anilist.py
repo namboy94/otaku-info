@@ -19,6 +19,7 @@ LICENSE"""
 
 from typing import List, Dict, Optional, Union, Tuple
 from puffotter.flask.base import db, app
+from puffotter.flask.db.User import User
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.db.MediaList import MediaList
@@ -34,10 +35,6 @@ def fetch_anilist_data():
     """
     Retrieves all entries on the anilists of all users that provided
     an anilist username
-    The update goes like this:
-      1. Create or update media items and anilist media IDs
-      2. Create or update media user entries
-      3. Create or update user list and user list entries
     :return: None
     """
     app.logger.debug("Starting Anilist Update")
@@ -51,9 +48,8 @@ def fetch_anilist_data():
         for user in usernames
     }
     media_ids = update_media_entries(anilist_data)
-    # TODO Update user entries
-    # TODO Update user lists
-    # TODO Update user list entries
+    update_media_user_entries(anilist_data, media_ids)
+    update_media_lists(anilist_data)
     app.logger.debug("Completed anilist update")
 
 
@@ -62,7 +58,7 @@ def update_media_entries(
             ServiceUsername,
             Dict[MediaType, List[AnilistItem]]
         ]
-) -> List[MediaId]:
+) -> Dict[Tuple[int, MediaType], MediaId]:
     """
     Updates the media entries and anilist IDs
     :param anilist_data:
@@ -100,7 +96,119 @@ def update_media_entries(
                 updated.append(id_tuple)
 
     db.session.commit()
-    return list(media_ids.values())
+    return media_ids
+
+
+def update_media_user_entries(
+        anilist_data: Dict[
+            ServiceUsername,
+            Dict[MediaType, List[AnilistItem]]
+        ],
+        media_ids: Dict[Tuple[int, MediaType], MediaId]
+):
+    """
+    Updates the individual users' current state for media items in
+    thei ranilist account.
+    :param anilist_data: The anilist data to enter into the database
+    :param media_ids: The anilist media IDs of the previously added media items
+    :return: None
+    """
+    all_user_entries = {
+        (x.media_id.service_id, x.media_id.media_item.media_type): x
+        for x in MediaUserState.query.all()
+    }
+
+    for service_user, anilist in anilist_data.items():
+        user = service_user.user
+        user_entries = {
+            x: y for x, y in all_user_entries.items()
+            if y.user.username == service_user.user.username
+        }
+        updated = []
+
+        for media_type, anilist_entries in anilist.items():
+            for entry in anilist_entries:
+                id_tuple = (entry.anilist_id, entry.media_type)
+
+                if id_tuple in updated:
+                    continue
+
+                media_id = media_ids[id_tuple]
+                user_entry = user_entries.get(id_tuple)
+                update_media_user_state(entry, media_id, user, user_entry)
+
+                updated.append(id_tuple)
+
+        for id_tuple, user_entry in user_entries.items():
+            if id_tuple not in updated:
+                db.session.remove(user_entry)
+
+    db.session.commit()
+
+
+def update_media_lists(
+        anilist_data: Dict[
+            ServiceUsername,
+            Dict[MediaType, List[AnilistItem]]
+        ]
+):
+    """
+    Updates the database for anilist user lists.
+    This includes custom anilist lists.
+    :param anilist_data: The anilist data to enter into the database
+    :return: None
+    """
+    MediaListItem.query.delete()
+    existing_lists = MediaList.query.all()
+    all_user_states = {
+        (x.media_id.service_id, x.media_id.media_item.media_type): x
+        for x in MediaUserState.query.all()
+    }
+
+    for service_user, anilist in anilist_data.items():
+
+        user_states = {
+            x: y for x, y in all_user_states.items()
+            if y.user.username == service_user.user.username
+        }
+
+        for media_type, entries in anilist.items():
+
+            collected_list_names = []
+            user_lists = {
+                x.name: x for x in existing_lists
+                if x.user_id == service_user.user_id
+                and media_type == x.media_type
+            }
+
+            for entry in entries:
+                if entry.list_name not in collected_list_names:
+                    collected_list_names.append(entry.list_name)
+
+                if entry.list_name not in user_lists:
+                    user_list = MediaList(
+                        user=service_user.user,
+                        name=entry.list_name,
+                        service=ListService.ANILIST,
+                        media_type=media_type
+                    )
+                    db.session.add(user_list)
+                    user_lists[entry.list_name] = user_list
+                else:
+                    user_list = user_lists[entry.list_name]
+
+                state_tuple = (entry.anilist_id, entry.media_type)
+                list_item = MediaListItem(
+                    media_list=user_list,
+                    media_user_state=user_states[state_tuple]
+                )
+                db.session.add(list_item)
+
+            for list_name, user_list in user_lists.items():
+                if list_name not in collected_list_names:
+                    db.session.remove(user_list)
+
+    db.session.commit()
 
 
 def update_media_item(
@@ -148,3 +256,29 @@ def update_media_id(
     if existing is None:
         db.session.add(media_id)
     return media_id
+
+
+def update_media_user_state(
+        new_data: AnilistItem,
+        media_id: MediaId,
+        user: User,
+        existing: Optional[MediaUserState]
+) -> MediaUserState:
+    """
+    Updates or creates a MediaUserState entry in the database
+    :param new_data: The new anilist data
+    :param media_id: The media ID of the anilist media item
+    :param user: The user associated with the data
+    :param existing: The existing database entry. If None, will be created
+    :return: The updated/created MediaUserState object
+    """
+    media_user_state = MediaUserState() if existing is None else existing
+    media_user_state.media_id = media_id
+    media_user_state.consuming_state = new_data.consuming_state
+    media_user_state.score = new_data.score
+    media_user_state.progress = new_data.progress
+    media_user_state.user = user
+
+    if existing is None:
+        db.session.add(media_user_state)
+    return media_user_state

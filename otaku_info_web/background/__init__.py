@@ -19,10 +19,13 @@ LICENSE"""
 
 from typing import Dict, Tuple, Callable
 from otaku_info_web.background.anilist import fetch_anilist_data
+from otaku_info_web.background.manga_chapters import \
+    update_manga_chapter_guesses
 
 
 bg_tasks: Dict[str, Tuple[int, Callable]] = {
-    "anilist_update": (60, fetch_anilist_data)
+    "anilist_update": (60, fetch_anilist_data),
+    "update_manga_chapter_guesses": (120, update_manga_chapter_guesses)
 }
 """
 A dictionary containing background tasks for the flask application

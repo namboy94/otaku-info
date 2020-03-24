@@ -19,6 +19,7 @@ LICENSE"""
 
 from typing import Dict, Any, Optional
 from puffotter.flask.base import db
+from puffotter.flask.db.User import User
 from puffotter.flask.db.ModelMixin import ModelMixin
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.utils.enums import ConsumingState
@@ -64,6 +65,27 @@ class MediaUserState(ModelMixin, db.Model):
     The media ID referenced by this user state
     """
 
+    user_id: int = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "users.id", ondelete="CASCADE", onupdate="CASCADE"
+        ),
+        nullable=False
+    )
+    """
+    The ID of the user associated with this user state
+    """
+
+    user: User = db.relationship(
+        "User",
+        backref=db.backref(
+            "media_user_states", lazy=True, cascade="all,delete"
+        )
+    )
+    """
+    The user associated with this user state
+    """
+
     progress: Optional[int] = db.Column(db.Integer, nullable=True)
     """
     The user's current progress consuming the media item
@@ -90,10 +112,12 @@ class MediaUserState(ModelMixin, db.Model):
         data = {
             "id": self.id,
             "media_id_id": self.media_id,
+            "user_id": self.user_id,
             "progress": self.progress,
             "score": self.score,
             "consuming_state": self.consuming_state.value
         }
         if include_children:
             data["media_id"] = self.media_id.__json__(include_children)
+            data["user"] = self.user.__json__(include_children)
         return data

@@ -21,7 +21,7 @@ from typing import Dict, Any
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
 from puffotter.flask.db.ModelMixin import ModelMixin
-from otaku_info_web.utils.enums import ListService
+from otaku_info_web.utils.enums import ListService, MediaType
 
 
 class MediaList(ModelMixin, db.Model):
@@ -69,6 +69,11 @@ class MediaList(ModelMixin, db.Model):
     service: ListService = db.Column(db.Enum(ListService), nullable=False)
     """
     The service for which this list applies to
+    """
+
+    media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
+    """
+    The media type for this list
     """
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
