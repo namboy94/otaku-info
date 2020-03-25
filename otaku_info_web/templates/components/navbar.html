@@ -61,6 +61,9 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
                 <li class="nav-item {% if request.path == "/profile" %} active {% endif %}">
                     <a class="nav-link" href="{{ url_for("user_management.profile") }}">Profile</a>
                 </li>
+                <li class="nav-item {% if request.path == "/manga/updates" %} active {% endif %}">
+                    <a class="nav-link" href="{{ url_for("manga.show_manga_updates") }}">Manga Updates</a>
+                </li>
 
             {% endif %}
         </ul>
