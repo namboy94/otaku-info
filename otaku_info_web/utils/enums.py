@@ -52,6 +52,7 @@ class ListService(Enum):
     ANILIST = "anilist"
     MYANIMELIST = "myanimelist"
     MANGADEX = "mangadex"
+    MANGAUPDATES = "mangaupdates"
 
 
 class ReleasingState(Enum):

@@ -38,7 +38,8 @@ def get_ids(mangadex_id: int) -> Optional[Dict[ListService, int]]:
 
         for service, identifier in {
             ListService.ANILIST: "al",
-            ListService.MYANIMELIST: "mal"
+            ListService.MYANIMELIST: "mal",
+            ListService.MANGAUPDATES: "mu"
         }.items():
             if identifier in links:
                 ids[service] = links[identifier]

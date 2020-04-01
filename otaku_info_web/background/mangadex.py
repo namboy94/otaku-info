@@ -18,7 +18,7 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from puffotter.flask.base import db
+from puffotter.flask.base import db, app
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.utils.enums import ListService
 from otaku_info_web.utils.mangadex.api import get_ids
@@ -36,14 +36,11 @@ def load_id_mappings():
         MediaId.query.filter_by(service=ListService.ANILIST).all()
     }
 
-    start = time.time()
     endcounter = 0
 
     while True:
         time.sleep(0.5)
         mangadex_id += 1
-
-        print(f"{mangadex_id}: {'%.2f' % (time.time() - start)}")
 
         other_ids = get_ids(mangadex_id)
 
@@ -70,7 +67,8 @@ def load_id_mappings():
             MediaId.query.filter_by(media_item_id=media.id).all()
         ]
 
-        print(other_ids)
+        app.logger.info("Found IDS using mangadex for mangadex id {}: {}"
+                        .format(mangadex_id, other_ids))
 
         for list_service, _id in other_ids.items():
 

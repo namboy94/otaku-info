@@ -156,7 +156,9 @@ class TestMediaId(_TestFramework):
         urls = {
             ListService.ANILIST: "https://anilist.co/manga/101177",
             ListService.MYANIMELIST: "https://myanimelist.net/manga/101177",
-            ListService.MANGADEX: "https://mangadex.org/title/101177"
+            ListService.MANGADEX: "https://mangadex.org/title/101177",
+            ListService.MANGAUPDATES: "https://www.mangaupdates.com/"
+                                      "series.html?id=101177"
         }
         for service in ListService:
             expected = urls[service]

@@ -84,7 +84,9 @@ class MediaId(ModelMixin, db.Model):
             ListService.ANILIST: f"https://anilist.co/{media_type}/{_id}",
             ListService.MYANIMELIST: f"https://myanimelist.net/"
                                      f"{media_type}/{_id}",
-            ListService.MANGADEX: f"https://mangadex.org/title/{_id}"
+            ListService.MANGADEX: f"https://mangadex.org/title/{_id}",
+            ListService.MANGAUPDATES: f"https://www.mangaupdates.com/"
+                                      f"series.html?id={_id}"
         }[self.service]
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:

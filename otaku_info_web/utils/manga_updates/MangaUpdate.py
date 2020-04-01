@@ -65,7 +65,8 @@ class MangaUpdate:
 
         self.diff = self.latest - self.progress
 
-    def get_icon(self, list_service: ListService):
+    @staticmethod
+    def get_icon(list_service: ListService):
         """
         Retrieves the icon for a list service
         :param list_service: The list service for which to retrieve the icon
@@ -77,5 +78,23 @@ class MangaUpdate:
             ListService.MANGADEX: "https://i.pinimg.com/originals/73/9d/1b/"
                                   "739d1bc55429f8aeb516752c356c343c.png",
             ListService.MYANIMELIST: "https://cdn.myanimelist.net/img/sp/"
-                                     "icon/apple-touch-icon-256.png"
+                                     "icon/apple-touch-icon-256.png",
+            ListService.MANGAUPDATES: "https://images-wixmp-ed30a86b8c4ca8877"
+                                      "73594c2.wixmp.com/f/c62ca132-232a-4540"
+                                      "-9634-7a23e0be45ee/d14dc73-b4b9a8e7-f4"
+                                      "5f-4663-8d2d-4ddab19d3e2c.png/v1/fill/"
+                                      "w_394,h_434,strp/baka_logo_by_baka_y2k"
+                                      "7_d14dc73-fullview.png?token=eyJ0eXAiO"
+                                      "iJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOi"
+                                      "J1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWY"
+                                      "wZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFw"
+                                      "cDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYT"
+                                      "BkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9"
+                                      "NDM0IiwicGF0aCI6IlwvZlwvYzYyY2ExMzItMj"
+                                      "MyYS00NTQwLTk2MzQtN2EyM2UwYmU0NWVlXC9k"
+                                      "MTRkYzczLWI0YjlhOGU3LWY0NWYtNDY2My04ZD"
+                                      "JkLTRkZGFiMTlkM2UyYy5wbmciLCJ3aWR0aCI6"
+                                      "Ijw9Mzk0In1dXSwiYXVkIjpbInVybjpzZXJ2aW"
+                                      "NlOmltYWdlLm9wZXJhdGlvbnMiXX0.VtNvtNhS"
+                                      "7ZiWa7VYe-ATH8ps_UYcTg7lwkTXsIAT0rs"
         }.get(list_service, url_for("static", filename='logo.png'))
