@@ -146,3 +146,16 @@ class TestMediaId(_TestFramework):
         self.assertEqual(media_id, media_id)
         self.assertNotEqual(media_id, media_id_2)
         self.assertNotEqual(media_id, 100)
+
+    def test_generating_service_url(self):
+        """
+        Tests generating the generating of service URLs
+        :return: None
+        """
+        _, media_id = self.generate_sample_media_id()
+        for service, expected in {
+            ListService.ANILIST: "https://anilist.co/manga/101177",
+            ListService.MYANIMELIST: "https://myanimelist.net/manga/101177"
+        }.items():
+            media_id.service = service
+            self.assertEqual(media_id.service_url, expected)

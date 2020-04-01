@@ -18,6 +18,7 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Tuple
+from unittest.mock import patch
 from puffotter.flask.base import db
 from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.db.MediaId import MediaId
@@ -56,7 +57,7 @@ class TestMangaChapterGuess(_TestFramework):
         )
         chapter_guess = MangaChapterGuess(
             media_id=media_id,
-            guess=104,
+            guess=None,
             last_update=0
         )
         db.session.add(media_item)
@@ -152,3 +153,27 @@ class TestMangaChapterGuess(_TestFramework):
         self.assertEqual(chapter_guess, chapter_guess)
         self.assertNotEqual(chapter_guess, chapter_guess_2)
         self.assertNotEqual(chapter_guess, 100)
+
+    def test_guessing_latest_chapter(self):
+        """
+        Tests guessing the latest chapter
+        :return: None
+        """
+        _, _, chapter_guess = self.generate_sample_guess()
+
+        with patch("otaku_info_web.db.MangaChapterGuess"
+                   ".guess_latest_manga_chapter", lambda _: 105):
+            self.assertEqual(chapter_guess.guess, None)
+            self.assertEqual(chapter_guess.last_update, 0)
+            chapter_guess.update()
+            self.assertEqual(chapter_guess.guess, 105)
+            self.assertGreater(chapter_guess.last_update, 0)
+            chapter_guess.guess = 77
+            last_update = chapter_guess.last_update
+            chapter_guess.update()
+            self.assertEqual(chapter_guess.guess, 77)
+            self.assertEqual(chapter_guess.last_update, last_update)
+            chapter_guess.last_update = 0
+            chapter_guess.update()
+            self.assertEqual(chapter_guess.guess, 105)
+            self.assertGreaterEqual(chapter_guess.last_update, last_update)

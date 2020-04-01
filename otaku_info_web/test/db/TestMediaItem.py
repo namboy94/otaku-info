@@ -145,3 +145,13 @@ class TestMediaItem(_TestFramework):
         self.assertEqual(media_item, media_item)
         self.assertNotEqual(media_item, media_item_2)
         self.assertNotEqual(media_item, 100)
+
+    def test_title(self):
+        """
+        Tests the title attribute of the media item
+        :return: None
+        """
+        media_item = self.generate_sample_media_item()
+        self.assertEqual(media_item.title, "Fly Me to the Moon")
+        media_item.english_title = None
+        self.assertEqual(media_item.title, "Tonikaku Cawaii")
