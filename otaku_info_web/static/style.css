@@ -50,6 +50,7 @@ footer a {
     margin: 0 auto;
     /*width: 80%;*/
     min-height: calc(100vh - 100px);
+    background-color: #272c38;
 }
 
 #footer {
@@ -127,4 +128,8 @@ p {
     background: #ededed;
     padding: 20px;
     border-radius: 10px
+}
+
+.manga_update_image {
+    max-height: 60px;
 }

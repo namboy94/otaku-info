@@ -153,9 +153,12 @@ class TestMediaId(_TestFramework):
         :return: None
         """
         _, media_id = self.generate_sample_media_id()
-        for service, expected in {
+        urls = {
             ListService.ANILIST: "https://anilist.co/manga/101177",
-            ListService.MYANIMELIST: "https://myanimelist.net/manga/101177"
-        }.items():
+            ListService.MYANIMELIST: "https://myanimelist.net/manga/101177",
+            ListService.MANGADEX: "https://mangadex.org/title/101177"
+        }
+        for service in ListService:
+            expected = urls[service]
             media_id.service = service
             self.assertEqual(media_id.service_url, expected)

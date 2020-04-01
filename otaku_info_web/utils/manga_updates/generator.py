@@ -21,6 +21,7 @@ from typing import List, Dict
 from puffotter.flask.db.User import User
 from otaku_info_web.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info_web.db.MediaListItem import MediaListItem
+from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.utils.manga_updates.MangaUpdate import MangaUpdate
 from otaku_info_web.utils.enums \
     import MediaType, ListService, ConsumingState, ReleasingState
@@ -43,6 +44,7 @@ def prepare_manga_updates(
                          one new chapter
     :return: A list of MangaUpdate objects, sorted by score
     """
+    all_ids = MediaId.query.all()
 
     list_items: Dict[int, MediaListItem] = {
         x.media_user_state.media_id.service_id: x
@@ -79,7 +81,13 @@ def prepare_manga_updates(
             continue
 
         chapter_guess = chapter_guesses.get(service_id)
-        update = MangaUpdate(list_item, chapter_guess)
+
+        media_item_id = list_item.media_user_state.media_id.media_item_id
+        entry_ids = {
+            x.service: x for x in all_ids if x.media_item_id == media_item_id
+        }
+
+        update = MangaUpdate(list_item, chapter_guess, entry_ids)
 
         if only_updates and update.diff == 0:
             continue

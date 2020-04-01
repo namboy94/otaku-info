@@ -48,15 +48,15 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             service = args.get("service")
             list_name = args.get("list_name")
 
-        only_updates = args.get("only_updates", "0") == "1"
-        include_complete = args.get("include_complete", "0") == "1"
+        only_updates = args.get("only_updates", "n") == "y"
+        include_complete = args.get("include_complete", "n") == "y"
 
         if request.method == "POST":
             url = f"{url_for('manga.show_manga_updates')}" \
                   f"?service={service}" \
                   f"&list_name={list_name}" \
-                  f"&only_updates={1 if only_updates else 0}" \
-                  f"&include_complete={1 if include_complete else 0}"
+                  f"&only_updates={'y' if only_updates else 'n'}" \
+                  f"&include_complete={'y' if include_complete else 'n'}"
             return redirect(url)
 
         if service is None or list_name is None:

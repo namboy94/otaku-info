@@ -51,6 +51,7 @@ class ListService(Enum):
     """
     ANILIST = "anilist"
     MYANIMELIST = "myanimelist"
+    MANGADEX = "mangadex"
 
 
 class ReleasingState(Enum):

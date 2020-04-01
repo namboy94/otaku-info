@@ -1,22 +1,31 @@
 <li class="list-group-item">
-    <div class="row text-center">
+    <div class="row">
         <div class="col-md-1">
-            <img style="max-height: 50px" src="{{ entry.cover_url }}" alt="{{ entry.title }}">
+            <img class="manga_update_image" src="{{ entry.cover_url }}" alt="{{ entry.title }}">
         </div>
-        <div class="col-md-7 name">
-            <a href="{{ entry.url }}">{{ entry.title }}</a>
+        <div class="col-md-5 name">
+            <a style="padding-right: 30px" href="{{ entry.url }}">{{ entry.title }}</a>
         </div>
-        <div class="col-md-1 score">
+        <div class="col-md-2">
+            {% for service, media_id in entry.service_ids.items() %}
+                <span style="padding-right:3px; padding-top: 3px; display:inline-block;">
+                    <a href="{{ media_id.service_url }}">
+                        <img style="max-height: 30px" src="{{ entry.get_icon(service) }}" alt="{{ service.name }}"/>
+                    </a>
+                </span>
+            {%  endfor %}
+        </div>
+        <div class="col-md-1 user_score">
             {{  entry.score }}
         </div>
-        <div class="col-md-1 progress">
+        <div class="col-md-1 user_progress">
             {{  entry.progress }}
         </div>
         <div class="col-md-1 latest">
             {{ entry.latest }}
         </div>
         <div class="col-md-1 diff">
-            {{ entry.diff }}
+            <span class="badge badge-pill badge-danger">{{ entry.diff }}</span>
         </div>
     </div>
 </li>
