@@ -111,7 +111,7 @@ class MediaUserState(ModelMixin, db.Model):
         """
         data = {
             "id": self.id,
-            "media_id_id": self.media_id,
+            "media_id_id": self.media_id_id,
             "user_id": self.user_id,
             "progress": self.progress,
             "score": self.score,

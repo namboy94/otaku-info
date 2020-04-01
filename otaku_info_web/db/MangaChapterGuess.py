@@ -94,7 +94,7 @@ class MangaChapterGuess(ModelMixin, db.Model):
         """
         data = {
             "id": self.id,
-            "media_id_id": self.media_id,
+            "media_id_id": self.media_id_id,
             "guess": self.guess,
             "last_update": self.last_update
         }

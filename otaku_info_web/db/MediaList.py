@@ -87,7 +87,8 @@ class MediaList(ModelMixin, db.Model):
             "id": self.id,
             "name": self.name,
             "user_id": self.user_id,
-            "service": self.service.value
+            "service": self.service.value,
+            "media_type": self.media_type.value
         }
         if include_children:
             data["user"] = self.user.__json__(include_children)

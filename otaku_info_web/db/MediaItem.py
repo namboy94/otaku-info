@@ -101,10 +101,11 @@ class MediaItem(ModelMixin, db.Model):
         data = {
             "id": self.id,
             "media_type": self.media_type.value,
+            "media_subtype": self.media_subtype.value,
             "english_title": self.english_title,
             "romaji_title": self.romaji_title,
             "cover_url": self.cover_url,
             "latest_release": self.latest_release,
-            "releasing_state": self.release_state.value
+            "releasing_state": self.releasing_state.value
         }
         return data
