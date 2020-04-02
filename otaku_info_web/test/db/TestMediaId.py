@@ -49,7 +49,7 @@ class TestMediaId(_TestFramework):
         )
         media_id = MediaId(
             media_item=media_item,
-            service_id=101177,
+            service_id="101177",
             service=ListService.ANILIST
         )
         db.session.add(media_item)
@@ -118,7 +118,7 @@ class TestMediaId(_TestFramework):
         media_item, media_id = self.generate_sample_media_id()
         media_id_2 = MediaId(
             media_item=media_item,
-            service_id=101178,
+            service_id="101178",
             service=ListService.ANILIST
         )
         db.session.add(media_id_2)
@@ -138,7 +138,7 @@ class TestMediaId(_TestFramework):
         media_item, media_id = self.generate_sample_media_id()
         media_id_2 = MediaId(
             media_item=media_item,
-            service_id=101178,
+            service_id="101178",
             service=ListService.ANILIST
         )
         db.session.add(media_id_2)

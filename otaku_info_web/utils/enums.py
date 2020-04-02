@@ -53,6 +53,8 @@ class ListService(Enum):
     MYANIMELIST = "myanimelist"
     MANGADEX = "mangadex"
     MANGAUPDATES = "mangaupdates"
+    KITSU = "kitsu"
+    ANIMEPLANET = "animeplanet"
 
 
 class ReleasingState(Enum):

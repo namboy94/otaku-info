@@ -52,7 +52,7 @@ class TestMediaUserState(_TestFramework):
         )
         media_id = MediaId(
             media_item=media_item,
-            service_id=101177,
+            service_id="101177",
             service=ListService.ANILIST
         )
         media_user_state = MediaUserState(

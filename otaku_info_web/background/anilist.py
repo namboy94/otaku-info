@@ -26,7 +26,7 @@ from otaku_info_web.db.MediaList import MediaList
 from otaku_info_web.db.MediaListItem import MediaListItem
 from otaku_info_web.db.MediaUserState import MediaUserState
 from otaku_info_web.db.ServiceUsername import ServiceUsername
-from otaku_info_web.utils.anilist.AnilistItem import AnilistItem
+from otaku_info_web.utils.anilist.AnilistItem import AnilistUserItem
 from otaku_info_web.utils.anilist.api import load_anilist
 from otaku_info_web.utils.enums import ListService, MediaType, MediaSubType
 
@@ -56,7 +56,7 @@ def fetch_anilist_data():
 def update_media_entries(
         anilist_data: Dict[
             ServiceUsername,
-            Dict[MediaType, List[AnilistItem]]
+            Dict[MediaType, List[AnilistUserItem]]
         ]
 ) -> Dict[Tuple[int, MediaType], MediaId]:
     """
@@ -74,7 +74,7 @@ def update_media_entries(
 
     for media_type in MediaType:
 
-        anilist_entries: List[AnilistItem] = []
+        anilist_entries: List[AnilistUserItem] = []
         for data in anilist_data.values():
             anilist_entries += data[media_type]
 
@@ -103,7 +103,7 @@ def update_media_entries(
 def update_media_user_entries(
         anilist_data: Dict[
             ServiceUsername,
-            Dict[MediaType, List[AnilistItem]]
+            Dict[MediaType, List[AnilistUserItem]]
         ],
         media_ids: Dict[Tuple[int, MediaType], MediaId]
 ):
@@ -142,7 +142,7 @@ def update_media_user_entries(
 
         for id_tuple, user_entry in user_entries.items():
             if id_tuple not in updated:
-                db.session.remove(user_entry)
+                db.session.delete(user_entry)
 
     db.session.commit()
 
@@ -150,7 +150,7 @@ def update_media_user_entries(
 def update_media_lists(
         anilist_data: Dict[
             ServiceUsername,
-            Dict[MediaType, List[AnilistItem]]
+            Dict[MediaType, List[AnilistUserItem]]
         ]
 ):
     """
@@ -207,13 +207,13 @@ def update_media_lists(
 
             for list_name, user_list in user_lists.items():
                 if list_name not in collected_list_names:
-                    db.session.remove(user_list)
+                    db.session.delete(user_list)
 
     db.session.commit()
 
 
 def update_media_item(
-        new_data: AnilistItem,
+        new_data: AnilistUserItem,
         existing: Optional[MediaItem]
 ) -> MediaItem:
     """
@@ -238,7 +238,7 @@ def update_media_item(
 
 
 def update_media_id(
-        new_data: AnilistItem,
+        new_data: AnilistUserItem,
         media_item: MediaItem,
         existing: Optional[MediaId]
 ) -> MediaId:
@@ -260,7 +260,7 @@ def update_media_id(
 
 
 def update_media_user_state(
-        new_data: AnilistItem,
+        new_data: AnilistUserItem,
         media_id: MediaId,
         user: User,
         existing: Optional[MediaUserState]

@@ -21,9 +21,16 @@ import json
 import requests
 from typing import Dict, Optional
 from otaku_info_web.utils.enums import ListService
+from otaku_info_web.utils.mappings import mangadex_external_id_names, \
+    list_service_id_types
 
 
-def get_ids(mangadex_id: int) -> Optional[Dict[ListService, int]]:
+def get_external_ids(mangadex_id: int) -> Optional[Dict[ListService, str]]:
+    """
+    Retrieves associated IDs for a mangadex ID
+    :param mangadex_id: The mangadex ID
+    :return: The other IDs, mapped to their list service
+    """
     endpoint = "https://mangadex.org/api/manga/{}".format(mangadex_id)
     response = json.loads(requests.get(endpoint).text)
 
@@ -36,12 +43,17 @@ def get_ids(mangadex_id: int) -> Optional[Dict[ListService, int]]:
         if links is None:
             return ids
 
-        for service, identifier in {
-            ListService.ANILIST: "al",
-            ListService.MYANIMELIST: "mal",
-            ListService.MANGAUPDATES: "mu"
-        }.items():
+        for service, identifier in mangadex_external_id_names.items():
             if identifier in links:
-                ids[service] = links[identifier]
+                _id = links[identifier]
+                id_type = list_service_id_types[service]
+
+                if id_type == int:
+                    _id = "".join([x for x in _id if x.isdigit()])
+
+                try:
+                    ids[service] = str(id_type(_id))
+                except ValueError:
+                    pass
 
     return ids

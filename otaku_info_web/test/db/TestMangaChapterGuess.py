@@ -52,7 +52,7 @@ class TestMangaChapterGuess(_TestFramework):
         )
         media_id = MediaId(
             media_item=media_item,
-            service_id=101177,
+            service_id="101177",
             service=ListService.ANILIST
         )
         chapter_guess = MangaChapterGuess(

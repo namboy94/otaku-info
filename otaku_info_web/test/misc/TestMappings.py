@@ -17,30 +17,23 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-import logging
-from puffotter.env import load_env_file
-from puffotter.flask.initialize import init_flask
-from puffotter.flask.wsgi import start_server
-from otaku_info_web import sentry_dsn, root_path
-from otaku_info_web.background import bg_tasks
-from otaku_info_web.Config import Config
-from otaku_info_web.routes import blueprint_generators
-from otaku_info_web.db import models
+from unittest import TestCase
+from otaku_info_web.utils.enums import ListService
+from otaku_info_web.utils.mappings import list_service_id_types, \
+    list_service_url_formats, mangadex_external_id_names
 
 
-def main():
+class TestMappings(TestCase):
     """
-    Starts the flask application
-    :return: None
+    Class that tests enum mappings
     """
-    load_env_file()
-    init_flask(
-        "otaku_info_web",
-        sentry_dsn,
-        root_path,
-        Config,
-        models,
-        blueprint_generators
-    )
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    start_server(Config, bg_tasks)
+
+    def test_completeness(self):
+        """
+        Tests that mappings include all possible enum types
+        :return: None
+        """
+        for list_service in ListService:
+            self.assertTrue(list_service in list_service_id_types)
+            self.assertTrue(list_service in list_service_url_formats)
+            self.assertTrue(list_service in mangadex_external_id_names)

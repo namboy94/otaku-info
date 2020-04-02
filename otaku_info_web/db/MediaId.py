@@ -21,6 +21,7 @@ from typing import Dict, Any
 from puffotter.flask.base import db
 from puffotter.flask.db.ModelMixin import ModelMixin
 from otaku_info_web.utils.enums import ListService
+from otaku_info_web.utils.mappings import list_service_url_formats
 from otaku_info_web.db.MediaItem import MediaItem
 
 
@@ -63,7 +64,7 @@ class MediaId(ModelMixin, db.Model):
     The media item referenced by this ID
     """
 
-    service_id: int = db.Column(db.Integer, nullable=False)
+    service_id: str = db.Column(db.String(255), nullable=False)
     """
     The ID of the media item on the external service
     """
@@ -78,16 +79,11 @@ class MediaId(ModelMixin, db.Model):
         """
         :return: The URL to the series for the given service
         """
-        media_type = self.media_item.media_type.value
-        _id = self.service_id
-        return {
-            ListService.ANILIST: f"https://anilist.co/{media_type}/{_id}",
-            ListService.MYANIMELIST: f"https://myanimelist.net/"
-                                     f"{media_type}/{_id}",
-            ListService.MANGADEX: f"https://mangadex.org/title/{_id}",
-            ListService.MANGAUPDATES: f"https://www.mangaupdates.com/"
-                                      f"series.html?id={_id}"
-        }[self.service]
+        url_format = list_service_url_formats[self.service]
+        url = url_format\
+            .replace("@{media_type}", self.media_item.media_type.value)\
+            .replace("@{id}", self.service_id)
+        return url
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

@@ -17,12 +17,11 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-
 from typing import Optional, List
 from puffotter.graphql import GraphQlClient
-from otaku_info_web.utils.anilist.AnilistItem import AnilistItem
-from otaku_info_web.utils.enums \
-    import MediaType, MediaSubType, ReleasingState, ConsumingState
+from otaku_info_web.utils.enums import MediaType
+from otaku_info_web.utils.anilist.AnilistItem \
+    import AnilistItem, AnilistUserItem
 
 
 def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
@@ -34,14 +33,14 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
     graphql = GraphQlClient("https://graphql.anilist.co")
     query = """
     query ($id: Int) {
-      Page(page: 1) {
+        Page(page: 1) {
         activities(mediaId: $id, sort: ID_DESC) {
-          ... on ListActivity {
-            progress
-            userId
-          }
+                ... on ListActivity {
+                    progress
+                    userId
+                }
+            }
         }
-      }
     }
     """
     resp = graphql.query(query, {"id": anilist_id})
@@ -70,7 +69,7 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
 def load_anilist(
         username: str,
         media_type: MediaType
-) -> List[AnilistItem]:
+) -> List[AnilistUserItem]:
     """
     Loads the anilist for a user
     :param username: The username
@@ -117,38 +116,52 @@ def load_anilist(
         return []
     user_lists = resp["data"]["MediaListCollection"]["lists"]
 
-    anilist_items: List[AnilistItem] = []
+    anilist_items: List[AnilistUserItem] = []
     for entries, list_name in [
         (y["entries"], y["name"]) for y in user_lists
     ]:
         for entry in entries:
-
-            _media_subtype = entry["media"]["format"]
-            if _media_subtype is None:
-                _media_subtype = "unknown"
-            media_subtype = MediaSubType(_media_subtype.lower())
-
-            _releasing_state = entry["media"]["status"]
-            if _releasing_state is None:
-                _releasing_state = "unknown"
-            releasing_state = ReleasingState(_releasing_state.lower())
-
-            consuming_state = ConsumingState(entry["status"].lower())
-
-            anilist_items.append(AnilistItem(
-                entry["media"]["id"],
-                media_type,
-                media_subtype,
-                entry["media"]["title"]["english"],
-                entry["media"]["title"]["romaji"],
-                entry["media"]["coverImage"]["large"],
-                entry["media"]["chapters"],
-                entry["media"]["episodes"],
-                releasing_state,
-                entry["score"],
-                entry["progress"],
-                consuming_state,
-                list_name
-            ))
+            entry["list_name"] = list_name
+            anilist_items.append(AnilistUserItem.from_query(media_type, entry))
 
     return anilist_items
+
+
+def load_media_info(anilist_id: int, media_type: MediaType) \
+        -> Optional[AnilistItem]:
+    """
+    Loads information for a single anilist media item
+    :param anilist_id: The anilist media ID
+    :param media_type: The media type
+    :return: The fetched AnilistItem
+    """
+    graphql = GraphQlClient("https://graphql.anilist.co")
+    query = """
+        query ($id: Int, $media_type: MediaType) {
+            Media(id: $id, type: $media_type) {
+                id
+                chapters
+                episodes
+                status
+                format
+                title {
+                    english
+                    romaji
+                }
+                coverImage {
+                    large
+                }
+                nextAiringEpisode {
+                  episode
+                }
+            }
+        }
+    """
+    resp = graphql.query(
+        query,
+        {"id": anilist_id, "media_type": media_type.value.upper()}
+    )
+    if resp is None:
+        return None
+    else:
+        return AnilistItem.from_query(media_type, resp["data"]["Media"])
