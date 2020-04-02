@@ -20,6 +20,7 @@ LICENSE"""
 from typing import Tuple
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
+from sqlalchemy.exc import IntegrityError
 from otaku_info_web.db.ServiceUsername import ServiceUsername
 from otaku_info_web.utils.enums import ListService
 from otaku_info_web.test.TestFramework import _TestFramework
@@ -134,3 +135,34 @@ class TestServiceUsername(_TestFramework):
         self.assertEqual(service_username, service_username)
         self.assertNotEqual(service_username, service_username_2)
         self.assertNotEqual(service_username, 100)
+
+    def test_uniqueness(self):
+        """
+        Tests if the uniqueness of the model is handled properly
+        :return: None
+        """
+        service_username, user = self.generate_sample_service_username()
+
+        standard_kwargs = service_username.__json__(False)
+        standard_kwargs.pop("id")
+        standard_kwargs["service"] = service_username.service
+
+        try:
+            duplicate = ServiceUsername(**standard_kwargs)
+            db.session.add(duplicate)
+            db.session.commit()
+            self.fail()
+        except IntegrityError:
+            db.session.rollback()
+
+        for key, value in [
+            ("user_id", self.generate_sample_user()[0].id),
+            ("username", "NEW"),
+            ("service", ListService.KITSU)
+        ]:
+            kwargs = dict(standard_kwargs)
+            kwargs[key] = value
+
+            generated = ServiceUsername(**kwargs)
+            db.session.add(generated)
+            db.session.commit()

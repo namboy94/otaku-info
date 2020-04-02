@@ -20,6 +20,7 @@ LICENSE"""
 from typing import Tuple
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
+from sqlalchemy.exc import IntegrityError
 from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.db.MediaUserState import MediaUserState
@@ -195,3 +196,52 @@ class TestMediaListItem(_TestFramework):
         self.assertEqual(media_list_item, media_list_item)
         self.assertNotEqual(media_list_item, media_list_item_2)
         self.assertNotEqual(media_list_item, 100)
+
+    def test_uniqueness(self):
+        """
+        Tests if the uniqueness of the model is handled properly
+        :return: None
+        """
+        media_list_item, media_list, media_user_state, \
+            user, media_item, media_id = \
+            self.generate_sample_media_list_item()
+
+        standard_kwargs = media_list_item.__json__(False)
+        standard_kwargs.pop("id")
+
+        media_list_kwargs = media_list.__json__(False)
+        media_list_kwargs.pop("id")
+        media_list_kwargs["service"] = ListService.KITSU
+        media_list_kwargs["media_type"] = MediaType.ANIME
+        new_media_list = MediaList(**media_list_kwargs)
+        db.session.add(new_media_list)
+        db.session.commit()
+
+        media_user_state_kwargs = media_user_state.__json__(False)
+        media_user_state_kwargs.pop("id")
+        media_user_state_kwargs["user_id"] = \
+            self.generate_sample_user(True)[0].id
+        media_user_state_kwargs["consuming_state"] \
+            = media_user_state.consuming_state
+        new_media_user_state = MediaUserState(**media_user_state_kwargs)
+        db.session.add(new_media_user_state)
+        db.session.commit()
+
+        try:
+            duplicate = MediaListItem(**standard_kwargs)
+            db.session.add(duplicate)
+            db.session.commit()
+            self.fail()
+        except IntegrityError:
+            db.session.rollback()
+
+        for key, value in [
+            ("media_list_id", new_media_list.id),
+            ("media_user_state_id", new_media_user_state.id)
+        ]:
+            kwargs = dict(standard_kwargs)
+            kwargs[key] = value
+
+            generated = MediaListItem(**kwargs)
+            db.session.add(generated)
+            db.session.commit()

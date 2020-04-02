@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+from sqlalchemy.exc import IntegrityError
 from puffotter.flask.base import db
 from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.utils.enums import MediaType, MediaSubType, ReleasingState
@@ -109,7 +110,7 @@ class TestMediaItem(_TestFramework):
             media_type=MediaType.MANGA,
             media_subtype=MediaSubType.MANGA,
             english_title="Don't Fly Me to the Moon",
-            romaji_title="Tonikaku Cawaii",
+            romaji_title="ATonikaku Cawaii",
             cover_url="https://s4.anilist.co/file/anilistcdn/media/manga/"
                       "cover/medium/nx101177-FjjD5UWB3C3t.png",
             latest_release=None,
@@ -134,7 +135,7 @@ class TestMediaItem(_TestFramework):
             media_type=MediaType.MANGA,
             media_subtype=MediaSubType.MANGA,
             english_title="Don't Fly Me to the Moon",
-            romaji_title="Tonikaku Cawaii",
+            romaji_title="ATonikaku Cawaii",
             cover_url="https://s4.anilist.co/file/anilistcdn/media/manga/"
                       "cover/medium/nx101177-FjjD5UWB3C3t.png",
             latest_release=None,
@@ -155,3 +156,41 @@ class TestMediaItem(_TestFramework):
         self.assertEqual(media_item.title, "Fly Me to the Moon")
         media_item.english_title = None
         self.assertEqual(media_item.title, "Tonikaku Cawaii")
+
+    def test_uniqueness(self):
+        """
+        Tests that a mediaitem can only exist once
+        :return: None
+        """
+        standard_kwargs = {
+            "media_type": MediaType.MANGA,
+            "media_subtype": MediaSubType.MANGA,
+            "english_title": "ABC",
+            "romaji_title": "DEF",
+            "cover_url": "N/A",
+            "latest_release": None,
+            "releasing_state": ReleasingState.RELEASING
+        }
+        original = MediaItem(**standard_kwargs)
+        db.session.add(original)
+        db.session.commit()
+
+        for key, value, error_expected in [
+            ("media_type", MediaType.ANIME, False),
+            ("media_subtype", MediaSubType.NOVEL, False),
+            ("romaji_title", "XYZ", False),
+            ("english_title", "ABCDE", True),
+            ("cover_url", "AAA", True)
+        ]:
+            kwargs = dict(standard_kwargs)
+            kwargs[key] = value
+            try:
+                generated = MediaItem(**kwargs)
+                db.session.add(generated)
+                db.session.commit()
+                if error_expected:
+                    self.fail()
+            except IntegrityError as e:
+                db.session.rollback()
+                if not error_expected:
+                    raise e

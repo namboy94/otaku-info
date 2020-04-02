@@ -20,6 +20,7 @@ LICENSE"""
 from typing import Tuple
 from unittest.mock import patch
 from puffotter.flask.base import db
+from sqlalchemy.exc import IntegrityError
 from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.db.MangaChapterGuess import MangaChapterGuess
@@ -125,8 +126,16 @@ class TestMangaChapterGuess(_TestFramework):
         :return: None
         """
         media_item, media_id, chapter_guess = self.generate_sample_guess()
+
+        media_id_kwargs = media_id.__json__(False)
+        media_id_kwargs.pop("id")
+        media_id_kwargs["service"] = ListService.ANIMEPLANET
+        new_media_id = MediaId(**media_id_kwargs)
+        db.session.add(new_media_id)
+        db.session.commit()
+
         chapter_guess_2 = MangaChapterGuess(
-            media_id=media_id,
+            media_id=new_media_id,
             guess=100,
             last_update=0
         )
@@ -145,8 +154,16 @@ class TestMangaChapterGuess(_TestFramework):
         :return: None
         """
         _, media_id, chapter_guess = self.generate_sample_guess()
+
+        media_id_kwargs = media_id.__json__(False)
+        media_id_kwargs.pop("id")
+        media_id_kwargs["service"] = ListService.ANIMEPLANET
+        new_media_id = MediaId(**media_id_kwargs)
+        db.session.add(new_media_id)
+        db.session.commit()
+
         chapter_guess_2 = MangaChapterGuess(
-            media_id=media_id,
+            media_id=new_media_id,
             guess=100,
             last_update=0
         )
@@ -177,3 +194,21 @@ class TestMangaChapterGuess(_TestFramework):
             chapter_guess.update()
             self.assertEqual(chapter_guess.guess, 105)
             self.assertGreaterEqual(chapter_guess.last_update, last_update)
+
+    def test_uniqueness(self):
+        """
+        Tests if the uniqueness of the model is handled properly
+        :return: None
+        """
+        _, media_id, chapter_guess = self.generate_sample_guess()
+        duplicate = MangaChapterGuess(
+            media_id_id=media_id.id,
+            guess=12345,
+            last_update=12345
+        )
+        try:
+            db.session.add(duplicate)
+            db.session.commit()
+            self.fail()
+        except IntegrityError:
+            pass

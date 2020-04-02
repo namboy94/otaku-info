@@ -48,7 +48,8 @@ class MangaChapterGuess(ModelMixin, db.Model):
         db.ForeignKey(
             "media_ids.id", ondelete="CASCADE", onupdate="CASCADE"
         ),
-        nullable=False
+        nullable=False,
+        unique=True
     )
     """
     The ID of the media ID referenced by this manga chapter guess

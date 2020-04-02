@@ -35,6 +35,17 @@ class MediaListItem(ModelMixin, db.Model):
     The name of the database table
     """
 
+    __table_args__ = (
+        db.UniqueConstraint(
+            "media_list_id",
+            "media_user_state_id",
+            name="unique_media_id"
+        ),
+    )
+    """
+    Makes sure that objects that should be unique are unique
+    """
+
     def __init__(self, *args, **kwargs):
         """
         Initializes the Model

@@ -19,6 +19,7 @@ LICENSE"""
 
 from typing import Tuple
 from puffotter.flask.base import db
+from sqlalchemy.exc import IntegrityError
 from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.utils.enums import ListService, MediaType, MediaSubType, \
@@ -119,7 +120,7 @@ class TestMediaId(_TestFramework):
         media_id_2 = MediaId(
             media_item=media_item,
             service_id="101178",
-            service=ListService.ANILIST
+            service=ListService.KITSU
         )
         db.session.add(media_id_2)
         db.session.commit()
@@ -139,7 +140,7 @@ class TestMediaId(_TestFramework):
         media_id_2 = MediaId(
             media_item=media_item,
             service_id="101178",
-            service=ListService.ANILIST
+            service=ListService.KITSU
         )
         db.session.add(media_id_2)
         db.session.commit()
@@ -167,3 +168,52 @@ class TestMediaId(_TestFramework):
             expected = urls[service]
             media_id.service = service
             self.assertEqual(media_id.service_url, expected)
+
+    def test_uniqueness(self):
+        """
+        Tests if the uniqueness of the model is handled properly
+        :return: None
+        """
+        media_item, media_id = self.generate_sample_media_id()
+        media_item_two = MediaItem(
+            media_type=MediaType.MANGA,
+            media_subtype=MediaSubType.MANGA,
+            english_title="Don't Fly Me to the Moon",
+            romaji_title="ATonikaku Cawaii",
+            cover_url="https://s4.anilist.co/file/anilistcdn/media/manga/"
+                      "cover/medium/nx101177-FjjD5UWB3C3t.png",
+            latest_release=None,
+            releasing_state=ReleasingState.RELEASING
+        )
+        db.session.add(media_item_two)
+        db.session.commit()
+
+        standard_kwargs = media_id.__json__(False)
+        standard_kwargs.pop("id")
+        standard_kwargs["service"] = media_id.service
+
+        try:
+            duplicate = MediaId(**standard_kwargs)
+            db.session.add(duplicate)
+            db.session.commit()
+            self.fail()
+        except IntegrityError:
+            db.session.rollback()
+
+        for key, value, error_expected in [
+            ("media_item_id", media_item_two.id, False),
+            ("service", ListService.KITSU, False),
+            ("service_id", "100", True)
+        ]:
+            kwargs = dict(standard_kwargs)
+            kwargs[key] = value
+            try:
+                generated = MediaId(**kwargs)
+                db.session.add(generated)
+                db.session.commit()
+                if error_expected:
+                    self.fail()
+            except IntegrityError as e:
+                db.session.rollback()
+                if not error_expected:
+                    raise e

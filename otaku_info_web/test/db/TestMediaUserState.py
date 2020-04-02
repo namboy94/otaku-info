@@ -20,6 +20,7 @@ LICENSE"""
 from typing import Tuple
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
+from sqlalchemy.exc import IntegrityError
 from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.db.MediaUserState import MediaUserState
@@ -138,7 +139,7 @@ class TestMediaUserState(_TestFramework):
             self.generate_sample_media_user_state()
         media_user_state_2 = MediaUserState(
             media_id=media_id,
-            user=user,
+            user=self.generate_sample_user()[0],
             progress=15,
             score=85,
             consuming_state=ConsumingState.CURRENT
@@ -161,7 +162,7 @@ class TestMediaUserState(_TestFramework):
             self.generate_sample_media_user_state()
         media_user_state_2 = MediaUserState(
             media_id=media_id,
-            user=user,
+            user=self.generate_sample_user()[0],
             progress=15,
             score=85,
             consuming_state=ConsumingState.CURRENT
@@ -171,3 +172,50 @@ class TestMediaUserState(_TestFramework):
         self.assertEqual(media_user_state, media_user_state)
         self.assertNotEqual(media_user_state, media_user_state_2)
         self.assertNotEqual(media_user_state, 100)
+
+    def test_uniqueness(self):
+        """
+        Tests if the uniqueness of the model is handled properly
+        :return: None
+        """
+        media_user_state, user, media_item, media_id = \
+            self.generate_sample_media_user_state()
+
+        standard_kwargs = media_user_state.__json__(False)
+        standard_kwargs.pop("id")
+        standard_kwargs["consuming_state"] = media_user_state.consuming_state
+
+        media_id_kwargs = media_id.__json__(False)
+        media_id_kwargs.pop("id")
+        media_id_kwargs["service"] = ListService.KITSU
+        new_media_id = MediaId(**media_id_kwargs)
+        db.session.add(new_media_id)
+        db.session.commit()
+
+        try:
+            duplicate = MediaUserState(**standard_kwargs)
+            db.session.add(duplicate)
+            db.session.commit()
+            self.fail()
+        except IntegrityError:
+            db.session.rollback()
+
+        for key, value, error_expected in [
+            ("media_id_id", new_media_id.id, False),
+            ("user_id", self.generate_sample_user(True)[0].id, False),
+            ("progress", 1, True),
+            ("score", 12, True),
+            ("consuming_state", ConsumingState.PAUSED, True)
+        ]:
+            kwargs = dict(standard_kwargs)
+            kwargs[key] = value
+            try:
+                generated = MediaUserState(**kwargs)
+                db.session.add(generated)
+                db.session.commit()
+                if error_expected:
+                    self.fail()
+            except IntegrityError as e:
+                db.session.rollback()
+                if not error_expected:
+                    raise e

@@ -20,6 +20,7 @@ LICENSE"""
 from typing import Tuple
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
+from sqlalchemy.exc import IntegrityError
 from otaku_info_web.db.MediaList import MediaList
 from otaku_info_web.utils.enums import MediaType, ListService
 from otaku_info_web.test.TestFramework import _TestFramework
@@ -139,3 +140,35 @@ class TestMediaList(_TestFramework):
         self.assertEqual(media_list, media_list)
         self.assertNotEqual(media_list, media_list_2)
         self.assertNotEqual(media_list, 100)
+
+    def test_uniqueness(self):
+        """
+        Tests if the uniqueness of the model is handled properly
+        :return: None
+        """
+        media_list, user = self.generate_sample_media_list()
+        standard_kwargs = media_list.__json__(False)
+        standard_kwargs.pop("id")
+        standard_kwargs["service"] = media_list.service
+        standard_kwargs["media_type"] = media_list.media_type
+
+        try:
+            duplicate = MediaList(**standard_kwargs)
+            db.session.add(duplicate)
+            db.session.commit()
+            self.fail()
+        except IntegrityError:
+            db.session.rollback()
+
+        for key, value in [
+            ("name", "ABABABABA"),
+            ("user_id", self.generate_sample_user(True)[0].id),
+            ("service", ListService.ANIMEPLANET),
+            ("media_type", MediaType.ANIME)
+        ]:
+            kwargs = dict(standard_kwargs)
+            kwargs[key] = value
+
+            generated = MediaList(**kwargs)
+            db.session.add(generated)
+            db.session.commit()
