@@ -10,7 +10,7 @@
             {% for service, media_id in entry.service_ids.items() %}
                 <span style="padding-right:3px; padding-top: 3px; display:inline-block;">
                     <a href="{{ media_id.service_url }}">
-                        <img style="max-height: 30px" src="{{ url_for("static", filename=service.value + ".png") }}" alt="{{ service.name }}"/>
+                        <img style="max-height: 30px" src="{{ url_for("static", filename="service_logos" + service.value + ".png") }}" alt="{{ service.name }}"/>
                     </a>
                 </span>
             {%  endfor %}
