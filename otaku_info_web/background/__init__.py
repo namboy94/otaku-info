@@ -26,8 +26,8 @@ from otaku_info_web.background.manga_chapters import \
 
 bg_tasks: Dict[str, Tuple[int, Callable]] = {
     "anilist_update": (60, fetch_anilist_data),
-    "update_manga_chapter_guesses": (120, update_manga_chapter_guesses),
-    "load_id_mappings": (60, load_id_mappings)
+    "update_manga_chapter_guesses": (60 * 60, update_manga_chapter_guesses),
+    "load_id_mappings": (60 * 60 * 24, load_id_mappings)
 }
 """
 A dictionary containing background tasks for the flask application
