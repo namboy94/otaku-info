@@ -54,7 +54,10 @@ def load_id_mappings():
 
         app.logger.debug(f"Probing mangadex id {mangadex_id}")
 
+        start = time.time()
         other_ids = get_external_ids(mangadex_id)
+        app.logger.debug("Loaded mangadex external IDs in {}s"
+                         .format("%.2f" % (time.time() - start)))
 
         if other_ids is None:
             endcounter += 1
@@ -122,6 +125,7 @@ def create_anilist_media_item(anilist_id: int) -> Optional[MediaItem]:
     :param anilist_id: The anilist ID of the media
     :return: The generated Media Item
     """
+    start = time.time()
     anilist_entry = load_media_info(anilist_id, MediaType.MANGA)
     if anilist_entry is None:
         return None
@@ -136,4 +140,6 @@ def create_anilist_media_item(anilist_id: int) -> Optional[MediaItem]:
     )
     db.session.add(media_item)
     db.session.commit()
+    app.logger.debug("Loaded anilist item in {}s"
+                     .format("%.2f" % (time.time() - start)))
     return media_item
