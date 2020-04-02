@@ -56,6 +56,6 @@ def update_manga_chapter_guesses():
         else:
             app.logger.debug(f"Updating chapter guess for {anilist_id}")
             guess.update()
+            time.sleep(1)
 
         db.session.commit()
-        time.sleep(1)
