@@ -33,7 +33,6 @@ def load_id_mappings():
     these entries if found
     :return: None
     """
-    mangadex_id = 23438
     endcounter = 0
 
     mangadex_ids: List[int] = [
@@ -41,6 +40,10 @@ def load_id_mappings():
         for x in MediaId.query.all()
         if x.service == ListService.MANGADEX
     ]
+    if len(mangadex_ids) > 0:
+        mangadex_id = mangadex_ids[-1]
+    else:
+        mangadex_id = 0
 
     while True:
         time.sleep(0.5)

@@ -19,7 +19,7 @@ LICENSE"""
 
 import time
 from puffotter.flask.base import db, app
-from otaku_info_web.db.MediaId import MediaId
+from otaku_info_web.db.MediaUserState import MediaUserState
 from otaku_info_web.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info_web.utils.enums import MediaType, ListService
 
@@ -30,12 +30,14 @@ def update_manga_chapter_guesses():
     :return: None
     """
     anilist_ids = {
-        x.service_id: x for x in MediaId.query.filter_by(
-            service=ListService.ANILIST
-        ).all() if x.media_item.media_type == MediaType.MANGA
+        x.media_id.service_id: x.media_id
+        for x in MediaUserState.query.all()
+        if x.media_id.media_item.media_type == MediaType.MANGA
+        and x.media_id.service == ListService.ANILIST
     }
     guesses = {
-        x.media_id.service_id: x for x in MangaChapterGuess.query.all()
+        x.media_id.service_id: x
+        for x in MangaChapterGuess.query.all()
     }
 
     for anilist_id in anilist_ids:
@@ -47,7 +49,13 @@ def update_manga_chapter_guesses():
     db.session.commit()
 
     for anilist_id, guess in guesses.items():
-        app.logger.debug(f"Updating chapter guess for {anilist_id}")
-        guess.update()
+
+        if anilist_id not in anilist_ids:
+            db.session.delete(guess)
+            app.logger.debug(f"Deleting stale chapter guess for {anilist_id}")
+        else:
+            app.logger.debug(f"Updating chapter guess for {anilist_id}")
+            guess.update()
+
         db.session.commit()
         time.sleep(1)
