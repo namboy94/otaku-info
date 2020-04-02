@@ -26,7 +26,8 @@ mangadex_external_id_names: Dict[ListService, str] = {
     ListService.ANIMEPLANET: "ap",
     ListService.KITSU: "kt",
     ListService.MANGAUPDATES: "mu",
-    ListService.MYANIMELIST: "mal"
+    ListService.MYANIMELIST: "mal",
+    ListService.MANGADEX: "NONE"
 }
 """
 The names used by mangadex to identify IDs from other services

@@ -70,7 +70,7 @@ class AnilistItem:
             return self.episodes
         else:
             return self.chapters
-        
+
     @classmethod
     def from_query(cls, media_type: MediaType, data: Dict[str, Any]) \
             -> "AnilistItem":

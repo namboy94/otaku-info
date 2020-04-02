@@ -55,13 +55,14 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
                 {% endfor %}
             </ul>
         </div>
+        <!--suppress JSUnresolvedFunction, ES6ConvertVarToLetConst -->
         <script>
             var userList = new List('manga-list', {
                 valueNames: [
                     "diff",
                     "name",
-                    "score",
-                    "progress",
+                    "user_score",
+                    "user_progress",
                     "latest"
                 ]
             });

@@ -158,7 +158,10 @@ class TestMediaId(_TestFramework):
             ListService.MYANIMELIST: "https://myanimelist.net/manga/101177",
             ListService.MANGADEX: "https://mangadex.org/title/101177",
             ListService.MANGAUPDATES: "https://www.mangaupdates.com/"
-                                      "series.html?id=101177"
+                                      "series.html?id=101177",
+            ListService.ANIMEPLANET: "https://www.anime-planet.com/"
+                                     "manga/101177",
+            ListService.KITSU: "https://kitsu.io/anime/101177"
         }
         for service in ListService:
             expected = urls[service]

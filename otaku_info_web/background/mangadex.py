@@ -33,7 +33,7 @@ def load_id_mappings():
     these entries if found
     :return: None
     """
-    mangadex_id = 0
+    mangadex_id = 23438
     endcounter = 0
 
     mangadex_ids: List[int] = [
@@ -98,8 +98,7 @@ def store_ids(mangadex_id: int, other_ids: Dict[ListService, str]):
         if x.media_item_id == media_item_id
     ]
 
-    app.logger.info("Storing external IDS for mangadex id {}: {}"
-                    .format(mangadex_id, other_ids))
+    app.logger.debug(f"Storing external IDS for mangadex id {mangadex_id}")
 
     for list_service, _id in other_ids.items():
         if list_service not in existing_ids:

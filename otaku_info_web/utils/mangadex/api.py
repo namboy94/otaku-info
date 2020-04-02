@@ -34,7 +34,7 @@ def get_external_ids(mangadex_id: int) -> Optional[Dict[ListService, str]]:
     endpoint = "https://mangadex.org/api/manga/{}".format(mangadex_id)
     response = json.loads(requests.get(endpoint).text)
 
-    ids = {ListService.MANGADEX: mangadex_id}
+    ids = {ListService.MANGADEX: str(mangadex_id)}
 
     if response["status"] != "OK":
         return None
