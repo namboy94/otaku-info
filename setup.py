@@ -39,7 +39,6 @@ if __name__ == "__main__":
         license="GNU GPL3",
         packages=find_packages(),
         install_requires=[
-            "cherrypy",
             "Flask",
             "werkzeug",
             "flask_sqlalchemy",

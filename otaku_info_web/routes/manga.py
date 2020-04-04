@@ -20,6 +20,7 @@ LICENSE"""
 from flask import request, render_template, redirect, url_for
 from flask.blueprints import Blueprint
 from flask_login import login_required, current_user
+from puffotter.flask.base import app
 from otaku_info_web.utils.enums import MediaType
 from otaku_info_web.utils.manga_updates.generator import prepare_manga_updates
 from otaku_info_web.db.MediaList import MediaList
@@ -40,6 +41,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         Shows the user's manga updates for a specified service and list
         :return: The response
         """
+        app.logger.debug("manga/updates request start")
         if request.method == "POST":
             args = request.form
             service, list_name = args["list_ident"].split(":", 1)
@@ -47,8 +49,6 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             args = request.args
             service = args.get("service")
             list_name = args.get("list_name")
-
-        print(args)
 
         only_updates = args.get("only_updates", "off") == "on"
         include_complete = args.get("include_complete", "off") == "on"
