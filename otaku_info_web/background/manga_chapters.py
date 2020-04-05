@@ -29,6 +29,7 @@ def update_manga_chapter_guesses():
     Updates the manga chapter guesses
     :return: None
     """
+    app.logger.info("Starting update of manga chapter guesses")
     anilist_ids = {
         x.media_id.service_id: x.media_id
         for x in MediaUserState.query.all()
@@ -59,3 +60,5 @@ def update_manga_chapter_guesses():
             time.sleep(1)
 
         db.session.commit()
+
+    app.logger.info("Finished updating manga chapter guesses")

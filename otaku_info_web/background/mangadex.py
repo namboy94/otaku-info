@@ -18,38 +18,13 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Dict, List, Optional, Tuple
+from sqlalchemy.exc import IntegrityError
 from puffotter.flask.base import db, app
 from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.utils.enums import ListService, MediaType
 from otaku_info_web.utils.mangadex.api import get_external_ids
 from otaku_info_web.utils.anilist.api import load_media_info
-
-
-def load_db_content() -> Tuple[
-    Dict[str, MediaId],
-    Dict[int, List[ListService]]
-]:
-    """
-    Loads the existing data from the database.
-    By doing this as few times as possible, we can greatly improve performance
-    :return: The anilist IDs, The mangadex IDs mapped to other existing IDs
-    """
-    app.logger.info("Starting caching of db data for mangadex ID mapping")
-    all_ids: List[MediaId] = MediaId.query.all()
-    anilist_ids: Dict[str, MediaId] = {
-        x.service_id: x
-        for x in all_ids
-        if x.service == ListService.ANILIST
-    }
-    existing_ids: Dict[int, List[ListService]] = {
-        int(x.service_id):
-            [y.service for y in all_ids if y.media_item_id == x.media_item_id]
-        for x in all_ids
-        if x.service == ListService.MANGADEX
-    }
-    app.logger.info("Finished caching of db data for mangadex ID mapping")
-    return anilist_ids, existing_ids
 
 
 def load_id_mappings():
@@ -85,6 +60,49 @@ def load_id_mappings():
         store_ids(existing_ids, anilist_ids, mangadex_id, other_ids)
 
 
+def load_db_content() -> Tuple[
+    Dict[str, MediaId],
+    Dict[int, List[ListService]]
+]:
+    """
+    Loads the existing data from the database.
+    By doing this as few times as possible, we can greatly improve performance
+    :return: The anilist IDs, The mangadex IDs mapped to other existing IDs
+    """
+    app.logger.info("Starting caching of db data for mangadex ID mapping")
+
+    all_ids: List[MediaId] = [
+        x for x in
+        MediaId.query.join(MediaItem).all()
+        if x.media_item.media_type == MediaType.MANGA
+    ]
+    anilist_ids: Dict[str, MediaId] = {
+        x.service_id: x
+        for x in all_ids
+        if x.service == ListService.ANILIST
+    }
+
+    mangadex_idmap: Dict[int, int] = {}
+
+    existing_ids: Dict[int, List[ListService]] = {}
+    for media_id in all_ids:
+        media_item_id = media_id.media_item_id
+        if media_item_id not in existing_ids:
+            existing_ids[media_item_id] = []
+        existing_ids[media_item_id].append(media_id)
+        if media_id.service == ListService.MANGADEX:
+            mangadex_idmap[media_item_id] = int(media_id.service_id)
+
+    mapped_existing_ids = {
+        mangadex_idmap[key]: value
+        for key, value in existing_ids.items()
+        if key in mangadex_idmap
+    }
+
+    app.logger.info("Finished caching of db data for mangadex ID mapping")
+    return anilist_ids, mapped_existing_ids
+
+
 def store_ids(
         existing_ids: Dict[int, List[ListService]],
         anilist_ids: Dict[str, MediaId],
@@ -104,8 +122,9 @@ def store_ids(
         return
 
     existing_services = existing_ids.get(mangadex_id, [])
-
+    existing_ids[mangadex_id] = existing_services
     anilist_id = other_ids[ListService.ANILIST]
+
     if anilist_id not in anilist_ids:
         media_item = create_anilist_media_item(int(anilist_id))
         if media_item is None:
@@ -126,7 +145,21 @@ def store_ids(
                 service_id=_id
             )
             db.session.add(media_id)
-    db.session.commit()
+            existing_ids[mangadex_id].append(list_service)
+            if list_service == ListService.ANILIST:
+                anilist_ids[_id] = media_id
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Since mangadex has some entries that point to the exact same anilist
+        # media item, we may sometimes encounter cases where we have two
+        # mangadex IDs for one anilist ID.
+        # By ignoring errors here, only the first mangadex ID will be stored.
+        # An example for this issue is Genshiken (961) and its
+        # sequel Genshiken Nidaime (962)
+        db.session.rollback()
+        app.logger.warning(f"Couldn't add mangadex ID {mangadex_id}")
 
 
 def create_anilist_media_item(anilist_id: int) -> Optional[MediaItem]:
