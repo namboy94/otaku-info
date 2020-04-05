@@ -17,11 +17,10 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Optional, Dict
-from otaku_info_web.db.MangaChapterGuess import MangaChapterGuess
-from otaku_info_web.db.MediaListItem import MediaListItem
-from otaku_info_web.db.MediaId import MediaId
-from otaku_info_web.utils.enums import ListService
+from flask import url_for
+from typing import Optional, List, Tuple
+from otaku_info_web.utils.enums import ListService, MediaType
+from otaku_info_web.utils.db_model_helper import build_service_url
 
 
 class MangaUpdate:
@@ -31,28 +30,34 @@ class MangaUpdate:
 
     def __init__(
             self,
-            list_item: MediaListItem,
-            chapter_guess: Optional[MangaChapterGuess],
-            service_ids: Dict[ListService, MediaId]
+            title: str,
+            cover_url: str,
+            latest_release: int,
+            progress: int,
+            score: int,
+            chapter_guess: Optional[int],
+            related_ids: List[Tuple[ListService, str]]
     ):
         """
         Initializes the MangaUpdate object
-        :param list_item: The list item to display
-        :param chapter_guess: The corresponding chapter guess
-        :param service_ids: Service IDS for this manga update entry
+        :param title: The title of the update
+        :param cover_url: The URL for the media item's cover
+        :param latest_release: The latest known released chapter
+        :param progress: The user's current progress
+        :param score: The user's score for this entry
+        :param chapter_guess: The current chapter guess
+        :param related_ids: Related service IDs
         """
-        media_item = list_item.media_user_state.media_id.media_item
-        self.title = media_item.title
-        self.cover_url = media_item.cover_url
-        self.url = list_item.media_user_state.media_id.service_url
-        self.score = list_item.media_user_state.score
-        self.progress = list_item.media_user_state.progress
-        self.service_ids = service_ids
+        self.title = title
+        self.cover_url = cover_url
+        self.score = score
+        self.progress = progress
+        self.related_ids = [RelatedMangaId(*args) for args in related_ids]
 
-        if chapter_guess is None or chapter_guess.guess is None:
-            self.latest = media_item.latest_release
+        if chapter_guess is None:
+            self.latest = latest_release
         else:
-            self.latest = chapter_guess.guess
+            self.latest = chapter_guess
 
         if self.latest is None:
             self.latest = 0
@@ -63,3 +68,22 @@ class MangaUpdate:
             self.latest = self.progress
 
         self.diff = self.latest - self.progress
+
+
+class RelatedMangaId:
+    """
+    Class that encapslates attributes for a related manga ID
+    """
+
+    def __init__(self, service: ListService, service_id: str):
+        """
+        Intializes the RelatedMangaId object
+        :param service: The service of the related manga ID
+        :param service_id: The ID on that service
+        """
+        self.service = service
+        self.service_id = service_id
+        self.url = build_service_url(MediaType.MANGA, service, service_id)
+        self.icon = url_for(
+            "static", filename="service_logos/" + service.value + ".png"
+        )

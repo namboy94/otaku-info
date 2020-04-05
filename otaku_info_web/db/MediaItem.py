@@ -20,6 +20,7 @@ LICENSE"""
 from typing import Dict, Any, Optional
 from puffotter.flask.base import db
 from puffotter.flask.db.ModelMixin import ModelMixin
+from otaku_info_web.utils.db_model_helper import build_title
 from otaku_info_web.utils.enums import ReleasingState, MediaType, MediaSubType
 
 
@@ -39,6 +40,7 @@ class MediaItem(ModelMixin, db.Model):
             "media_type",
             "media_subtype",
             "romaji_title",
+            "cover_url",
             name="unique_media_item"
         ),
     )
@@ -66,12 +68,12 @@ class MediaItem(ModelMixin, db.Model):
     The subtype (for example, TV short, movie oneshot etc)
     """
 
-    english_title: Optional[str] = db.Column(db.String(255), nullable=True)
+    english_title: Optional[str] = db.Column(db.Unicode(255), nullable=True)
     """
     The English title of the media item
     """
 
-    romaji_title: str = db.Column(db.String(255), nullable=False)
+    romaji_title: str = db.Column(db.Unicode(255), nullable=False)
     """
     The Japanese title of the media item written in Romaji
     """
@@ -98,10 +100,7 @@ class MediaItem(ModelMixin, db.Model):
         """
         :return: The default title for the media item.
         """
-        if self.english_title is not None:
-            return self.english_title
-        else:
-            return self.romaji_title
+        return build_title(self.english_title, self.romaji_title)
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

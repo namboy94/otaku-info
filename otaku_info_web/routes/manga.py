@@ -53,6 +53,10 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         only_updates = args.get("only_updates", "off") == "on"
         include_complete = args.get("include_complete", "off") == "on"
 
+        min_update_count = 0
+        if only_updates:
+            min_update_count = 1
+
         if request.method == "POST":
             url = f"{url_for('manga.show_manga_updates')}" \
                   f"?service={service}" \
@@ -78,7 +82,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
                     service,
                     list_name,
                     include_complete,
-                    only_updates
+                    min_update_count
                 )
             return render_template(
                 "manga/manga_updates.html",

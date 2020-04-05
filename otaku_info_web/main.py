@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-import logging
 from puffotter.env import load_env_file
 from puffotter.flask.initialize import init_flask
 from puffotter.flask.wsgi import start_server
@@ -42,5 +41,4 @@ def main():
         models,
         blueprint_generators
     )
-    logging.getLogger("requests").setLevel(logging.WARNING)
     start_server(Config, bg_tasks)

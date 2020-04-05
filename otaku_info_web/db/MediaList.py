@@ -40,7 +40,7 @@ class MediaList(ModelMixin, db.Model):
             "user_id",
             "service",
             "media_type",
-            name="unique_media_id"
+            name="unique_media_list"
         ),
     )
     """
@@ -55,7 +55,7 @@ class MediaList(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    name: str = db.Column(db.String(255), nullable=False)
+    name: str = db.Column(db.Unicode(255), nullable=False)
     """
     The name of this list
     """

@@ -39,7 +39,7 @@ class MediaListItem(ModelMixin, db.Model):
         db.UniqueConstraint(
             "media_list_id",
             "media_user_state_id",
-            name="unique_media_id"
+            name="unique_media_list_item"
         ),
     )
     """

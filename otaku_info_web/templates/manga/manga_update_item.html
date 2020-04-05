@@ -7,10 +7,10 @@
             <a style="padding-right: 30px" href="{{ entry.url }}">{{ entry.title }}</a>
         </div>
         <div class="col-md-2">
-            {% for service, media_id in entry.service_ids.items() %}
+            {% for related_id in entry.related_ids %}
                 <span style="padding-right:3px; padding-top: 3px; display:inline-block;">
-                    <a href="{{ media_id.service_url }}">
-                        <img style="max-height: 30px" src="{{ url_for("static", filename="service_logos/" + service.value + ".png") }}" alt="{{ service.name }}"/>
+                    <a href="{{ related_id.url }}">
+                        <img style="max-height: 30px" src="{{ related_id.icon }}" alt="{{ related_id.service.name }}"/>
                     </a>
                 </span>
             {%  endfor %}

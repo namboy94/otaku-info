@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import List, Dict, Optional, Union, Tuple
+from typing import List, Dict, Optional, Tuple
 from puffotter.flask.base import db, app
 from puffotter.flask.db.User import User
 from otaku_info_web.db.MediaId import MediaId
@@ -58,19 +58,22 @@ def update_media_entries(
             ServiceUsername,
             Dict[MediaType, List[AnilistUserItem]]
         ]
-) -> Dict[Tuple[str, MediaType], MediaId]:
+) -> Dict[Tuple[str, MediaSubType], MediaId]:
     """
     Updates the media entries and anilist IDs
     :param anilist_data: The anilist data to store
     :return: id/mediatype tuple keys with MediaId values
     """
-    media_ids = {
-        (x.service_id, x.media_item.media_type): x for x in MediaId.query.all()
+    media_ids: Dict[Tuple[str, MediaSubType], MediaId] = {
+        (x.service_id, x.media_item.media_subtype): x
+        for x in MediaId.query.all()
     }
-    media_items = {
-        (x.romaji_title, x.media_subtype): x for x in MediaItem.query.all()
+    media_items: Dict[Tuple[str, MediaSubType, str], MediaItem] = {
+        (x.romaji_title, x.media_subtype, x.cover_url): x
+        for x in MediaItem.query.all()
     }
-    updated: List[Union[Tuple[str, MediaType], Tuple[str, MediaSubType]]] = []
+    updated_ids: List[Tuple[str, MediaSubType]] = []
+    updated_items: List[Tuple[str, MediaSubType, str]] = []
 
     for media_type in MediaType:
 
@@ -79,23 +82,28 @@ def update_media_entries(
             anilist_entries += data[media_type]
 
         for anilist_entry in anilist_entries:
-            item_tuple \
-                = (anilist_entry.romaji_title, anilist_entry.media_subtype)
-            id_tuple \
-                = (str(anilist_entry.anilist_id), anilist_entry.media_type)
+            item_tuple = (
+                anilist_entry.romaji_title,
+                anilist_entry.media_subtype,
+                anilist_entry.cover_url
+            )
+            id_tuple = (
+                str(anilist_entry.anilist_id),
+                anilist_entry.media_subtype
+            )
 
             media_item = media_items.get(item_tuple)
             media_id = media_ids.get(id_tuple)
 
-            if item_tuple not in updated:
+            if item_tuple not in updated_items:
                 media_item = update_media_item(anilist_entry, media_item)
                 media_items[item_tuple] = media_item
-                updated.append(item_tuple)
-            if id_tuple not in updated:
+                updated_items.append(item_tuple)
+            if id_tuple not in updated_ids:
                 media_item = media_items[item_tuple]
                 media_id = update_media_id(anilist_entry, media_item, media_id)
                 media_ids[id_tuple] = media_id
-                updated.append(id_tuple)
+                updated_ids.append(id_tuple)
 
     db.session.commit()
     return media_ids
@@ -106,7 +114,7 @@ def update_media_user_entries(
             ServiceUsername,
             Dict[MediaType, List[AnilistUserItem]]
         ],
-        media_ids: Dict[Tuple[str, MediaType], MediaId]
+        media_ids: Dict[Tuple[str, MediaSubType], MediaId]
 ):
     """
     Updates the individual users' current state for media items in
@@ -130,7 +138,7 @@ def update_media_user_entries(
 
         for media_type, anilist_entries in anilist.items():
             for entry in anilist_entries:
-                id_tuple = (str(entry.anilist_id), entry.media_type)
+                id_tuple = (str(entry.anilist_id), entry.media_subtype)
 
                 if id_tuple in updated:
                     continue
@@ -163,13 +171,13 @@ def update_media_lists(
     MediaListItem.query.delete()
     existing_lists = MediaList.query.all()
     all_user_states = {
-        (x.media_id.service_id, x.media_id.media_item.media_type): x
+        (x.media_id.service_id, x.media_id.media_item.media_subtype): x
         for x in MediaUserState.query.all()
     }
 
     for service_user, anilist in anilist_data.items():
 
-        user_states: Dict[Tuple[str, MediaType], MediaUserState] = {
+        user_states: Dict[Tuple[str, MediaSubType], MediaUserState] = {
             x: y for x, y in all_user_states.items()
             if y.user.username == service_user.user.username
         }
@@ -195,16 +203,18 @@ def update_media_lists(
                         media_type=media_type
                     )
                     db.session.add(user_list)
+                    db.session.commit()
                     user_lists[entry.list_name] = user_list
                 else:
                     user_list = user_lists[entry.list_name]
 
-                state_tuple = (str(entry.anilist_id), entry.media_type)
+                state_tuple = (str(entry.anilist_id), entry.media_subtype)
                 list_item = MediaListItem(
                     media_list=user_list,
                     media_user_state=user_states[state_tuple]
                 )
                 db.session.add(list_item)
+                db.session.commit()
 
             for list_name, user_list in user_lists.items():
                 if list_name not in collected_list_names:
@@ -234,6 +244,7 @@ def update_media_item(
 
     if existing is None:
         db.session.add(media_item)
+        db.session.commit()
     return media_item
 
 
@@ -256,6 +267,7 @@ def update_media_id(
 
     if existing is None:
         db.session.add(media_id)
+        db.session.commit()
     return media_id
 
 
@@ -282,4 +294,5 @@ def update_media_user_state(
 
     if existing is None:
         db.session.add(media_user_state)
+        db.session.commit()
     return media_user_state

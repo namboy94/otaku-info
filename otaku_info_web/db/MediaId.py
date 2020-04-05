@@ -21,7 +21,7 @@ from typing import Dict, Any
 from puffotter.flask.base import db
 from puffotter.flask.db.ModelMixin import ModelMixin
 from otaku_info_web.utils.enums import ListService
-from otaku_info_web.utils.mappings import list_service_url_formats
+from otaku_info_web.utils.db_model_helper import build_service_url
 from otaku_info_web.db.MediaItem import MediaItem
 
 
@@ -90,11 +90,9 @@ class MediaId(ModelMixin, db.Model):
         """
         :return: The URL to the series for the given service
         """
-        url_format = list_service_url_formats[self.service]
-        url = url_format\
-            .replace("@{media_type}", self.media_item.media_type.value)\
-            .replace("@{id}", self.service_id)
-        return url
+        return build_service_url(
+            self.media_item.media_type, self.service, self.service_id
+        )
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

@@ -103,6 +103,8 @@ def store_ids(
     if ListService.ANILIST not in other_ids:
         return
 
+    existing_services = existing_ids.get(mangadex_id, [])
+
     anilist_id = other_ids[ListService.ANILIST]
     if anilist_id not in anilist_ids:
         media_item = create_anilist_media_item(int(anilist_id))
@@ -112,10 +114,9 @@ def store_ids(
             media_item_id = media_item.id
     else:
         media_item_id = anilist_ids[anilist_id].media_item_id
+        existing_services.append(ListService.ANILIST)
 
     app.logger.debug(f"Storing external IDS for mangadex id {mangadex_id}")
-
-    existing_services = existing_ids.get(mangadex_id, [])
 
     for list_service, _id in other_ids.items():
         if list_service not in existing_services:

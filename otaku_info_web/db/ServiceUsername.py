@@ -39,7 +39,7 @@ class ServiceUsername(ModelMixin, db.Model):
             "user_id",
             "username",
             "service",
-            name="unique_media_id"
+            name="unique_service_username"
         ),
     )
     """
