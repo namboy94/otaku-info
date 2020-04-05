@@ -21,7 +21,7 @@ from flask import request, render_template, redirect, url_for
 from flask.blueprints import Blueprint
 from flask_login import login_required, current_user
 from puffotter.flask.base import app
-from otaku_info_web.utils.enums import MediaType
+from otaku_info_web.utils.enums import MediaType, ListService
 from otaku_info_web.utils.manga_updates.generator import prepare_manga_updates
 from otaku_info_web.db.MediaList import MediaList
 
@@ -79,11 +79,12 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             list_entries = \
                 prepare_manga_updates(
                     current_user,
-                    service,
+                    ListService(service),
                     list_name,
                     include_complete,
                     min_update_count
                 )
+            list_entries.sort(key=lambda x: x.score, reverse=True)
             return render_template(
                 "manga/manga_updates.html",
                 entries=list_entries,

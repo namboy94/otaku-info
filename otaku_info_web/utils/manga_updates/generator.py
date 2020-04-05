@@ -28,12 +28,12 @@ from otaku_info_web.db.MediaUserState import MediaUserState
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.utils.manga_updates.MangaUpdate import MangaUpdate
 from otaku_info_web.utils.enums \
-    import MediaType, MediaSubType, ConsumingState, ReleasingState
+    import MediaType, MediaSubType, ConsumingState, ReleasingState, ListService
 
 
 def prepare_manga_updates(
         user: User,
-        service: str,
+        service: ListService,
         media_list: str,
         include_complete: bool,
         min_update_count: int
