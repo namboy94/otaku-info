@@ -191,5 +191,13 @@ def create_anilist_media_item(anilist_id: int) -> Optional[MediaItem]:
         releasing_state=anilist_entry.releasing_state
     )
     db.session.add(media_item)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        app.logger.warning(f"Failed to add anilist manga entry "
+                           f"(ID={anilist_id})")
+        return None
+
     return media_item
