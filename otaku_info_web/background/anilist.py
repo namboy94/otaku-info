@@ -39,7 +39,7 @@ def fetch_anilist_data():
     :return: None
     """
     start = time.time()
-    app.logger.info("Starting Anilist Update")
+    app.logger.debug("Starting Anilist Update")
     usernames: List[ServiceUsername] = \
         ServiceUsername.query.filter_by(service=ListService.ANILIST).all()
     anilist_data = {
@@ -159,7 +159,7 @@ def update_media_user_entries(
 
                 media_user_state = media_user_states.get(user_state_id)
 
-                update_media_user_state(
+                media_user_state = update_media_user_state(
                     entry, media_id, service_user.user, media_user_state
                 )
 

@@ -20,7 +20,6 @@ LICENSE"""
 from flask import request, render_template, redirect, url_for
 from flask.blueprints import Blueprint
 from flask_login import login_required, current_user
-from puffotter.flask.base import app
 from otaku_info_web.utils.enums import MediaType, ListService
 from otaku_info_web.utils.manga_updates.generator import prepare_manga_updates
 from otaku_info_web.db.MediaList import MediaList
@@ -34,36 +33,37 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
     """
     blueprint = Blueprint(blueprint_name, __name__)
 
-    @blueprint.route("/manga/updates", methods=["GET", "POST"])
+    @blueprint.route("/manga/updates", methods=["POST"])
+    @login_required
+    def redirect_manga_updates():
+        """
+        Redirects a POST requests to the appropriate GET request for
+        the /manga/updates route
+        :return: The response
+        """
+        service, list_name = request.form["list_ident"].split(":", 1)
+        mincount = request.form.get("mincount", "0")
+        include_complete = request.form.get("include_complete", "off") == "on"
+
+        get_url = url_for("manga.show_manga_updates")
+        get_url += f"?service={service}" \
+                   f"&list_name={list_name}" \
+                   f"&mincount={mincount}" \
+                   f"&include_complete={1 if include_complete else 0}"
+
+        return redirect(get_url)
+
+    @blueprint.route("/manga/updates", methods=["GET"])
     @login_required
     def show_manga_updates():
         """
         Shows the user's manga updates for a specified service and list
         :return: The response
         """
-        app.logger.debug("manga/updates request start")
-        if request.method == "POST":
-            args = request.form
-            service, list_name = args["list_ident"].split(":", 1)
-        else:
-            args = request.args
-            service = args.get("service")
-            list_name = args.get("list_name")
-
-        only_updates = args.get("only_updates", "off") == "on"
-        include_complete = args.get("include_complete", "off") == "on"
-
-        min_update_count = 0
-        if only_updates:
-            min_update_count = 1
-
-        if request.method == "POST":
-            url = f"{url_for('manga.show_manga_updates')}" \
-                  f"?service={service}" \
-                  f"&list_name={list_name}" \
-                  f"&only_updates={'on' if only_updates else 'off'}" \
-                  f"&include_complete={'on' if include_complete else 'off'}"
-            return redirect(url)
+        service = request.args.get("service")
+        list_name = request.args.get("list_name")
+        mincount = int(request.args.get("mincount", "0"))
+        include_complete = request.args.get("include_complete", "0") == "1"
 
         if service is None or list_name is None:
             media_lists = [
@@ -82,7 +82,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
                     ListService(service),
                     list_name,
                     include_complete,
-                    min_update_count
+                    mincount
                 )
             list_entries.sort(key=lambda x: x.score, reverse=True)
             return render_template(

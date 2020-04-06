@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import time
 from typing import Dict, List, Optional, Tuple
 from sqlalchemy.exc import IntegrityError
 from puffotter.flask.base import db, app
@@ -44,6 +45,11 @@ def load_id_mappings():
 
     while True:
         mangadex_id += 1
+
+        if mangadex_id % 100 == 0:
+            app.logger.debug("Refreshing mangadex cache")
+            anilist_ids, existing_ids = load_db_content()
+
         app.logger.debug(f"Probing mangadex id {mangadex_id}")
 
         other_ids = get_external_ids(mangadex_id)
@@ -58,6 +64,7 @@ def load_id_mappings():
             endcounter = 0
 
         store_ids(existing_ids, anilist_ids, mangadex_id, other_ids)
+    app.logger.info("Reached end of mangadex ID range")
 
 
 def load_db_content() -> Tuple[
@@ -69,7 +76,8 @@ def load_db_content() -> Tuple[
     By doing this as few times as possible, we can greatly improve performance
     :return: The anilist IDs, The mangadex IDs mapped to other existing IDs
     """
-    app.logger.info("Starting caching of db data for mangadex ID mapping")
+    start = time.time()
+    app.logger.debug("Starting caching of db data for mangadex ID mapping")
 
     all_ids: List[MediaId] = [
         x for x in
@@ -99,7 +107,8 @@ def load_db_content() -> Tuple[
         if key in mangadex_idmap
     }
 
-    app.logger.info("Finished caching of db data for mangadex ID mapping")
+    app.logger.info(f"Finished caching of db data for mangadex ID mapping "
+                    f"in {time.time() - start}s")
     return anilist_ids, mapped_existing_ids
 
 

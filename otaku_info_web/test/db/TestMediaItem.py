@@ -179,8 +179,8 @@ class TestMediaItem(_TestFramework):
             ("media_type", MediaType.ANIME, False),
             ("media_subtype", MediaSubType.NOVEL, False),
             ("romaji_title", "XYZ", False),
+            ("cover_url", "AAA", False),
             ("english_title", "ABCDE", True),
-            ("cover_url", "AAA", True)
         ]:
             kwargs = dict(standard_kwargs)
             kwargs[key] = value
