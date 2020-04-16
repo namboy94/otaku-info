@@ -18,7 +18,7 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from flask import url_for
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict, Any
 from otaku_info_web.utils.enums import ListService, MediaType
 from otaku_info_web.utils.db_model_helper import build_service_url
 
@@ -68,6 +68,29 @@ class MangaUpdate:
             self.latest = self.progress
 
         self.diff = self.latest - self.progress
+
+    def __json__(self) -> Dict[str, Any]:
+        """
+        Converts the object into a JSON-compatible dictionary
+        :return: The JSON-compatible dictionary
+        """
+        return {
+            "title": self.title,
+            "cover_url": self.cover_url,
+            "score": self.score,
+            "progress": self.progress,
+            "related_ids": [
+                {
+                    "service": x.service.value,
+                    "id": x.service_id,
+                    "url": x.url,
+                    "icon": x.icon
+                }
+                for x in self.related_ids
+            ],
+            "latest": self.latest,
+            "diff": self.diff
+        }
 
 
 class RelatedMangaId:

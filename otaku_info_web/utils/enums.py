@@ -45,6 +45,25 @@ class MediaSubType(Enum):
     UNKNOWN = "unknown"
 
 
+class MediaRelationType(Enum):
+    """
+    Class that models a media relation type
+    """
+    ADAPTATION = "adaptation"
+    PREQUEL = "prequel"
+    SEQUEL = "sequel"
+    PARENT = "parent"
+    SIDE_STORY = "side_story"
+    CHARACTER = "character"
+    SUMMARY = "summary"
+    ALTERNATIVE = "alternative"
+    SPIN_OFF = "spin_off"
+    OTHER = "other"
+    SOURCE = "source"
+    COMPILATION = "compilation"
+    CONTAINS = "contains"
+
+
 class ListService(Enum):
     """
     Class that defines available list services
