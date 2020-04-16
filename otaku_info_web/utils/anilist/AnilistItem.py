@@ -17,9 +17,9 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Optional, Dict, Any
-from otaku_info_web.utils.enums \
-    import MediaType, MediaSubType, ReleasingState, ConsumingState
+from typing import Optional, Dict, Any, Tuple
+from otaku_info_web.utils.enums import MediaType, MediaSubType, \
+    ReleasingState, ConsumingState, MediaRelationType
 
 
 class AnilistItem:
@@ -37,7 +37,8 @@ class AnilistItem:
             cover_url: str,
             chapters: Optional[int],
             episodes: Optional[int],
-            releasing_state: ReleasingState
+            releasing_state: ReleasingState,
+            relations: Dict[Tuple[MediaType, int], MediaRelationType]
     ):
         """
         Initializes the AnilistItem object
@@ -50,6 +51,7 @@ class AnilistItem:
         :param chapters: The total amount of known manga chapters
         :param episodes: The total amount of known anime episodes
         :param releasing_state: The current releasing state of the series
+        :param relations: Related media items identified by IDs
         """
         self.anilist_id = anilist_id
         self.media_type = media_type
@@ -60,6 +62,7 @@ class AnilistItem:
         self.chapters = chapters
         self.episodes = episodes
         self.releasing_state = releasing_state
+        self.relations = relations
 
     @property
     def latest_release(self) -> Optional[int]:
@@ -90,6 +93,13 @@ class AnilistItem:
             _releasing_state = "unknown"
         releasing_state = ReleasingState(_releasing_state.lower())
 
+        relations = {}
+        for edge in data["relations"]["edges"]:
+            node_id = edge["node"]["id"]
+            node_type = MediaType(edge["node"]["type"].lower())
+            relation_type = MediaRelationType(edge["relationType"].lower())
+            relations[(node_type, node_id)] = relation_type
+
         return AnilistItem(
             data["id"],
             media_type,
@@ -99,7 +109,8 @@ class AnilistItem:
             data["coverImage"]["large"],
             data["chapters"],
             data["episodes"],
-            releasing_state
+            releasing_state,
+            relations
         )
 
 
@@ -119,6 +130,7 @@ class AnilistUserItem(AnilistItem):
             chapters: Optional[int],
             episodes: Optional[int],
             releasing_state: ReleasingState,
+            relations: Dict[Tuple[MediaType, int], MediaRelationType],
             score: Optional[int],
             progress: Optional[int],
             consuming_state: ConsumingState,
@@ -135,6 +147,7 @@ class AnilistUserItem(AnilistItem):
         :param chapters: The total amount of known manga chapters
         :param episodes: The total amount of known anime episodes
         :param releasing_state: The current releasing state of the series
+        :param relations: Related media items identified by IDs
         :param score: The user's score for the series
         :param progress: The user's progress for the series
         :param consuming_state: The user's consumption state for the series
@@ -149,7 +162,8 @@ class AnilistUserItem(AnilistItem):
             cover_url,
             chapters,
             episodes,
-            releasing_state
+            releasing_state,
+            relations
         )
         self.score = score
         self.progress = progress
@@ -182,6 +196,7 @@ class AnilistUserItem(AnilistItem):
             base.chapters,
             base.episodes,
             base.releasing_state,
+            base.relations,
             data["score"],
             data["progress"],
             consuming_state,

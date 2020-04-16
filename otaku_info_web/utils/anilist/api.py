@@ -24,6 +24,33 @@ from otaku_info_web.utils.anilist.AnilistItem \
     import AnilistItem, AnilistUserItem
 
 
+MEDIA_QUERY = """
+    id
+    chapters
+    episodes
+    status
+    format
+    title {
+        english
+        romaji
+    }
+    coverImage {
+        large
+    }
+    nextAiringEpisode {
+      episode
+    }
+    relations {
+        edges {
+            node {
+                id
+            }
+            relationType
+        }
+    }
+"""
+
+
 def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
     """
     Guesses the latest chapter number based on anilist user activity
@@ -86,28 +113,12 @@ def load_anilist(
                     progress
                     score
                     status
-                    media {
-                        id
-                        chapters
-                        episodes
-                        status
-                        format
-                        title {
-                            english
-                            romaji
-                        }
-                        coverImage {
-                            large
-                        }
-                        nextAiringEpisode {
-                          episode
-                        }
-                    }
+                    media {@{MEDIA_QUERY}}
                 }
             }
         }
     }
-    """
+    """.replace("@{MEDIA_QUERY}", MEDIA_QUERY)
     resp = graphql.query(query, {
         "username": username,
         "media_type": media_type.value.upper()
@@ -139,24 +150,10 @@ def load_media_info(anilist_id: int, media_type: MediaType) \
     query = """
         query ($id: Int, $media_type: MediaType) {
             Media(id: $id, type: $media_type) {
-                id
-                chapters
-                episodes
-                status
-                format
-                title {
-                    english
-                    romaji
-                }
-                coverImage {
-                    large
-                }
-                nextAiringEpisode {
-                  episode
-                }
+                @{MEDIA_QUERY}
             }
         }
-    """
+    """.replace("@{MEDIA_QUERY}", MEDIA_QUERY)
     resp = graphql.query(
         query,
         {"id": anilist_id, "media_type": media_type.value.upper()}
