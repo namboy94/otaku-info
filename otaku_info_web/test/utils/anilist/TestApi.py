@@ -19,7 +19,7 @@ LICENSE"""
 
 from otaku_info_web.test.TestFramework import _TestFramework
 from otaku_info_web.utils.anilist.api import load_anilist, \
-    guess_latest_manga_chapter
+    guess_latest_manga_chapter, load_media_info
 from otaku_info_web.utils.enums import MediaType
 
 
@@ -43,3 +43,12 @@ class TestApi(_TestFramework):
         """
         guess = guess_latest_manga_chapter(101177)
         self.assertGreater(guess, 100)
+
+    def test_loading_media(self):
+        """
+        Tests loading a media item
+        :return: None
+        """
+        media = load_media_info(1, MediaType.ANIME)
+        self.assertEqual(media.english_title, "Cowboy Bebop")
+        self.assertGreater(len(media.relations), 0)

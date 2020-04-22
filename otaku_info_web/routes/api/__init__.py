@@ -16,22 +16,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
-
-from flask.blueprints import Blueprint
-from typing import List, Tuple, Callable
-from otaku_info_web.routes.manga import define_blueprint as __manga
-from otaku_info_web.routes.external_service import define_blueprint \
-    as __external_service
-from otaku_info_web.routes.manga_api import define_blueprint as __manga_api
-from otaku_info_web.routes.api.media_api import define_blueprint as __media_api
-
-blueprint_generators: List[Tuple[Callable[[str], Blueprint], str]] = [
-    (__external_service, "external_service"),
-    (__manga, "manga"),
-    (__manga_api, "manga_api"),
-    (__media_api, "media_api")
-]
-"""
-Defines the functions used to create the various blueprints
-as well as their names
-"""

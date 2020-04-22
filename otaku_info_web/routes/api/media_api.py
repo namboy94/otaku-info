@@ -19,11 +19,11 @@ LICENSE"""
 
 from flask import request
 from flask.blueprints import Blueprint
-from flask_login import login_required, current_user
-from puffotter.flask.routes.decorators import api, api_login_required
+from puffotter.flask.routes.decorators import api
 from otaku_info_web.Config import Config
-from otaku_info_web.utils.enums import ListService
-from otaku_info_web.utils.manga_updates.generator import prepare_manga_updates
+from otaku_info_web.db.MediaId import MediaId
+from otaku_info_web.db.MediaItem import MediaItem
+from otaku_info_web.utils.enums import MediaType, ListService
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:
@@ -35,28 +35,27 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
     blueprint = Blueprint(blueprint_name, __name__)
     api_base_path = f"/api/v{Config.API_VERSION}"
 
-    @blueprint.route(f"{api_base_path}/manga_updates", methods=["GET"])
-    @api_login_required
-    @login_required
+    @blueprint.route(f"{api_base_path}/media_ids", methods=["GET"])
     @api
-    def fetch_manga_updates():
+    def media_ids():
         """
+        Retrieves all media IDs for a media ID
         :return: The response
         """
-        service = request.args.get("service")
-        list_name = request.args.get("list_name")
-        mincount = int(request.args.get("mincount", "0"))
-        include_complete = request.args.get("include_complete", "0") == "1"
+        service = ListService(request.args["service"])
+        service_id = request.args["service_id"]
+        media_type = MediaType(request.args["media_type"])
 
-        list_entries = \
-            prepare_manga_updates(
-                current_user,
-                ListService(service),
-                list_name,
-                include_complete,
-                mincount
-            )
-        list_entries.sort(key=lambda x: x.score, reverse=True)
-        return [x.__json__() for x in list_entries]
+        media_item: MediaItem = [
+            x for x in
+            MediaId.query
+            .filter_by(service_id=service_id, service=service).all()
+            if x.media_item.media_type == media_type
+        ][0].media_item
+
+        return {
+            x.service.value: x.service_id
+            for x in MediaId.query.filter_by(media_item_id=media_item.id).all()
+        }
 
     return blueprint

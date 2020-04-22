@@ -44,6 +44,7 @@ MEDIA_QUERY = """
         edges {
             node {
                 id
+                type
             }
             relationType
         }
