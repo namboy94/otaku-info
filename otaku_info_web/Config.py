@@ -17,13 +17,27 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import os
 from typing import Type
 from puffotter.flask.Config import Config as BaseConfig
+from bokkichat.settings.impl.TelegramBotSettings import TelegramBotSettings
+from bokkichat.connection.impl.TelegramBotConnection import \
+    TelegramBotConnection
 
 
 class Config(BaseConfig):
     """
     Configuration for the flask application
+    """
+
+    TELEGRAM_API_KEY: str = os.environ["TELEGRAM_API_KEY"]
+    """
+    API Key for the telegram bot used for notification messages
+    """
+
+    TELEGRAM_BOT_CONNECTION: TelegramBotConnection
+    """
+    Single Telegram bot connection used for all telegram communications
     """
 
     @classmethod
@@ -37,3 +51,6 @@ class Config(BaseConfig):
         parent.TEMPLATE_EXTRAS.update({
             "profile": profile_extras
         })
+        Config.TELEGRAM_BOT_CONNECTION = TelegramBotConnection(
+            TelegramBotSettings(Config.TELEGRAM_API_KEY)
+        )

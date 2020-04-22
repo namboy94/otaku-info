@@ -17,20 +17,25 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Tuple, Callable
-from otaku_info_web.background.anilist import fetch_anilist_data
-from otaku_info_web.background.mangadex import load_id_mappings
-from otaku_info_web.background.manga_chapters import \
-    update_manga_chapter_guesses
-from otaku_info_web.background.telegram import handle_whoami_requests
+from flask import request
+from flask.blueprints import Blueprint
+from puffotter.flask.routes.decorators import api
+from otaku_info_web.Config import Config
+from bokkichat.entities.message.TextMessage import TextMessage
+from bokkichat.entities.Address import Address
 
 
-bg_tasks: Dict[str, Tuple[int, Callable]] = {
-    "anilist_update": (60, fetch_anilist_data),
-    "update_manga_chapter_guesses": (60 * 60, update_manga_chapter_guesses),
-    "load_id_mappings": (60 * 60 * 24, load_id_mappings),
-    "telegram_whoami": (1, handle_whoami_requests)
-}
-"""
-A dictionary containing background tasks for the flask application
-"""
+def define_blueprint(blueprint_name: str) -> Blueprint:
+    blueprint = Blueprint(blueprint_name, __name__)
+    api_base_path = f"/api/v{Config.API_VERSION}"
+
+    @blueprint.route(f"{api_base_path}/telegram", methods=["GET"])
+    @api
+    def telegram_test():
+        telegram = Config.TELEGRAM_BOT_CONNECTION
+        telegram.send(TextMessage(
+            telegram.address,
+            Address(request.args["chat"]),
+            "Hello"
+        ))
+    return blueprint

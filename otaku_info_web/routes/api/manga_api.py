@@ -48,14 +48,13 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         mincount = int(request.args.get("mincount", "0"))
         include_complete = request.args.get("include_complete", "0") == "1"
 
-        list_entries = \
-            prepare_manga_updates(
-                current_user,
-                ListService(service),
-                list_name,
-                include_complete,
-                mincount
-            )
+        list_entries = prepare_manga_updates(
+            current_user,
+            ListService(service),
+            list_name,
+            include_complete,
+            mincount
+        )
         list_entries.sort(key=lambda x: x.score, reverse=True)
         return [x.__json__() for x in list_entries]
 

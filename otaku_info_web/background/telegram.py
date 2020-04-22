@@ -17,20 +17,22 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Tuple, Callable
-from otaku_info_web.background.anilist import fetch_anilist_data
-from otaku_info_web.background.mangadex import load_id_mappings
-from otaku_info_web.background.manga_chapters import \
-    update_manga_chapter_guesses
-from otaku_info_web.background.telegram import handle_whoami_requests
+from bokkichat.entities.message.TextMessage import TextMessage
+from otaku_info_web.Config import Config
 
 
-bg_tasks: Dict[str, Tuple[int, Callable]] = {
-    "anilist_update": (60, fetch_anilist_data),
-    "update_manga_chapter_guesses": (60 * 60, update_manga_chapter_guesses),
-    "load_id_mappings": (60 * 60 * 24, load_id_mappings),
-    "telegram_whoami": (1, handle_whoami_requests)
-}
-"""
-A dictionary containing background tasks for the flask application
-"""
+def handle_whoami_requests():
+
+    telegram = Config.TELEGRAM_BOT_CONNECTION
+
+    def handler(con, msg):
+        if msg.is_text():
+            msg: TextMessage = msg
+            print(msg.body)
+
+            if msg.body == "/whoami":
+                sender = telegram.address
+                receiver = msg.sender
+                telegram.send(TextMessage(sender, receiver, receiver.address))
+
+    telegram.loop(handler)

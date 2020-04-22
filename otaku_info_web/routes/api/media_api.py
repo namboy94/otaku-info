@@ -17,9 +17,11 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+from typing import List
 from flask import request
 from flask.blueprints import Blueprint
 from puffotter.flask.routes.decorators import api
+from puffotter.flask.exceptions import ApiException
 from otaku_info_web.Config import Config
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.db.MediaItem import MediaItem
@@ -46,12 +48,17 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         service_id = request.args["service_id"]
         media_type = MediaType(request.args["media_type"])
 
-        media_item: MediaItem = [
+        matching_ids: List[MediaItem] = [
             x for x in
             MediaId.query
             .filter_by(service_id=service_id, service=service).all()
             if x.media_item.media_type == media_type
-        ][0].media_item
+        ]
+
+        if len(matching_ids) < 1:
+            raise ApiException("ID does not exist", 404)
+
+        media_item = matching_ids[0].media_item
 
         return {
             x.service.value: x.service_id

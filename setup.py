@@ -45,7 +45,8 @@ if __name__ == "__main__":
             "flask_login",
             "puffotter[flask,crypto]",
             "requests",
-            "sqlalchemy"
+            "sqlalchemy",
+            "bokkichat"
         ],
         include_package_data=True,
         zip_safe=False
