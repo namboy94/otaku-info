@@ -32,10 +32,7 @@ def main():
     Starts the flask application
     :return: None
     """
-    import os
-    print(os.environ.keys())
     load_env_file()
-    print(os.environ.keys())
     init_flask(
         "otaku_info_web",
         sentry_dsn,
@@ -44,4 +41,5 @@ def main():
         models,
         blueprint_generators
     )
+    Config.initialize_telegram()
     start_server(Config, bg_tasks)

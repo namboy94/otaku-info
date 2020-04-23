@@ -52,7 +52,14 @@ class Config(BaseConfig):
             "profile": profile_extras
         })
         Config.TELEGRAM_API_KEY = os.environ["TELEGRAM_API_KEY"]
-        if not Config.TESTING:
-            Config.TELEGRAM_BOT_CONNECTION = TelegramBotConnection(
-                TelegramBotSettings(Config.TELEGRAM_API_KEY)
-            )
+
+
+    @classmethod
+    def initialize_telegram(cls):
+        """
+        Initializes the telegram bot connection
+        :return: None
+        """
+        Config.TELEGRAM_BOT_CONNECTION = TelegramBotConnection(
+            TelegramBotSettings(Config.TELEGRAM_API_KEY)
+        )
