@@ -66,6 +66,13 @@ def send_new_manga_chapter_notifications():
 
         if guess != notification.last_update:
             notification.last_update = guess
-            chat.send_message("LOLOLOLOLOLOLO")
+
+            title = user_state.media_id.media_item.title
+            url = user_state.media_id.service_url
+            chat.send_message(
+                f"New Chapter for {title}\n\n"
+                f"Chapter {guess}\n\n"
+                f"{url}"
+            )
 
     db.session.commit()
