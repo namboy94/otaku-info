@@ -22,16 +22,15 @@ from typing import List, Tuple, Callable
 from otaku_info_web.routes.manga import define_blueprint as __manga
 from otaku_info_web.routes.external_service import define_blueprint \
     as __external_service
-from otaku_info_web.routes.api.manga_api import define_blueprint as __manga_api
 from otaku_info_web.routes.api.media_api import define_blueprint as __media_api
-from otaku_info_web.routes.api.test import define_blueprint as __test
+from otaku_info_web.routes.notifications import define_blueprint as \
+    __notifications
 
 blueprint_generators: List[Tuple[Callable[[str], Blueprint], str]] = [
     (__external_service, "external_service"),
     (__manga, "manga"),
-    (__manga_api, "manga_api"),
     (__media_api, "media_api"),
-    (__test, "test")
+    (__notifications, "notifications")
 ]
 """
 Defines the functions used to create the various blueprints

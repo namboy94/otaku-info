@@ -70,7 +70,7 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
         <div class="container form-container">
             <form method="post" action="{{ url_for("external_service.set_service_username") }}">
                 <div class="form-group">
-                    <label for="old_password_input">{{ service.value.title() }} username</label>
+                    <label for="{{ site_name }}_input">{{ service.value.title() }} username</label>
                     <input class="form-control"
                            type="text"
                            autocomplete="on"
@@ -84,8 +84,6 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
             </form>
         </div>
     {% endfor %}
-
-
 
     <hr>
 

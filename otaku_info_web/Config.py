@@ -51,6 +51,7 @@ class Config(BaseConfig):
         parent.TEMPLATE_EXTRAS.update({
             "profile": profile_extras
         })
-        Config.TELEGRAM_BOT_CONNECTION = TelegramBotConnection(
-            TelegramBotSettings(Config.TELEGRAM_API_KEY)
-        )
+        if not Config.TESTING:
+            Config.TELEGRAM_BOT_CONNECTION = TelegramBotConnection(
+                TelegramBotSettings(Config.TELEGRAM_API_KEY)
+            )

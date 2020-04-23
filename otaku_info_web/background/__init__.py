@@ -23,13 +23,16 @@ from otaku_info_web.background.mangadex import load_id_mappings
 from otaku_info_web.background.manga_chapters import \
     update_manga_chapter_guesses
 from otaku_info_web.background.telegram import handle_whoami_requests
+from otaku_info_web.background.notifications import \
+    send_new_manga_chapter_notifications
 
 
 bg_tasks: Dict[str, Tuple[int, Callable]] = {
     "anilist_update": (60, fetch_anilist_data),
     "update_manga_chapter_guesses": (60 * 60, update_manga_chapter_guesses),
     "load_id_mappings": (60 * 60 * 24, load_id_mappings),
-    "telegram_whoami": (1, handle_whoami_requests)
+    "telegram_whoami": (1, handle_whoami_requests),
+    "manga_chapter_notifications": (60, send_new_manga_chapter_notifications)
 }
 """
 A dictionary containing background tasks for the flask application

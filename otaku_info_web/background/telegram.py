@@ -22,10 +22,13 @@ from otaku_info_web.Config import Config
 
 
 def handle_whoami_requests():
-
+    """
+    Handles whoami requests to the telegram bot
+    :return: None
+    """
     telegram = Config.TELEGRAM_BOT_CONNECTION
 
-    def handler(con, msg):
+    def handler(_, msg):
         if msg.is_text():
             msg: TextMessage = msg
             print(msg.body)

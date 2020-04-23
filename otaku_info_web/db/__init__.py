@@ -25,7 +25,9 @@ from otaku_info_web.db.MediaItem import MediaItem
 from otaku_info_web.db.MediaList import MediaList
 from otaku_info_web.db.MediaListItem import MediaListItem
 from otaku_info_web.db.MediaUserState import MediaUserState
+from otaku_info_web.db.MediaNotification import MediaNotification
 from otaku_info_web.db.ServiceUsername import ServiceUsername
+from otaku_info_web.db.TelegramChatId import TelegramChatId
 
 
 models: List[db.Model] = [
@@ -35,7 +37,9 @@ models: List[db.Model] = [
     MediaList,
     MediaListItem,
     MediaUserState,
-    ServiceUsername
+    ServiceUsername,
+    TelegramChatId,
+    MediaNotification
 ]
 """
 The database models of the application
