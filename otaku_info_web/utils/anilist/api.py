@@ -66,6 +66,10 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
                 ... on ListActivity {
                     progress
                     userId
+                    status
+                    media {
+                        chapters
+                    }
                 }
             }
         }
@@ -80,7 +84,12 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
     progresses = []
     for entry in data:
         progress = entry["progress"]
-        if progress is not None:
+        status = entry["status"]
+        chapters = entry["media"]["chapters"]
+
+        if status == "completed":
+            progresses.append(chapters)
+        elif progress is not None:
             progress = entry["progress"].split(" - ")[-1]
             progresses.append(int(progress))
 
