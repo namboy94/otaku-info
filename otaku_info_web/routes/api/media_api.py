@@ -60,9 +60,12 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
 
         media_item = matching_ids[0].media_item
 
-        return {
+        id_mappings = {
             x.service.value: x.service_id
             for x in MediaId.query.filter_by(media_item_id=media_item.id).all()
         }
+        id_mappings["otaku_info"] = media_item.id
+
+        return id_mappings
 
     return blueprint

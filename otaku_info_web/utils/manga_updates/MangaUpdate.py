@@ -30,6 +30,7 @@ class MangaUpdate:
 
     def __init__(
             self,
+            media_item_id: int,
             title: str,
             cover_url: str,
             latest_release: int,
@@ -40,6 +41,7 @@ class MangaUpdate:
     ):
         """
         Initializes the MangaUpdate object
+        :param media_item_id: The media item ID
         :param title: The title of the update
         :param cover_url: The URL for the media item's cover
         :param latest_release: The latest known released chapter
@@ -48,11 +50,13 @@ class MangaUpdate:
         :param chapter_guess: The current chapter guess
         :param related_ids: Related service IDs
         """
+        self.media_item_id = media_item_id
         self.title = title
         self.cover_url = cover_url
         self.score = score
         self.progress = progress
         self.related_ids = [RelatedMangaId(*args) for args in related_ids]
+        self.url = url_for("media.media", media_item_id=media_item_id)
 
         if chapter_guess is None:
             self.latest = latest_release

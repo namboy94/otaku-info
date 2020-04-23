@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+from flask import url_for
 from typing import Dict, Any
 from puffotter.flask.base import db
 from puffotter.flask.db.ModelMixin import ModelMixin
@@ -92,6 +93,15 @@ class MediaId(ModelMixin, db.Model):
         """
         return build_service_url(
             self.media_item.media_type, self.service, self.service_id
+        )
+
+    @property
+    def service_icon(self) -> str:
+        """
+        :return: The path to the service's icon file
+        """
+        return url_for(
+            "static", filename="service_logos/" + self.service.value + ".png"
         )
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:

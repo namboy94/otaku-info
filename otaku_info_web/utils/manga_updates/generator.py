@@ -212,6 +212,7 @@ def prepare_manga_updates(
 
     compiled = [
         MangaUpdate(
+            x["media_item_id"],
             x["title"],
             x["cover_url"],
             x["latest_release"],
