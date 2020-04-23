@@ -32,7 +32,10 @@ def main():
     Starts the flask application
     :return: None
     """
+    import os
+    print(os.environ.keys())
     load_env_file()
+    print(os.environ.keys())
     init_flask(
         "otaku_info_web",
         sentry_dsn,

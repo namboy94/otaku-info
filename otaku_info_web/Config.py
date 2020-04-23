@@ -30,7 +30,7 @@ class Config(BaseConfig):
     Configuration for the flask application
     """
 
-    TELEGRAM_API_KEY: str = os.environ["TELEGRAM_API_KEY"]
+    TELEGRAM_API_KEY: str
     """
     API Key for the telegram bot used for notification messages
     """
@@ -51,6 +51,7 @@ class Config(BaseConfig):
         parent.TEMPLATE_EXTRAS.update({
             "profile": profile_extras
         })
+        Config.TELEGRAM_API_KEY = os.environ["TELEGRAM_API_KEY"]
         if not Config.TESTING:
             Config.TELEGRAM_BOT_CONNECTION = TelegramBotConnection(
                 TelegramBotSettings(Config.TELEGRAM_API_KEY)
