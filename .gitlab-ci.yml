@@ -53,7 +53,8 @@ docgen:
   stage: stats
   tags: [docker]
   script:
-    - pip install flask
+    - pip uninstall sphinx -y
+    - pip install flask sphinx==3.0.1
     - sphinx-docgen
 
 deploy_develop:
