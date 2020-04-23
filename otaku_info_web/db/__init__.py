@@ -28,7 +28,7 @@ from otaku_info_web.db.MediaUserState import MediaUserState
 from otaku_info_web.db.MediaNotification import MediaNotification
 from otaku_info_web.db.ServiceUsername import ServiceUsername
 from otaku_info_web.db.TelegramChatId import TelegramChatId
-
+from otaku_info_web.db.NotificationSetting import NotificationSetting
 
 models: List[db.Model] = [
     MangaChapterGuess,
@@ -39,7 +39,8 @@ models: List[db.Model] = [
     MediaUserState,
     ServiceUsername,
     TelegramChatId,
-    MediaNotification
+    MediaNotification,
+    NotificationSetting
 ]
 """
 The database models of the application

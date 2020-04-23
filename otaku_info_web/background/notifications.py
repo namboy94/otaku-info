@@ -25,7 +25,9 @@ from otaku_info_web.db.MediaNotification import MediaNotification
 from otaku_info_web.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info_web.db.MediaId import MediaId
 from otaku_info_web.db.MediaItem import MediaItem
-from otaku_info_web.utils.enums import MediaType, MediaSubType, ConsumingState
+from otaku_info_web.db.NotificationSetting import NotificationSetting
+from otaku_info_web.utils.enums import \
+    MediaType, MediaSubType, ConsumingState, NotificationType
 
 
 def send_new_manga_chapter_notifications():
@@ -50,8 +52,18 @@ def send_new_manga_chapter_notifications():
     notifications: Dict[int, MediaNotification] = {
         x.media_user_state_id: x for x in MediaNotification.query.all()
     }
+    notification_settings: Dict[int, bool] = {
+        x.user_id: x.value
+        for x in NotificationSetting.query.filter_by(
+            notification_type=NotificationType.NEW_MANGA_CHAPTERS
+        ).all()
+    }
 
     for user_state in user_states:
+
+        if not notification_settings.get(user_state.user_id):
+            continue
+
         guess = chapter_guesses.get(user_state.media_id_id)
         notification = notifications.get(user_state.id)
         chat = chats.get(user_state.user_id)

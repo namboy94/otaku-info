@@ -55,19 +55,28 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 
     <br>
 
+
     <div class="container form-container">
         <form method="post" action="{{ url_for("notifications.set_notification_settings") }}">
+            {% for notification_type, active in notification_settings.items() %}
             <div class="form-check">
                 <input type="checkbox"
                        class="form-check-input"
-                       id="manga_chapter_check"
-                       name="manga_chapter"
-                       checked>
-                <label class="form-check-label" for="manga_chapter_check">New Manga Chapters</label>
+                       id="{{notification_type.value}}_check"
+                       name="{{notification_type.value}}"
+                       {% if active %}
+                           checked
+                       {% endif %}
+                       >
+                <label class="form-check-label" for="{{notification_type.value}}_check">
+                    {{ notification_type.value.title().replace("_", " ") }}
+                </label>
             </div>
+            {% endfor %}
             <br>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
+
 
 {% endblock %}

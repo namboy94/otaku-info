@@ -97,3 +97,11 @@ class ConsumingState(Enum):
     DROPPED = "dropped"
     PAUSED = "paused"
     REPEATING = "repeating"
+
+
+class NotificationType(Enum):
+    """
+    Class that defines the possible notification types
+    """
+    NEW_MANGA_CHAPTERS = "new_manga_chapters"
+    NEW_ANIME_EPISODES = "new_anime_episodes"

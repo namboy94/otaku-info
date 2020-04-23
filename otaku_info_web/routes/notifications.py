@@ -22,6 +22,8 @@ from flask.blueprints import Blueprint
 from flask_login import current_user, login_required
 from puffotter.flask.base import db
 from otaku_info_web.db.TelegramChatId import TelegramChatId
+from otaku_info_web.utils.enums import NotificationType
+from otaku_info_web.db.NotificationSetting import NotificationSetting
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:
@@ -41,9 +43,19 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         """
         telegram_chat_id = \
             TelegramChatId.query.filter_by(user=current_user).first()
+        settings = {
+            x: False
+            for x in NotificationType
+        }
+        settings.update({
+            x.notification_type: x.value
+            for x in
+            NotificationSetting.query.filter_by(user_id=current_user.id).all()
+        })
         return render_template(
             "user_management/notifications.html",
-            telegram_chat_id=telegram_chat_id
+            telegram_chat_id=telegram_chat_id,
+            notification_settings=settings
         )
 
     @blueprint.route("/set_telegram_chat_id", methods=["POST"])
@@ -57,7 +69,10 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         db_chat_id = TelegramChatId.query.filter_by(user=current_user).first()
 
         if db_chat_id is None:
-            db_chat_id = TelegramChatId(user=current_user, chat_id=chat_id)
+            db_chat_id = TelegramChatId(
+                user=current_user,
+                chat_id=chat_id
+            )
             db.session.add(db_chat_id)
         else:
             db_chat_id.chat_id = chat_id
@@ -77,7 +92,31 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         return redirect(url_for("notifications.notifications"))
 
     @blueprint.route("/set_notification_settings", methods=["POST"])
+    @login_required
     def set_notification_settings():
+        """
+        Sets the notification settings
+        :return: Redirect to notifications page
+        """
+        existing_settings = {
+            x.notification_type: x
+            for x in
+            NotificationSetting.query.filter_by(user_id=current_user.id).all()
+        }
+        for notification_type in NotificationType:
+            form_data = request.form.get(notification_type.value, "off")
+            form_value = form_data == "on"
+
+            setting = existing_settings.get(notification_type)
+            if setting is None:
+                setting = NotificationSetting(
+                    user=current_user, notification_type=notification_type
+                )
+                db.session.add(setting)
+
+            setting.value = form_value
+            db.session.commit()
+
         return redirect(url_for("notifications.notifications"))
 
     return blueprint
