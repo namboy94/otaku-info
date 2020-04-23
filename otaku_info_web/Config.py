@@ -53,7 +53,6 @@ class Config(BaseConfig):
         })
         Config.TELEGRAM_API_KEY = os.environ["TELEGRAM_API_KEY"]
 
-
     @classmethod
     def initialize_telegram(cls):
         """
