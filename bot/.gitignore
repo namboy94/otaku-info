@@ -1,7 +1,0 @@
-.idea/
-*.iml
-cover/
-.coverage
-*.egg-info/
-dist/
-build/
