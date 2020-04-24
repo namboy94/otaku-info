@@ -1,0 +1,23 @@
+V 0.5.0:
+  - Added ranked ordering option
+V 0.4.0:
+  - Sort new release listings alphabetically after amount of new chapters/episodes
+  - Added option to limit new release listings by amount of new chapters/episodes
+  - Also check for release type for light novel releases
+V 0.3.1:
+  - Adjusted to new kudubot version
+V 0.3.0:
+  - Integrated manga notifications
+  - Made anime notifications more user-friendly
+  - Added sentry error logging
+  - Caches manga chapter guesses to not get rate limited by anilist
+  - Integrated mypy static type checking
+  - Added ways to filter between releasing and completed series notifications
+V 0.2.0:
+  - Now uses docker for Ci
+  - Integrated new kudubot features
+  - Added light novel release listineature
+V 0.1.0:
+  - Initial Release
+V 0.0.1:
+  - Project Start
