@@ -1,0 +1,98 @@
+stages:
+  - mirror
+  - test
+  - stats
+  - deploy
+  - release
+
+default:
+  image: namboy94/ci-docker-environment:0.8.0
+  before_script:
+    - echo "$SERVER_ACCESS_KEY" > ~/.ssh/id_rsa
+    - chmod 0600 ~/.ssh/id_rsa
+
+github_mirror:
+  stage: mirror
+  tags: [docker]
+  only: [master, develop]
+  before_script:
+    - echo "$GITHUB_SSH_KEY" > ~/.ssh/id_rsa
+    - chmod 0600 ~/.ssh/id_rsa
+  script:
+    - git-mirror-pusher git@github.com:namboy94/otaku-info-web.git
+      master develop
+
+stylecheck:
+  stage: test
+  tags: [docker]
+  script:
+    - python-codestyle-check
+
+unittest:
+  stage: test
+  tags: [docker]
+  only: [master, develop]
+  script:
+    - echo "$ENV_FILE" > .env
+    - python-unittest
+    - rm .env
+
+type_check:
+  stage: test
+  tags: [docker]
+  script:
+    - python-static-type-check
+
+gitstats:
+  stage: stats
+  tags: [docker]
+  script:
+    - gitstats-gen
+
+docgen:
+  stage: stats
+  tags: [docker]
+  script:
+    - pip install flask sphinx==3.0.1
+    - sphinx-docgen
+
+deploy_develop:
+  stage: deploy
+  tags: [privileged]
+  only: [develop]
+  before_script: []
+  script:
+    - echo "$ENV_FILE" > .env
+    - export HTTP_PORT=$DEV_HTTP_PORT
+    - export DEPLOY_MODE=dev
+    - docker-compose -p otaku_info_web_dev build
+    - docker-compose -p otaku_info_web_dev up -d
+    - rm .env
+
+deploy_production:
+  stage: deploy
+  tags: [privileged]
+  only: [master]
+  before_script: []
+  script:
+    - echo "$ENV_FILE" > .env
+    - export HTTP_PORT=$PROD_HTTP_PORT
+    - export DEPLOY_MODE=prod
+    - docker-compose -p otaku_info_web_prod build
+    - docker-compose -p otaku_info_web_prod up -d
+    - rm .env
+
+release_upload:
+  stage: release
+  only: [master]
+  tags: [docker]
+  script:
+    - github-release-upload $(cat version) "$(changelog-reader)"
+    - gitlab-release-upload $(cat version) "$(changelog-reader)"
+
+pypi_upload:
+  stage: release
+  only: [master]
+  tags: [docker]
+  script:
+    - pypi-upload

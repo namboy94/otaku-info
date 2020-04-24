@@ -1,0 +1,3 @@
+graft otaku-info-web/templates
+graft otaku-info-web/static
+include version

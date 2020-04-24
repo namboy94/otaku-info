@@ -1,0 +1,12 @@
+.idea/
+*.iml
+cover/
+.coverage
+*.egg-info/
+dist/
+build/
+./secrets.json
+.env
+.mypy_cache/
+__pycache__/
+venv/

@@ -1,0 +1,37 @@
+version: "3.2"
+networks:
+  net:
+    driver: bridge
+services:
+  app:
+    build: .
+    image: "otaku-info-web-${DEPLOY_MODE}"
+    depends_on:
+      - db
+    networks:
+      - net
+    volumes:
+      - logs:/var/logs
+    ports:
+      - "${HTTP_PORT}:8000"
+    env_file: .env
+    environment:
+      - DB_MODE=postgresql
+      - POSTGRESQL_HOST=db
+      - LOGGING_PATH=/var/logs/otaku_info_web.log
+      - DEBUG_LOGGING_PATH=/var/logs/otaku_info_web_debug.log
+      - FLASK_PORT=8000
+    restart: always
+  db:
+    image: postgres
+    env_file: .env
+    networks:
+      - net
+    volumes:
+      - data:/var/lib/postgresql/data
+    restart: always
+    ports:
+    - 5432:5432  # TODO REMOVE
+volumes:
+  logs: ~
+  data: ~
