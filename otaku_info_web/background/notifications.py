@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from flask import url_for
 from typing import Dict, List
 from puffotter.flask.base import db
 from otaku_info_web.db.TelegramChatId import TelegramChatId
@@ -88,10 +87,12 @@ def send_new_manga_chapter_notifications():
             notification.last_update = guess
 
             title = user_state.media_id.media_item.title
-            url = url_for(
-                "media.media",
-                media_item_id=user_state.media_id.media_item_id
-            )
+            url = f"https://dev.otaku-info.eu/media/" \
+                  f"{user_state.media_id.media_item_id}"
+            # url = url_for(
+            #     "media.media",
+            #     media_item_id=user_state.media_id.media_item_id
+            # )
             chat.send_message(
                 f"New Chapter for {title}\n\n"
                 f"Chapter {progress}/{guess} (+{diff})\n\n"
