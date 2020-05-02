@@ -29,7 +29,7 @@ from otaku_info_web.background.notifications import \
 
 bg_tasks: Dict[str, Tuple[int, Callable]] = {
     "anilist_update": (60, fetch_anilist_data),
-    "update_manga_chapter_guesses": (60 * 60, update_manga_chapter_guesses),
+    "update_manga_chapter_guesses": (60, update_manga_chapter_guesses),
     "load_id_mappings": (60 * 60 * 24, load_id_mappings),
     "telegram_whoami": (1, handle_whoami_requests),
     "manga_chapter_notifications": (60, send_new_manga_chapter_notifications)

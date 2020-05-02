@@ -69,10 +69,15 @@ def send_new_manga_chapter_notifications():
         notification = notifications.get(user_state.id)
         chat = chats.get(user_state.user_id)
         progress = user_state.progress
+
+        if guess is None or chat is None:
+            continue
+
         diff = guess - progress
 
-        if guess is None or chat is None or diff <= 0:
+        if diff <= 0:
             continue
+
         if notification is None:
             notification = MediaNotification(
                 media_user_state=user_state, last_update=guess
