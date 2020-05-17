@@ -19,7 +19,13 @@ along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 
 <!DOCTYPE html>
 <html lang="en">
-    {% include "components/header.html" %}
+    <head>
+        <meta charset="UTF-8">
+        <title>otaku-info-web</title>
+        <link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
+        {% include "components/header.html" %}
+        {% block head %}{% endblock %}
+    </head>
     <body>
         <div id="container">
             <div id="header">{% include "components/navbar.html" %}</div>
