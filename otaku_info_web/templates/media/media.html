@@ -17,8 +17,12 @@ You should have received a copy of the GNU General Public License
 along with otaku-info-web.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-<!--user_management/login.html-->
 {% extends "components/base_layout.html" %}
+{% block head %}
+    <meta property="og:title" content="{{ media_item.title }}">
+    <meta property="og:image" content="{{ media_item.cover_url }}">
+{% endblock %}
+
 {% block body %}
     <h1>{{media_item.title}}</h1>
     <img src="{{ media_item.cover_url }}" alt="{{ media_item.title }}">
