@@ -21,6 +21,7 @@ services:
       - LOGGING_PATH=/var/logs/otaku_info_web.log
       - DEBUG_LOGGING_PATH=/var/logs/otaku_info_web_debug.log
       - FLASK_PORT=8000
+      - DOMAIN_NAME="${DOMAIN_NAME}"
     restart: always
   db:
     image: postgres

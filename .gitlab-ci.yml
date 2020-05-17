@@ -63,6 +63,7 @@ deploy_develop:
   before_script: []
   script:
     - echo "$ENV_FILE" > .env
+    - echo "DOMAIN_NAME=dev.otaku-info.eu" >> .env
     - export HTTP_PORT=$DEV_HTTP_PORT
     - export DEPLOY_MODE=dev
     - docker-compose -p otaku_info_web_dev build
@@ -76,6 +77,7 @@ deploy_production:
   before_script: []
   script:
     - echo "$ENV_FILE" > .env
+    - echo "DOMAIN_NAME=otaku-info.eu" >> .env
     - export HTTP_PORT=$PROD_HTTP_PORT
     - export DEPLOY_MODE=prod
     - docker-compose -p otaku_info_web_prod build

@@ -19,6 +19,7 @@ LICENSE"""
 
 from typing import Dict, List
 from puffotter.flask.base import db
+from otaku_info_web.Config import Config
 from otaku_info_web.db.TelegramChatId import TelegramChatId
 from otaku_info_web.db.MediaUserState import MediaUserState
 from otaku_info_web.db.MediaNotification import MediaNotification
@@ -84,15 +85,12 @@ def send_new_manga_chapter_notifications():
             db.session.add(notification)
 
         if guess != notification.last_update:
+
             notification.last_update = guess
 
             title = user_state.media_id.media_item.title
-            url = f"https://dev.otaku-info.eu/media/" \
+            url = f"https://{Config.DOMAIN_NAME}/media/" \
                   f"{user_state.media_id.media_item_id}"
-            # url = url_for(
-            #     "media.media",
-            #     media_item_id=user_state.media_id.media_item_id
-            # )
             chat.send_message(
                 f"New Chapter for {title}\n\n"
                 f"Chapter {progress}/{guess} (+{diff})\n\n"
