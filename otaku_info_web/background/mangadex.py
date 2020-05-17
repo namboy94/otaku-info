@@ -35,13 +35,9 @@ def load_id_mappings():
     :return: None
     """
     endcounter = 0
+    mangadex_id = 0
 
     anilist_ids, existing_ids = load_db_content()
-
-    if len(existing_ids) > 0:
-        mangadex_id = max(existing_ids)
-    else:
-        mangadex_id = 0
 
     while True:
         mangadex_id += 1
