@@ -2,5 +2,6 @@ V 0.1.0:
   - Implemented anilist support
   - Implemented manga chapter guesses
   - Implemented manga update page
+  - Implemented notifications
 V 0.0.1:
   - Project start

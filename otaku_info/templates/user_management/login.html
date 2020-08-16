@@ -1,0 +1,68 @@
+{#
+Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
+
+This file is part of otaku-info.
+
+otaku-info is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+otaku-info is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+<!--user_management/login.html-->
+{% extends "components/base_layout.html" %}
+{% block body %}
+    <h1>Login</h1>
+
+    <br>
+
+    <div class="container form-container">
+        <form method="post" action="{{ url_for("user_management.login") }}">
+            <div class="form-group">
+                <label for="username_input">Username</label>
+                <input class="form-control"
+                       type="text"
+                       autocomplete="on"
+                       id="username_input"
+                       aria-label="username"
+                       placeholder="Username"
+                       name="username">
+            </div>
+            <div class="form-group">
+                <label for="password_input">Password</label>
+                <input class="form-control"
+                       type="password"
+                       autocomplete="on"
+                       id="password_input"
+                       aria-label="password"
+                       placeholder="Password"
+                       name="password">
+            </div>
+            <div class="form-check">
+                <input type="checkbox"
+                       class="form-check-input"
+                       id="remember_me_check"
+                       name="remember_me"
+                       checked>
+                <label class="form-check-label" for="remember_me_check">Remember Me</label>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <br>
+
+    <p>
+        <a href="{{ url_for("user_management.forgot") }}">Forgot Password?</a>
+    </p>
+
+{% endblock %}

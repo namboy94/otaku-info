@@ -1,4 +1,4 @@
-Welcome to otaku-info-web' documentation!
+Welcome to otaku-info' documentation!
 =====================================
 
 Contents:
@@ -6,7 +6,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   otaku-info-web.rst
+   otaku-info.rst
    modules.rst
 
 Indices and tables
