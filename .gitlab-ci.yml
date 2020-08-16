@@ -56,33 +56,21 @@ docgen:
     - pip install flask sphinx==3.0.1
     - sphinx-docgen
 
-deploy_develop:
-  stage: deploy
-  tags: [privileged]
-  only: [develop]
-  before_script: []
-  script:
-    - echo "$ENV_FILE" > .env
-    - echo DOMAIN_NAME=dev.otaku-info.eu >> .env
-    - export HTTP_PORT=$DEV_HTTP_PORT
-    - export DEPLOY_MODE=dev
-    - docker-compose -p otaku_info_dev build
-    - docker-compose -p otaku_info_dev up -d
-    - rm .env
-
 deploy_production:
   stage: deploy
-  tags: [privileged]
+  tags: [privileged, otaku-info]
   only: [master]
   before_script: []
   script:
     - echo "$ENV_FILE" > .env
-    - echo DOMAIN_NAME=otaku-info.eu >> .env
-    - export HTTP_PORT=$PROD_HTTP_PORT
-    - export DEPLOY_MODE=prod
-    - docker-compose -p otaku_info_prod build
-    - docker-compose -p otaku_info_prod up -d
+    - docker-compose build
+    - bin/backup.sh backup.tar.gz
+    - docker-compose up -d
     - rm .env
+    artifacts:
+      paths:
+        - backup.tar.gz
+      expire_in: 1 month
 
 release_upload:
   stage: release
