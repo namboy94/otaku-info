@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """LICENSE
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
@@ -18,5 +17,23 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from otaku_info.Config import Config
-Config.dump_env_variables()
+from typing import Dict, Any
+from flask_login import current_user
+from otaku_info.utils.enums import ListService
+from otaku_info.db.ServiceUsername import ServiceUsername
+
+
+def profile_extras() -> Dict[str, Any]:
+    """
+    Makes sure that the profile page displays service usernames
+    :return: The variables to forward to the template
+    """
+    service_usernames = {}
+    for service in ListService:
+        service_username = ServiceUsername.query.filter_by(
+            user=current_user, service=service
+        ).first()
+        service_usernames[service] = service_username
+    return {
+        "service_usernames": service_usernames
+    }

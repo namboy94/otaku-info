@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """LICENSE
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
@@ -18,5 +17,21 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from otaku_info.Config import Config
-Config.dump_env_variables()
+from typing import Dict, Tuple, Callable
+from otaku_info.background.anilist import fetch_anilist_data
+from otaku_info.background.mangadex import load_id_mappings
+from otaku_info.background.manga_chapters import \
+    update_manga_chapter_guesses
+from otaku_info.background.notifications import \
+    send_new_manga_chapter_notifications
+
+
+bg_tasks: Dict[str, Tuple[int, Callable]] = {
+    "anilist_update": (60, fetch_anilist_data),
+    "update_manga_chapter_guesses": (60, update_manga_chapter_guesses),
+    "load_id_mappings": (60 * 60 * 24, load_id_mappings),
+    "manga_chapter_notifications": (60, send_new_manga_chapter_notifications)
+}
+"""
+A dictionary containing background tasks for the flask application
+"""

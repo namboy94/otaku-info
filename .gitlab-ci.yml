@@ -66,8 +66,8 @@ deploy_develop:
     - echo DOMAIN_NAME=dev.otaku-info.eu >> .env
     - export HTTP_PORT=$DEV_HTTP_PORT
     - export DEPLOY_MODE=dev
-    - docker-compose -p otaku_info_web_dev build
-    - docker-compose -p otaku_info_web_dev up -d
+    - docker-compose -p otaku_info_dev build
+    - docker-compose -p otaku_info_dev up -d
     - rm .env
 
 deploy_production:
@@ -80,8 +80,8 @@ deploy_production:
     - echo DOMAIN_NAME=otaku-info.eu >> .env
     - export HTTP_PORT=$PROD_HTTP_PORT
     - export DEPLOY_MODE=prod
-    - docker-compose -p otaku_info_web_prod build
-    - docker-compose -p otaku_info_web_prod up -d
+    - docker-compose -p otaku_info_prod build
+    - docker-compose -p otaku_info_prod up -d
     - rm .env
 
 release_upload:

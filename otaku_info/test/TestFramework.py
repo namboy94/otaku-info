@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """LICENSE
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
@@ -18,5 +17,21 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+# noinspection PyProtectedMember
+from puffotter.flask.test.TestFramework import \
+    _TestFramework as __TestFrameWork
+from otaku_info.main import root_path
 from otaku_info.Config import Config
-Config.dump_env_variables()
+from otaku_info.routes import blueprint_generators
+from otaku_info.db import models
+
+
+class _TestFramework(__TestFrameWork):
+    """
+    Class that models a testing framework for the flask application
+    """
+    module_name = "otaku_info"
+    root_path = root_path
+    config = Config
+    models = models
+    blueprint_generators = blueprint_generators
