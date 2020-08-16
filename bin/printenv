@@ -1,4 +1,5 @@
-{#
+#!/usr/bin/env python3
+"""LICENSE
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
 This file is part of otaku-info.
@@ -15,18 +16,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
-#}
+LICENSE"""
 
-<h1>Registration Confirmation</h1>
-<p>
-    Hi {{ username }}!
-    Registered at <a href="https://{{ host }}">{{ host }}</a>.
-</p>
-
-<p>
-    To confirm, visit the following link:
-</p>
-
-<a href="https://{{ target }}?user_id={{ user_id }}&confirm_key={{ confirm_key }}">
-    {{ target }}?user_id={{ user_id }}&confirm_key={{ confirm_key }}
-</a>
+from otaku_info_web.Config import Config
+Config.dump_env_variables()

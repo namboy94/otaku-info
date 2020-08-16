@@ -1,10 +1,10 @@
-# otaku-info-web
+# otaku-info
 
 Website providing information on Japanese entertainment media
 
 |master|develop|
 |:----:|:-----:|
-|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/badges/master/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/commits/master)|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/badges/develop/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info-web/commits/develop)|
+|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info/badges/master/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info/commits/master)|[![build status](https://gitlab.namibsun.net/namibsun/python/otaku-info/badges/develop/build.svg)](https://gitlab.namibsun.net/namibsun/python/otaku-info/commits/develop)|
 
 ![Logo](resources/logo-readme.png)
 
@@ -22,7 +22,7 @@ application.
 
 * [Changelog](CHANGELOG)
 * [License (GPLv3)](LICENSE)
-* [Gitlab](https://gitlab.namibsun.net/namibsun/python/otaku-info-web)
-* [Github](https://github.com/otaku-info-web)
-* [Progstats](https://progstats.namibsun.net/projects/otaku-info-web)
-* [PyPi](https://pypi.org/project/otaku-info-web)
+* [Gitlab](https://gitlab.namibsun.net/namibsun/python/otaku-info)
+* [Github](https://github.com/otaku-info)
+* [Progstats](https://progstats.namibsun.net/projects/otaku-info)
+* [PyPi](https://pypi.org/project/otaku-info)
