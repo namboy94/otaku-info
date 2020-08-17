@@ -1,0 +1,70 @@
+{#
+Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
+
+This file is part of otaku-info.
+
+otaku-info is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+otaku-info is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+<!--static/index.html-->
+{% extends "components/base_layout.html" %}
+{% block body %}
+    <h1>Light Novel Releases</h1>
+
+    <div id="ln-list">
+        <div class="row text-center">
+            <div class="col-md-1">
+                Image
+            </div>
+            <div class="col-md-1">
+                Links
+            </div>
+            <div class="col-md-2">
+                <button class="sort" data-sort="release">Release Date</button>
+            </div>
+            <div class="col-md-4">
+                <button class="sort" data-sort="series">Series</button>
+            </div>
+            <div class="col-md-1">
+                Volume
+            </div>
+            <div class="col-md-1">
+                <button class="sort" data-sort="publisher">Publisher</button>
+            </div>
+            <div class="col-md-1">
+                Digital
+            </div>
+            <div class="col-md-1">
+                Physical
+            </div>
+        </div>
+        <ul class="list-group list">
+            {% for release in releases %}
+                {% with release=release %}
+                    {% include "ln/ln_release_item.html" %}
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    </div>
+    <!--suppress JSUnresolvedFunction, ES6ConvertVarToLetConst -->
+    <script>
+        var userList = new List('ln-list', {
+            valueNames: [
+                "series",
+                "release",
+                "publisher"
+            ]
+        });
+    </script>
+{% endblock %}

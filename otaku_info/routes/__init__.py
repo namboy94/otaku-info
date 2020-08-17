@@ -26,13 +26,15 @@ from otaku_info.routes.api.media_api import define_blueprint as __media_api
 from otaku_info.routes.notifications import define_blueprint as \
     __notifications
 from otaku_info.routes.media import define_blueprint as __media
+from otaku_info.routes.ln import define_blueprint as __ln
 
 blueprint_generators: List[Tuple[Callable[[str], Blueprint], str]] = [
     (__external_service, "external_service"),
     (__manga, "manga"),
     (__media_api, "media_api"),
     (__notifications, "notifications"),
-    (__media, "media")
+    (__media, "media"),
+    (__ln, "ln")
 ]
 """
 Defines the functions used to create the various blueprints

@@ -48,7 +48,8 @@ if __name__ == "__main__":
             "puffotter[flask,crypto]",
             "requests",
             "sqlalchemy",
-            "bokkichat"
+            "bokkichat",
+            "beautifulsoup4"
         ],
         include_package_data=True,
         zip_safe=False
