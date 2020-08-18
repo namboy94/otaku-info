@@ -98,4 +98,3 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         return redirect(get_url)
 
     return blueprint
-
