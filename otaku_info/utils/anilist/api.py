@@ -172,3 +172,31 @@ def load_media_info(anilist_id: int, media_type: MediaType) \
         return None
     else:
         return AnilistItem.from_query(media_type, resp["data"]["Media"])
+
+
+def map_myanimelist_id_to_anilist_id(
+        myanimelist_id: int,
+        media_type: MediaType
+) -> Optional[int]:
+    """
+    Translates a myanimelist ID to an Anilist ID
+    :param myanimelist_id: The myanimelist ID
+    :param media_type: The media type
+    :return: The anilist ID
+    """
+    graphql = GraphQlClient("https://graphql.anilist.co")
+    query = """
+        query ($mal_id: Int, $type: MediaType) {
+            Media(idMal: $mal_id, type: $type) {
+                id
+            }
+        }
+    """
+    resp = graphql.query(
+        query,
+        {"mal_id": myanimelist_id, "media_type": media_type.value.upper()}
+    )
+    if resp is None:
+        return None
+    else:
+        return int(resp["data"]["Media"]["id"])

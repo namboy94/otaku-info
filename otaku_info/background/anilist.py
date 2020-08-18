@@ -27,7 +27,7 @@ from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaListItem import MediaListItem
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.ServiceUsername import ServiceUsername
-from otaku_info.utils.anilist.AnilistItem import AnilistUserItem
+from otaku_info.utils.anilist.AnilistItem import AnilistUserItem, AnilistItem
 from otaku_info.utils.anilist.api import load_anilist
 from otaku_info.utils.enums import ListService, MediaType, MediaSubType
 
@@ -344,7 +344,7 @@ def fetch_media_id(
 
 
 def update_media_item(
-        new_data: AnilistUserItem,
+        new_data: AnilistItem,
         existing: Optional[MediaItem]
 ) -> MediaItem:
     """
@@ -369,7 +369,7 @@ def update_media_item(
 
 
 def update_media_id(
-        new_data: AnilistUserItem,
+        new_data: AnilistItem,
         media_item: MediaItem,
         existing: Optional[MediaId]
 ) -> MediaId:
