@@ -28,6 +28,7 @@ from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaNotification import MediaNotification
 from otaku_info.db.ServiceUsername import ServiceUsername
 from otaku_info.db.NotificationSetting import NotificationSetting
+from otaku_info.db.LnRelease import LnRelease
 
 models: List[db.Model] = [
     MangaChapterGuess,
@@ -38,7 +39,8 @@ models: List[db.Model] = [
     MediaUserState,
     ServiceUsername,
     MediaNotification,
-    NotificationSetting
+    NotificationSetting,
+    LnRelease
 ]
 """
 The database models of the application

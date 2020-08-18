@@ -133,3 +133,11 @@ p {
 .manga_update_image {
     max-height: 60px;
 }
+
+.fa-check {
+    color: green;
+}
+
+.fa-times {
+    color: red;
+}

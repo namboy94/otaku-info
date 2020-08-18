@@ -20,28 +20,51 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 <li class="list-group-item">
     <div class="row">
         <div class="col-md-1">
-            <img class="manga_update_image" src="" alt="{{ release.series_name }}">
+            {% if release.media_item is not none %}
+                <img class="manga_update_image" src="{{ release.media_item.cover_url }}" alt="{{ release.series_name }}">
+            {% endif %}
         </div>
-        <div class="col-md-1">
-            None
+        <div class="col-md-2">
+            {% for media_id in release.get_ids() %}
+                <a href="{{ media_id.service_url }}">
+                    <img style="max-height: 30px" src="{{media_id.service_icon}}" alt="{{media_id.service.name}}">
+                </a>
+            {% endfor %}
         </div>
         <div class="col-md-2 release">
-            {{  release.release_date_iso }}
+            {{  release.release_date_string }}
         </div>
-        <div class="col-md-4 series">
-            <a style="padding-right: 30px" href="">{{ release.series_name }}</a>
+        <div class="col-md-3 series">
+            {% if release.media_item is not none %}
+                <a style="padding-right: 30px" href="{{ url_for('media.media', media_item_id=release.media_item_id) }}">{{ release.series_name }}</a>
+            {% else %}
+                {{ release.series_name }}
+            {% endif %}
+
         </div>
         <div class="col-md-1">
             {{  release.volume }}
         </div>
         <div class="col-md-1 publisher">
-            {{ release.publisher }}
+            {% if release.purchase_link is not none %}
+                <a href="{{ release.purchase_link }}">{{ release.publisher }}</a>
+            {% else %}
+                {{ release.publisher }}
+            {% endif %}
         </div>
         <div class="col-md-1">
-            {{ release.digital }}
+            {% if release.digital %}
+                <i class="fas fa-check"></i>
+            {% else %}
+                <i class="fas fa-times"></i>
+            {% endif %}
         </div>
         <div class="col-md-1">
-            {{ release.physical }}
+            {% if release.physical %}
+                <i class="fas fa-check"></i>
+            {% else %}
+                <i class="fas fa-times"></i>
+            {% endif %}
         </div>
     </div>
 </li>
