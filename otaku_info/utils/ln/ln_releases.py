@@ -80,6 +80,9 @@ def parse_release(year: int, parts: List[BeautifulSoup]) -> LnRelease:
     release_date_string = parts[0].text
     month_name, day_string = release_date_string.split(" ")
     month = map_month_name_to_month_number(month_name)
+    if month is None:
+        month = 1
+
     try:
         day = int(day_string)
     except ValueError:
@@ -97,7 +100,7 @@ def parse_release(year: int, parts: List[BeautifulSoup]) -> LnRelease:
         purchase_link = purchase_link_item["href"]
 
     info_link_item = parts[1].find("a")
-    info_link = None
+    info_link: Optional[str] = None
     if info_link_item is not None:
         info_link = info_link_item["href"]
 
@@ -135,7 +138,7 @@ def parse_release(year: int, parts: List[BeautifulSoup]) -> LnRelease:
     return release
 
 
-def get_media_item(info_link: str) -> Optional[MediaItem]:
+def get_media_item(info_link: Optional[str]) -> Optional[MediaItem]:
     """
     Retrieves the media item for an info link
     Automatically adds missing entries to the database

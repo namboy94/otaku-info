@@ -22,6 +22,41 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 {% block body %}
     <h1>Light Novel Releases</h1>
 
+    <div class="container form-container">
+        <form method="post" action="{{ url_for("ln.ln_releases") }}">
+            <div class="form-row align-items-center">
+                <div class="col-md-5">
+                    <label class="sr-only" for="year_input">Year</label>
+                    <select id="year_input" name="year" class="form-control mb-2">
+                        {% for year in years %}
+                            {% if year == selected_year %}
+                                <option value="{{year}}" selected>{{year}}</option>
+                            {% else %}
+                                <option value="{{year}}">{{year}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="sr-only" for="month_input">Month</label>
+                    <select id="month_input" name="month" class="form-control mb-2">
+                        {% for month in months %}
+                            {% if month == selected_month %}
+                                <option value="{{month}}" selected>{{month.title()}}</option>
+                            {% else %}
+                                <option value="{{month}}">{{month.title()}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary mb-2">Go</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
     <div id="ln-list">
         <div class="row text-center">
             <div class="col-md-1">
