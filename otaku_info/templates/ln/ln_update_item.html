@@ -1,0 +1,57 @@
+{#
+Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
+
+This file is part of otaku-info.
+
+otaku-info is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+otaku-info is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+{% set media_id = user_state.media_id %}
+{% set media_item = media_id.media_item %}
+{% set release = ln_releases.get(media_item.id) %}
+{% set related = related_ids[media_item.id] %}
+
+<li class="list-group-item">
+    <div class="row">
+        <div class="col-md-1">
+            <img class="manga_update_image" src="{{ media_item.cover_url }}" alt="{{ media_item.title }}">
+        </div>
+        <div class="col-md-5 name">
+            <a style="padding-right: 30px" href="{{ url_for('media.media', media_item_id=media_item.id) }}">
+                {{ media_item.title }}
+            </a>
+        </div>
+        <div class="col-md-2">
+            {% for related_id in related %}
+                <span style="padding-right:3px; padding-top: 3px; display:inline-block;">
+                    <a href="{{ related_id.url }}">
+                        <img style="max-height: 30px" src="{{ related_id.icon }}" alt="{{ related_id.service.name }}"/>
+                    </a>
+                </span>
+            {%  endfor %}
+        </div>
+        <div class="col-md-1 user_score">
+            {{  user_state.score }}
+        </div>
+        <div class="col-md-1 user_progress">
+            {{  user_state.progress }}
+        </div>
+        <div class="col-md-1 latest">
+            {{ release.volume }}
+        </div>
+        <div class="col-md-1 diff">
+            <span class="badge badge-pill badge-danger">N/A</span>
+        </div>
+    </div>
+</li>
