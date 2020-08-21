@@ -25,8 +25,7 @@ from puffotter.flask.base import db
 from otaku_info.db.LnRelease import LnRelease
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaId import MediaId
-from otaku_info.db.MediaItem import MediaItem
-from otaku_info.utils.enums import MediaSubType
+from otaku_info.utils.enums import MediaSubType, ConsumingState
 from otaku_info.utils.dates import MONTHS, map_month_name_to_month_number, \
     map_month_number_to_month_name
 from otaku_info.utils.manga_updates.MangaUpdate import RelatedMangaId as \
@@ -115,6 +114,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             x for x in
             MediaUserState.query
             .filter_by(user=current_user)
+            .filter_by(consuming_state=ConsumingState.CURRENT)
             .options(
                 db.joinedload(MediaUserState.media_id)
                   .subqueryload(MediaId.media_item)
@@ -145,6 +145,8 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             if existing is None \
                     or existing.release_date < ln_release.release_date:
                 newest_ln_releases[media_item_id] = ln_release
+
+        media_user_states.sort(key=lambda x: x.score, reverse=True)
 
         return render_template(
             "ln/ln_updates.html",

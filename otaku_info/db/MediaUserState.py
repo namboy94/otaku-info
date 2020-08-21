@@ -57,9 +57,7 @@ class MediaUserState(ModelMixin, db.Model):
 
     media_id_id: int = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "media_ids.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
+        db.ForeignKey("media_ids.id"),
         nullable=False
     )
     """
@@ -68,9 +66,7 @@ class MediaUserState(ModelMixin, db.Model):
 
     media_id: MediaId = db.relationship(
         "MediaId",
-        backref=db.backref(
-            "media_user_states", lazy=True, cascade="all,delete"
-        )
+        back_populates="media_user_states"
     )
     """
     The media ID referenced by this user state

@@ -18,12 +18,14 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from flask import url_for
-from typing import Dict, Any
+from typing import Dict, Any, List, TYPE_CHECKING
 from puffotter.flask.base import db
 from puffotter.flask.db.ModelMixin import ModelMixin
-from otaku_info.utils.enums import ListService
+from otaku_info.utils.enums import ListService, MediaType
 from otaku_info.utils.db_model_helper import build_service_url
 from otaku_info.db.MediaItem import MediaItem
+if TYPE_CHECKING:
+    from otaku_info.db.MediaUserState import MediaUserState
 
 
 class MediaId(ModelMixin, db.Model):
@@ -42,7 +44,17 @@ class MediaId(ModelMixin, db.Model):
         db.UniqueConstraint(
             "media_item_id",
             "service",
-            name="unique_media_id"
+            name="unique_media_item_service_id"
+        ),
+        db.UniqueConstraint(
+            "media_type",
+            "service",
+            "service_id",
+            name="unique_service_id"
+        ),
+        db.ForeignKeyConstraint(
+            ["media_item_id", "media_type"],
+            ["media_items.id", "media_items.media_type"]
         ),
     )
     """
@@ -57,23 +69,22 @@ class MediaId(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_item_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey(
-            "media_items.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
-        nullable=False
-    )
+    media_item_id: int = db.Column(db.Integer, nullable=False)
     """
     The ID of the media item referenced by this ID
     """
 
     media_item: MediaItem = db.relationship(
         "MediaItem",
-        backref=db.backref("media_ids", lazy=True, cascade="all,delete")
+        back_populates="media_ids"
     )
     """
     The media item referenced by this ID
+    """
+
+    media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
+    """
+    The media type of the list item
     """
 
     service_id: str = db.Column(db.String(255), nullable=False)
@@ -84,6 +95,13 @@ class MediaId(ModelMixin, db.Model):
     service: ListService = db.Column(db.Enum(ListService), nullable=False)
     """
     The service for which this object represents an ID
+    """
+
+    media_user_states: List["MediaUserState"] = db.relationship(
+        "MediaUserState", back_populates="media_id", cascade="all, delete"
+    )
+    """
+    Media user states associated with this media ID
     """
 
     @property

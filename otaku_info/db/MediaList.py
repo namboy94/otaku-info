@@ -17,11 +17,13 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any
+from typing import Dict, Any, List, TYPE_CHECKING
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
 from puffotter.flask.db.ModelMixin import ModelMixin
 from otaku_info.utils.enums import ListService, MediaType
+if TYPE_CHECKING:
+    from otaku_info.db.MediaListItem import MediaListItem
 
 
 class MediaList(ModelMixin, db.Model):
@@ -87,6 +89,13 @@ class MediaList(ModelMixin, db.Model):
     media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
     """
     The media type for this list
+    """
+
+    media_list_items: List["MediaListItem"] = db.relationship(
+        "MediaListItem", back_populates="media_list", cascade="all, delete"
+    )
+    """
+    Media List Items that are a part of this media list
     """
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:

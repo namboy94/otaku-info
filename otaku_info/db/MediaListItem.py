@@ -56,9 +56,7 @@ class MediaListItem(ModelMixin, db.Model):
 
     media_list_id: int = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "media_lists.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
+        db.ForeignKey("media_lists.id"),
         nullable=False
     )
     """
@@ -67,7 +65,7 @@ class MediaListItem(ModelMixin, db.Model):
 
     media_list: MediaList = db.relationship(
         "MediaList",
-        backref=db.backref("media_list_items", lazy=True, cascade="all,delete")
+        back_populates="media_list_items"
     )
     """
     The media list this list item is a part of

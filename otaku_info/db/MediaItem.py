@@ -17,11 +17,13 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, TYPE_CHECKING
 from puffotter.flask.base import db
 from puffotter.flask.db.ModelMixin import ModelMixin
 from otaku_info.utils.db_model_helper import build_title
 from otaku_info.utils.enums import ReleasingState, MediaType, MediaSubType
+if TYPE_CHECKING:
+    from otaku_info.db.MediaId import MediaId
 
 
 class MediaItem(ModelMixin, db.Model):
@@ -93,6 +95,13 @@ class MediaItem(ModelMixin, db.Model):
     )
     """
     The current releasing state of the media item
+    """
+
+    media_ids: List["MediaId"] = db.relationship(
+        "MediaId", back_populates="media_item", cascade="all, delete"
+    )
+    """
+    Media IDs associated with this Media item
     """
 
     @property
