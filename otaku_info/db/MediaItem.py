@@ -21,7 +21,8 @@ from typing import Dict, Any, Optional, List, Tuple, TYPE_CHECKING
 from puffotter.flask.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.utils.db_model_helper import build_title
-from otaku_info.enums import ReleasingState, MediaType, MediaSubType
+from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
+    ListService
 if TYPE_CHECKING:
     from otaku_info.db.MediaId import MediaId
 
@@ -110,6 +111,15 @@ class MediaItem(ModelMixin, db.Model):
     """
     Media IDs associated with this Media item
     """
+
+    @property
+    def media_id_mapping(self) -> Dict[ListService, "MediaId"]:
+        """
+        :return: A dictionary mapping list services to IDs for this media item
+        """
+        return {
+            x.service: x.service_id for x in self.media_ids
+        }
 
     @property
     def identifier_tuple(self) -> Tuple[str, MediaType, MediaSubType, str]:

@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import List, Dict, Tuple, Optional, cast
+from typing import List, Optional, cast
 from puffotter.flask.base import db, app
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
@@ -32,6 +32,8 @@ from otaku_info.utils.db.updater import update_or_insert_item
 from otaku_info.utils.db.convert import anilist_item_to_media_id, \
     anilist_item_to_media_item, anilist_user_item_to_media_user_state, \
     anilist_user_item_to_media_list
+from otaku_info.utils.db.load import load_existing_media_data, \
+    load_existing_media_list_data
 
 
 def update_anilist_data(usernames: Optional[List[ServiceUsername]]):
@@ -55,8 +57,8 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]]):
         }
         for username in usernames
     }
-    media_items, media_ids, media_user_states, media_lists, media_list_items \
-        = __load_existing()
+    media_items, media_ids, media_user_states = load_existing_media_data()
+    media_lists, media_list_items = load_existing_media_list_data()
 
     for username, anilist_info in anilist_data.items():
         for media_type, anilist_items in anilist_info.items():
@@ -90,43 +92,3 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]]):
                 )
     db.session.commit()  # Commit Updates
     app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
-
-
-def __load_existing() -> Tuple[
-    Dict[Tuple, MediaItem],
-    Dict[Tuple, MediaId],
-    Dict[Tuple, MediaUserState],
-    Dict[Tuple, MediaList],
-    Dict[Tuple, MediaListItem]
-]:
-    """
-    Loads current database contents, mapped to unique identifer tuples
-    :return: The database contents
-    """
-    media_items: Dict[Tuple, MediaItem] = {
-        x.identifier_tuple: x
-        for x in MediaItem.query.options(
-            db.joinedload(MediaItem.media_ids)
-              .subqueryload(MediaId.media_user_states)
-        ).all()
-    }
-    media_ids: Dict[Tuple, MediaId] = {}
-    media_user_states: Dict[Tuple, MediaUserState] = {}
-    for media_item in media_items.values():
-        for media_id in media_item.media_ids:
-            media_ids[media_id.identifier_tuple] = media_id
-            for user_state in media_id.media_user_states:
-                media_user_states[user_state.identifier_tuple] = user_state
-    media_lists: Dict[Tuple, MediaList] = {
-        x.identifier_tuple: x
-        for x in MediaList.query.options(
-            db.joinedload(MediaList.media_list_items)
-        ).all()
-    }
-    media_list_items: Dict[Tuple, MediaListItem] = {}
-    for media_list in media_lists.values():
-        for list_item in media_list.media_list_items:
-            media_list_items[list_item.identifier_tuple] = list_item
-
-    return media_items, media_ids, media_user_states, \
-        media_lists, media_list_items

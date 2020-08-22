@@ -50,6 +50,8 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         from otaku_info.db.ServiceUsername import ServiceUsername
         from otaku_info.background.anilist import update_anilist_data
         update_anilist_data(ServiceUsername.query.all())
+        from otaku_info.background.mangadex import load_mangadex_id_mappings
+        load_mangadex_id_mappings(950)
         return "OK"
 
     @blueprint.route("/setup")

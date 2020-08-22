@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, cast
 from sqlalchemy.exc import IntegrityError
 from puffotter.flask.base import db, app
 from otaku_info.db.MediaItem import MediaItem
@@ -26,12 +26,142 @@ from otaku_info.db.MediaId import MediaId
 from otaku_info.enums import ListService, MediaType
 from otaku_info.external.mangadex import fetch_mangadex_item
 from otaku_info.external.anilist import load_media_info
+from otaku_info.utils.db.convert import anilist_item_to_media_id, \
+    anilist_item_to_media_item
+from otaku_info.utils.db.updater import update_or_insert_item
+from otaku_info.utils.db.load import load_existing_media_data
 
 
-def load_id_mappings():
+def load_mangadex_id_mappings(
+        start: int = 1,
+        end: Optional[int] = None,
+        refresh: bool = False
+):
     """
     Goes through mangadex IDs sequentially and stores ID mappings for
     these entries if found
+    :param start: Optionally specifies a starting index
+    :param end: Optionally specifies an ending index
+    :return: None
+    """
+    start_time = time.time()
+    app.logger.info("Starting Mangadex ID Mapping Update")
+    endcounter = 0
+    mangadex_id = start - 1
+
+    existing_mangadex_ids, existing_anilist_ids = __load_db_ids()
+    existing_media_items, existing_media_ids, _ = load_existing_media_data()
+    while True:
+        mangadex_id += 1
+
+        if mangadex_id == end or endcounter > 100:
+            break
+
+        if mangadex_id % 100 == 0:
+            app.logger.debug("Refreshing mangadex cache")
+            existing_mangadex_ids, existing_anilist_ids = __load_db_ids()
+            existing_media_items, existing_media_ids, _ = \
+                load_existing_media_data()
+
+        if str(mangadex_id) in existing_mangadex_ids and not refresh:
+            app.logger.debug("Mangadex ID exists")
+            continue
+
+        app.logger.debug(f"Probing mangadex id {mangadex_id}")
+        mangadex_item = fetch_mangadex_item(mangadex_id)
+        if mangadex_item is None:
+            endcounter += 1
+            app.logger.debug("Couldn't load mangadex info")
+            continue
+        else:
+            endcounter = 0
+
+        if ListService.ANILIST not in mangadex_item.external_ids:
+            app.logger.debug("No anilist ID for mangadex item")
+            continue
+
+        anilist_service_id = mangadex_item.external_ids[ListService.ANILIST]
+        anilist_id = existing_anilist_ids.get(anilist_service_id)
+        if anilist_id is None:
+            anilist_id = __create_media_item_from_anilist_id(
+                anilist_service_id,
+                existing_media_items,
+                existing_media_ids
+            )
+        if anilist_id is None:
+            app.logger.debug("Could not load anilist data for mangadex item")
+            continue
+
+        media_item = anilist_id.media_item
+        media_id_mapping = media_item.media_id_mapping
+
+        for service, service_id in mangadex_item.external_ids.items():
+            if service not in media_id_mapping:
+                media_id = MediaId(
+                    media_item_id=media_item.id,
+                    media_type=media_item.media_type,
+                    service=service,
+                    service_id=service_id
+                )
+                update_or_insert_item(media_id, existing_media_ids)
+
+    app.logger.info(f"Finished Mangadex ID mapping Update in "
+                    f"{time.time() - start_time}s.")
+
+
+def __create_media_item_from_anilist_id(
+        anilist_id: str,
+        existing_media_items: Dict[Tuple, MediaItem],
+        existing_media_ids: Dict[Tuple, MediaId]
+) -> Optional[MediaId]:
+    anilist_item = load_media_info(int(anilist_id), MediaType.MANGA)
+
+    if anilist_item is None:
+        return None
+
+    media_item = anilist_item_to_media_item(anilist_item)
+    media_item = cast(MediaItem, update_or_insert_item(
+        media_item, existing_media_items
+    ))
+    media_id = anilist_item_to_media_id(anilist_item, media_item)
+    media_id = cast(MediaId, update_or_insert_item(
+        media_id, existing_media_ids
+    ))
+    return media_id
+
+
+
+
+def __load_db_ids():
+
+    existing: List[MediaId] = [
+        x for x in MediaId.query.options(
+            db.joinedload(MediaId.media_item)
+              .subqueryload(MediaItem.media_ids)
+        ).all()
+        if x.media_type == MediaType.MANGA
+        and x.service in [ListService.ANILIST, ListService.MANGADEX]
+    ]
+    mangadex_ids = [
+        x.service_id
+        for x in existing
+        if x.service == ListService.MANGADEX
+    ]
+    anilist_ids = {
+        x.service_id: x
+        for x in existing
+        if x.service == ListService.ANILIST
+    }
+    return mangadex_ids, anilist_ids
+
+
+
+def load_id_mappings(start: Optional[int], end: Optional[int]):
+    """
+    Goes through mangadex IDs sequentially and stores ID mappings for
+    these entries if found
+    :param start: Optionally specifies a starting index
+    :param end: Optionally specifies an ending index
     :return: None
     """
     endcounter = 0
