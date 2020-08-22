@@ -17,11 +17,57 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+from typing import Optional, Dict, Tuple
 from puffotter.flask.base import app
-from otaku_info.utils.ln.ln_releases import load_ln_releases
+from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaItem import MediaItem
+from otaku_info.enums import MediaType, ListService
+from otaku_info.external.reddit import load_ln_releases
+from otaku_info.external.entities.RedditLnRelease import RedditLnRelease
+from otaku_info.utils.db.updater import update_media_item
 
 
 def update_ln_releases():
+    """
+    Updates the light novel releases
+    :return: None
+    """
+    app.logger.info("Starting Light Novel Release Update")
+    ln_releases = load_ln_releases()
+
+    existing_ids = {
+        x.identifier_tuple: x
+        for x in MediaId.query.all()
+    }
+    for ln_release in ln_releases:
+        pass
+
+    app.logger.info("Finished Light Novel Release Update")
+
+
+def store_release_item(
+        existing_media_ids: Dict[Tuple[MediaType, ListService, str], MediaId],
+        ln_release: RedditLnRelease
+) -> Optional[MediaItem]:
+
+    mal_id = ln_release.myanimelist_id
+    anilist_id = ln_release.anilist_id
+
+    if anilist_id is not None:
+        anilist_entry = ln_release.anilist_entry
+        update_media_item(anilist_entry)
+        media_item = MediaItem()
+
+    if ln_release.myanimelist_id is not None:
+        mal_id = MediaId()
+        mal_tuple = MediaItem(
+
+        ).identifier_tuple
+        if existing_media_ids.
+
+
+
+def __update_ln_releases():
     """
     Updates the light novel releases
     :return: None

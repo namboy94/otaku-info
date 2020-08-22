@@ -20,7 +20,7 @@ LICENSE"""
 from sqlalchemy.exc import IntegrityError
 from puffotter.flask.base import db
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.utils.enums import MediaType, MediaSubType, ReleasingState
+from otaku_info.enums import MediaType, MediaSubType, ReleasingState
 from otaku_info.test.TestFramework import _TestFramework
 
 

@@ -25,7 +25,7 @@ from puffotter.flask.base import db
 from otaku_info.db.LnRelease import LnRelease
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaId import MediaId
-from otaku_info.utils.enums import MediaSubType, ConsumingState
+from otaku_info.enums import MediaSubType, ConsumingState
 from otaku_info.utils.dates import MONTHS, map_month_name_to_month_number, \
     map_month_number_to_month_name
 from otaku_info.utils.manga_updates.MangaUpdate import RelatedMangaId as \

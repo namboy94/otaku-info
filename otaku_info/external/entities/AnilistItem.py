@@ -19,7 +19,7 @@ LICENSE"""
 
 from typing import Optional, Dict, Any, Tuple
 from otaku_info.enums import MediaType, MediaSubType, \
-    ReleasingState, ConsumingState, MediaRelationType
+    ReleasingState, MediaRelationType
 
 
 class AnilistItem:
@@ -30,12 +30,14 @@ class AnilistItem:
     def __init__(
             self,
             anilist_id: int,
+            myanimelist_id: Optional[int],
             media_type: MediaType,
             media_subtype: MediaSubType,
             english_title: Optional[str],
             romaji_title: str,
             cover_url: str,
             chapters: Optional[int],
+            volumes: Optional[str],
             episodes: Optional[int],
             releasing_state: ReleasingState,
             relations: Dict[Tuple[MediaType, int], MediaRelationType]
@@ -43,23 +45,27 @@ class AnilistItem:
         """
         Initializes the AnilistItem object
         :param anilist_id: The anilist ID of the series
+        :param myanimelist_id: The myanimelist ID of the series
         :param media_type: The media type of the series
         :param media_subtype: The media subtype of the series
         :param english_title: The English title of the series
         :param romaji_title: The Japanes title of the series written in romaji
         :param cover_url: URL to a cover image for the series
         :param chapters: The total amount of known manga chapters
+        :param volumes: The total amount of known manga/ln volumes
         :param episodes: The total amount of known anime episodes
         :param releasing_state: The current releasing state of the series
         :param relations: Related media items identified by IDs
         """
         self.anilist_id = anilist_id
+        self.myanimelist_id = myanimelist_id
         self.media_type = media_type
         self.media_subtype = media_subtype
         self.english_title = english_title
         self.romaji_title = romaji_title
         self.cover_url = cover_url
         self.chapters = chapters
+        self.volumes = volumes
         self.episodes = episodes
         self.releasing_state = releasing_state
         self.relations = relations
@@ -102,103 +108,15 @@ class AnilistItem:
 
         return AnilistItem(
             data["id"],
+            data["idMal"],
             media_type,
             media_subtype,
             data["title"]["english"],
             data["title"]["romaji"],
             data["coverImage"]["large"],
             data["chapters"],
+            data["volumes"],
             data["episodes"],
             releasing_state,
             relations
-        )
-
-
-class AnilistUserItem(AnilistItem):
-    """
-    Class that models an anilist list item for a user
-    Represents the information fetched using anilist's API
-    """
-    def __init__(
-            self,
-            anilist_id: int,
-            media_type: MediaType,
-            media_subtype: MediaSubType,
-            english_title: Optional[str],
-            romaji_title: str,
-            cover_url: str,
-            chapters: Optional[int],
-            episodes: Optional[int],
-            releasing_state: ReleasingState,
-            relations: Dict[Tuple[MediaType, int], MediaRelationType],
-            score: Optional[int],
-            progress: Optional[int],
-            consuming_state: ConsumingState,
-            list_name: str
-    ):
-        """
-        Initializes the AnilistItem object
-        :param anilist_id: The anilist ID of the series
-        :param media_type: The media type of the series
-        :param media_subtype: The media subtype of the series
-        :param english_title: The English title of the series
-        :param romaji_title: The Japanes title of the series written in romaji
-        :param cover_url: URL to a cover image for the series
-        :param chapters: The total amount of known manga chapters
-        :param episodes: The total amount of known anime episodes
-        :param releasing_state: The current releasing state of the series
-        :param relations: Related media items identified by IDs
-        :param score: The user's score for the series
-        :param progress: The user's progress for the series
-        :param consuming_state: The user's consumption state for the series
-        :param list_name: Which of the user's lists this entry belongs to
-        """
-        super().__init__(
-            anilist_id,
-            media_type,
-            media_subtype,
-            english_title,
-            romaji_title,
-            cover_url,
-            chapters,
-            episodes,
-            releasing_state,
-            relations
-        )
-        self.score = score
-        self.progress = progress
-        self.consuming_state = consuming_state
-        self.list_name = list_name
-
-    @classmethod
-    def from_query(
-            cls,
-            media_type: MediaType,
-            data: Dict[str, Any]
-    ) -> "AnilistUserItem":
-        """
-        Generates an AnilistUserItem from a dictionary generated
-        by an APi query
-        :param media_type: The media type of the item
-        :param data: The data to use
-        :return: The generated AnilistItem
-        """
-        base = AnilistItem.from_query(media_type, data["media"])
-        consuming_state = ConsumingState(data["status"].lower())
-
-        return AnilistUserItem(
-            base.anilist_id,
-            base.media_type,
-            base.media_subtype,
-            base.english_title,
-            base.romaji_title,
-            base.cover_url,
-            base.chapters,
-            base.episodes,
-            base.releasing_state,
-            base.relations,
-            data["score"],
-            data["progress"],
-            consuming_state,
-            data["list_name"]
         )

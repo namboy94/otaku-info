@@ -22,7 +22,7 @@ from puffotter.flask.base import db
 from puffotter.flask.db.User import User
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaList import MediaList
-from otaku_info.utils.enums import MediaType, ListService
+from otaku_info.enums import MediaType, ListService
 from otaku_info.test.TestFramework import _TestFramework
 
 

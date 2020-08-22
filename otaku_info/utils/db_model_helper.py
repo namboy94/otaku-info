@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Optional
-from otaku_info.utils.enums import ListService, MediaType
+from otaku_info.enums import ListService, MediaType
 from otaku_info.utils.mappings import list_service_url_formats
 
 

@@ -27,7 +27,7 @@ from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.NotificationSetting import NotificationSetting
-from otaku_info.utils.enums import \
+from otaku_info.enums import \
     MediaType, MediaSubType, ConsumingState, NotificationType
 
 

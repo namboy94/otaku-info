@@ -18,10 +18,10 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from flask import url_for
-from typing import Dict, Any, List, TYPE_CHECKING
+from typing import Dict, Any, List, TYPE_CHECKING, Tuple
 from puffotter.flask.base import db
-from puffotter.flask.db.ModelMixin import ModelMixin
-from otaku_info.utils.enums import ListService, MediaType
+from otaku_info.db.ModelMixin import ModelMixin
+from otaku_info.enums import ListService, MediaType
 from otaku_info.utils.db_model_helper import build_service_url
 from otaku_info.db.MediaItem import MediaItem
 if TYPE_CHECKING:
@@ -121,6 +121,13 @@ class MediaId(ModelMixin, db.Model):
         return url_for(
             "static", filename="service_logos/" + self.service.value + ".png"
         )
+
+    @property
+    def identifier_tuple(self) -> Tuple[MediaType, ListService, str]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.media_type, self.service, self.service_id
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

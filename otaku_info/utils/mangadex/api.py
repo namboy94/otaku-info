@@ -20,7 +20,7 @@ LICENSE"""
 import json
 import requests
 from typing import Dict, Optional
-from otaku_info.utils.enums import ListService
+from otaku_info.enums import ListService
 from otaku_info.utils.mappings import mangadex_external_id_names, \
     list_service_id_types
 

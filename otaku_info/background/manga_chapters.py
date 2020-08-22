@@ -21,7 +21,7 @@ import time
 from puffotter.flask.base import db, app
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
-from otaku_info.utils.enums import MediaType, ListService
+from otaku_info.enums import MediaType, ListService
 
 
 def update_manga_chapter_guesses():

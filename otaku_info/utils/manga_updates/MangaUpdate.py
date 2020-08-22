@@ -19,7 +19,7 @@ LICENSE"""
 
 from flask import url_for
 from typing import Optional, List, Tuple, Dict, Any
-from otaku_info.utils.enums import ListService, MediaType
+from otaku_info.enums import ListService, MediaType
 from otaku_info.utils.db_model_helper import build_service_url
 
 

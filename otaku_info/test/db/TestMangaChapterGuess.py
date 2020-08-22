@@ -24,7 +24,7 @@ from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
-from otaku_info.utils.enums import ListService, MediaType, MediaSubType, \
+from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState
 from otaku_info.test.TestFramework import _TestFramework
 

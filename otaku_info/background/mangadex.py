@@ -23,9 +23,9 @@ from sqlalchemy.exc import IntegrityError
 from puffotter.flask.base import db, app
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
-from otaku_info.utils.enums import ListService, MediaType
-from otaku_info.utils.mangadex.api import get_external_ids
-from otaku_info.utils.anilist.api import load_media_info
+from otaku_info.enums import ListService, MediaType
+from otaku_info.external.mangadex import fetch_mangadex_item
+from otaku_info.external.anilist import load_media_info
 
 
 def load_id_mappings():
@@ -48,7 +48,7 @@ def load_id_mappings():
 
         app.logger.debug(f"Probing mangadex id {mangadex_id}")
 
-        other_ids = get_external_ids(mangadex_id)
+        other_ids = fetch_mangadex_item(mangadex_id).external_ids
 
         if other_ids is None:
             endcounter += 1
@@ -156,7 +156,7 @@ def store_ids(
 
     try:
         db.session.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         # Since mangadex has some entries that point to the exact same anilist
         # media item, we may sometimes encounter cases where we have two
         # mangadex IDs for one anilist ID.
@@ -164,7 +164,7 @@ def store_ids(
         # An example for this issue is Genshiken (961) and its
         # sequel Genshiken Nidaime (962)
         db.session.rollback()
-        app.logger.warning(f"Couldn't add mangadex ID {mangadex_id}")
+        app.logger.warning(f"Couldn't add mangadex ID {mangadex_id} ({e})")
 
 
 def create_anilist_media_item(anilist_id: int) -> Optional[MediaItem]:

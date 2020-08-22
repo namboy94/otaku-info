@@ -17,12 +17,12 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
-from puffotter.flask.db.ModelMixin import ModelMixin
+from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaId import MediaId
-from otaku_info.utils.enums import ConsumingState
+from otaku_info.enums import ConsumingState
 
 
 class MediaUserState(ModelMixin, db.Model):
@@ -108,6 +108,13 @@ class MediaUserState(ModelMixin, db.Model):
     """
     The current consuming state of the user for this media item
     """
+
+    @property
+    def identifier_tuple(self) -> Tuple[int, int]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.media_id_id, self.user_id
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

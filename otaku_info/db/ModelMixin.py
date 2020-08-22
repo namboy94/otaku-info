@@ -17,23 +17,13 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from unittest import TestCase
-from otaku_info.enums import ListService
-from otaku_info.utils.mappings import list_service_id_types, \
-    list_service_url_formats, mangadex_external_id_names
+from typing import Tuple
+from puffotter.flask.db.ModelMixin import ModelMixin as PuffotterModelMixin
 
 
-class TestMappings(TestCase):
-    """
-    Class that tests enum mappings
-    """
+# noinspection PyAbstractClass
+class ModelMixin(PuffotterModelMixin):
 
-    def test_completeness(self):
-        """
-        Tests that mappings include all possible enum types
-        :return: None
-        """
-        for list_service in ListService:
-            self.assertTrue(list_service in list_service_id_types)
-            self.assertTrue(list_service in list_service_url_formats)
-            self.assertTrue(list_service in mangadex_external_id_names)
+    @property
+    def identifier_tuple(self) -> Tuple:
+        raise NotImplementedError()

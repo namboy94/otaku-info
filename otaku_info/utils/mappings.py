@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Dict, Type
-from otaku_info.utils.enums import ListService
+from otaku_info.enums import ListService
 
 
 mangadex_external_id_names: Dict[ListService, str] = {

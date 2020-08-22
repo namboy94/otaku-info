@@ -18,9 +18,9 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from puffotter.flask.base import db
-from puffotter.flask.db.ModelMixin import ModelMixin
+from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaId import MediaId
 from otaku_info.utils.anilist.api import guess_latest_manga_chapter
 
@@ -84,7 +84,16 @@ class MangaChapterGuess(ModelMixin, db.Model):
         delta = time.time() - self.last_update
         if delta > 60 * 60:
             self.last_update = int(time.time())
-            self.guess = guess_latest_manga_chapter(self.media_id.service_id)
+            self.guess = guess_latest_manga_chapter(
+                int(self.media_id.service_id)
+            )
+
+    @property
+    def identifier_tuple(self) -> Tuple[int]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.media_id_id,
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

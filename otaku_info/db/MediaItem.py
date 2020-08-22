@@ -17,11 +17,11 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Optional, List, TYPE_CHECKING
+from typing import Dict, Any, Optional, List, Tuple, TYPE_CHECKING
 from puffotter.flask.base import db
-from puffotter.flask.db.ModelMixin import ModelMixin
+from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.utils.db_model_helper import build_title
-from otaku_info.utils.enums import ReleasingState, MediaType, MediaSubType
+from otaku_info.enums import ReleasingState, MediaType, MediaSubType
 if TYPE_CHECKING:
     from otaku_info.db.MediaId import MediaId
 
@@ -42,7 +42,9 @@ class MediaItem(ModelMixin, db.Model):
             "media_type",
             "media_subtype",
             "romaji_title",
-            "cover_url",
+            "cover_url",  # Sometimes, there legitimately exist some media
+                          # items with the same name
+                          # (for example pre-serialization & serialized works)
             name="unique_media_item"
         ),
     )
@@ -103,6 +105,14 @@ class MediaItem(ModelMixin, db.Model):
     """
     Media IDs associated with this Media item
     """
+
+    @property
+    def identifier_tuple(self) -> Tuple[str, MediaType, MediaSubType, str]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.romaji_title, self.media_type, \
+            self.media_subtype, self.cover_url
 
     @property
     def title(self) -> str:

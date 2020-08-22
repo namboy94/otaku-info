@@ -26,7 +26,7 @@ from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.LnRelease import LnRelease
 from otaku_info.utils.dates import map_month_name_to_month_number
-from otaku_info.utils.enums import MediaType, ListService
+from otaku_info.enums import MediaType, ListService
 from otaku_info.utils.anilist.api import load_media_info, \
     map_myanimelist_id_to_anilist_id
 from otaku_info.background.anilist import update_media_id, update_media_item

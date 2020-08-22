@@ -17,9 +17,9 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from puffotter.flask.base import db
-from puffotter.flask.db.ModelMixin import ModelMixin
+from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaUserState import MediaUserState
 
@@ -89,6 +89,13 @@ class MediaListItem(ModelMixin, db.Model):
     """
     The media user state this list item references
     """
+
+    @property
+    def identifier_tuple(self) -> Tuple[int, int]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.media_list_id, self.media_user_state_id
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

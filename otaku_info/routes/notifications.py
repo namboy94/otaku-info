@@ -22,7 +22,7 @@ from flask.blueprints import Blueprint
 from flask_login import current_user, login_required
 from puffotter.flask.base import db
 from puffotter.flask.db.TelegramChatId import TelegramChatId
-from otaku_info.utils.enums import NotificationType
+from otaku_info.enums import NotificationType
 from otaku_info.db.NotificationSetting import NotificationSetting
 
 

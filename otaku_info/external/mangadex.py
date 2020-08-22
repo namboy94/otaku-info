@@ -17,23 +17,20 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from unittest import TestCase
-from otaku_info.enums import ListService
-from otaku_info.utils.mappings import list_service_id_types, \
-    list_service_url_formats, mangadex_external_id_names
+import json
+import requests
+from typing import Optional
+from otaku_info.external.entities.MangadexItem import MangadexItem
 
 
-class TestMappings(TestCase):
+def fetch_mangadex_item(mangadex_id: int) -> Optional[MangadexItem]:
     """
-    Class that tests enum mappings
+    Fetches information for a mangadex
     """
 
-    def test_completeness(self):
-        """
-        Tests that mappings include all possible enum types
-        :return: None
-        """
-        for list_service in ListService:
-            self.assertTrue(list_service in list_service_id_types)
-            self.assertTrue(list_service in list_service_url_formats)
-            self.assertTrue(list_service in mangadex_external_id_names)
+    endpoint = "https://mangadex.org/api/manga/{}".format(mangadex_id)
+    response = json.loads(requests.get(endpoint).text)
+    if response["status"] == "OK":
+        return MangadexItem.from_json(mangadex_id, response)
+    else:
+        return None

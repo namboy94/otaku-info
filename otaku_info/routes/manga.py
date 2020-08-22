@@ -20,7 +20,7 @@ LICENSE"""
 from flask import request, render_template, redirect, url_for
 from flask.blueprints import Blueprint
 from flask_login import login_required, current_user
-from otaku_info.utils.enums import MediaType, ListService
+from otaku_info.enums import MediaType, ListService
 from otaku_info.utils.manga_updates.generator import prepare_manga_updates
 from otaku_info.db.MediaList import MediaList
 

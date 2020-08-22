@@ -18,11 +18,11 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from puffotter.flask.base import db
-from puffotter.flask.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
+from otaku_info.db.ModelMixin import ModelMixin
 
 
 class LnRelease(ModelMixin, db.Model):
@@ -106,6 +106,13 @@ class LnRelease(ModelMixin, db.Model):
         :return: The release date as a datetime object
         """
         return datetime.strptime(self.release_date_string, "%Y-%m-%d")
+
+    @property
+    def identifier_tuple(self) -> Tuple[int, str, bool, bool]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.media_item_id, self.volume, self.digital, self.physical
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

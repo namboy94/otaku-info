@@ -28,7 +28,7 @@ from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaId import MediaId
 from otaku_info.utils.manga_updates.MangaUpdate import MangaUpdate
 from otaku_info.utils.db_model_helper import build_title
-from otaku_info.utils.enums \
+from otaku_info.enums \
     import MediaType, MediaSubType, ConsumingState, ReleasingState, ListService
 
 

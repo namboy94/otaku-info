@@ -17,11 +17,11 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
-from puffotter.flask.db.ModelMixin import ModelMixin
-from otaku_info.utils.enums import NotificationType
+from otaku_info.db.ModelMixin import ModelMixin
+from otaku_info.enums import NotificationType
 
 
 class NotificationSetting(ModelMixin, db.Model):
@@ -78,6 +78,13 @@ class NotificationSetting(ModelMixin, db.Model):
     """
     Whether or not the notification is active or not
     """
+
+    @property
+    def identifier_tuple(self) -> Tuple[int]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.user_id,
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

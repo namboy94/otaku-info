@@ -20,7 +20,7 @@ LICENSE"""
 from otaku_info.test.TestFramework import _TestFramework
 from otaku_info.utils.anilist.api import load_anilist, \
     guess_latest_manga_chapter, load_media_info
-from otaku_info.utils.enums import MediaType
+from otaku_info.enums import MediaType
 
 
 class TestApi(_TestFramework):

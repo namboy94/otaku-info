@@ -24,7 +24,7 @@ from puffotter.flask.exceptions import ApiException
 from otaku_info.Config import Config
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.utils.enums import MediaType, ListService
+from otaku_info.enums import MediaType, ListService
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:
