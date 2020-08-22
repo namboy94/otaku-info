@@ -129,6 +129,17 @@ class MediaId(ModelMixin, db.Model):
         """
         return self.media_type, self.service, self.service_id
 
+    def update(self, new_data: "MediaId"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_item_id = new_data.media_item_id
+        self.media_type = new_data.media_type
+        self.service = new_data.service
+        self.service_id = new_data.service_id
+
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
         Generates a dictionary containing the information of this model

@@ -75,6 +75,15 @@ class MediaNotification(ModelMixin, db.Model):
         """
         return self.media_user_state_id,
 
+    def update(self, new_data: "MediaNotification"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_user_state_id = new_data.media_user_state_id
+        self.last_update = new_data.last_update
+
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
         Generates a dictionary containing the information of this model

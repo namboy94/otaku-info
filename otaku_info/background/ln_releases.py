@@ -24,7 +24,7 @@ from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, ListService
 from otaku_info.external.reddit import load_ln_releases
 from otaku_info.external.entities.RedditLnRelease import RedditLnRelease
-from otaku_info.utils.db.updater import update_media_item
+
 
 
 def update_ln_releases():
@@ -50,21 +50,7 @@ def store_release_item(
         ln_release: RedditLnRelease
 ) -> Optional[MediaItem]:
 
-    mal_id = ln_release.myanimelist_id
-    anilist_id = ln_release.anilist_id
-
-    if anilist_id is not None:
-        anilist_entry = ln_release.anilist_entry
-        update_media_item(anilist_entry)
-        media_item = MediaItem()
-
-    if ln_release.myanimelist_id is not None:
-        mal_id = MediaId()
-        mal_tuple = MediaItem(
-
-        ).identifier_tuple
-        if existing_media_ids.
-
+    pass
 
 
 def __update_ln_releases():

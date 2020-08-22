@@ -98,6 +98,11 @@ class MediaUserState(ModelMixin, db.Model):
     The user's current progress consuming the media item
     """
 
+    volume_progress: Optional[int] = db.Column(db.Integer, nullable=True)
+    """
+    The user's current 'volume' progress.
+    """
+
     score: Optional[int] = db.Column(db.Integer, nullable=True)
     """
     The user's score for the references media item
@@ -115,6 +120,19 @@ class MediaUserState(ModelMixin, db.Model):
         :return: A tuple that uniquely identifies this database entry
         """
         return self.media_id_id, self.user_id
+
+    def update(self, new_data: "MediaUserState"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_id_id = new_data.media_id_id
+        self.user_id = new_data.user_id
+        self.progress = new_data.progress
+        self.volume_progress = new_data.volume_progress
+        self.score = new_data.score
+        self.consuming_state = new_data.consuming_state
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

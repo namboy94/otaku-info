@@ -92,6 +92,11 @@ class MediaItem(ModelMixin, db.Model):
     The latest release chapter/episode for this media item
     """
 
+    latest_volume_release: Optional[int] = db.Column(db.Integer, nullable=True)
+    """
+    The latest volume for this media item
+    """
+
     releasing_state: ReleasingState = db.Column(
         db.Enum(ReleasingState), nullable=False
     )
@@ -113,6 +118,21 @@ class MediaItem(ModelMixin, db.Model):
         """
         return self.romaji_title, self.media_type, \
             self.media_subtype, self.cover_url
+
+    def update(self, new_data: "MediaItem"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_type = new_data.media_type
+        self.media_subtype = new_data.media_subtype
+        self.english_title = new_data.english_title
+        self.romaji_title = new_data.romaji_title
+        self.cover_url = new_data.cover_url
+        self.latest_release = new_data.latest_release
+        self.latest_volume_release = new_data.latest_volume_release
+        self.releasing_state = new_data.releasing_state
 
     @property
     def title(self) -> str:

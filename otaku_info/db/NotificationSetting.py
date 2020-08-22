@@ -86,6 +86,17 @@ class NotificationSetting(ModelMixin, db.Model):
         """
         return self.user_id,
 
+    def update(self, new_data: "NotificationSetting"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.user_id = new_data.user_id
+        self.notification_type = new_data.notification_type
+        self.value = new_data.value
+        self.minimum_score = new_data.minimum_score
+
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
         Generates a dictionary containing the information of this model

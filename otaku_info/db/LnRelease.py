@@ -114,6 +114,21 @@ class LnRelease(ModelMixin, db.Model):
         """
         return self.media_item_id, self.volume, self.digital, self.physical
 
+    def update(self, new_data: "LnRelease"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_item_id = new_data.media_item_id
+        self.series_name = new_data.series_name
+        self.volume = new_data.volume
+        self.release_date_string = new_data.release_date_string
+        self.purchase_link = new_data.purchase_link
+        self.publisher = new_data.publisher
+        self.physical = new_data.physical
+        self.digital = new_data.digital
+
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
         Generates a dictionary containing the information of this model

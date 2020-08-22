@@ -21,9 +21,23 @@ from typing import Tuple
 from puffotter.flask.db.ModelMixin import ModelMixin as PuffotterModelMixin
 
 
-# noinspection PyAbstractClass
 class ModelMixin(PuffotterModelMixin):
+    """
+    Class that define methods that greatly ease working with existing database
+    entries
+    """
 
     @property
     def identifier_tuple(self) -> Tuple:
+        """
+        :return: A tuple that's unique to this database entry
+        """
+        raise NotImplementedError()
+
+    def update(self, new_data: "ModelMixin"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
         raise NotImplementedError()

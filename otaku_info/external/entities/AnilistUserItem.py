@@ -44,6 +44,7 @@ class AnilistUserItem(AnilistItem):
             relations: Dict[Tuple[MediaType, int], MediaRelationType],
             score: Optional[int],
             progress: Optional[int],
+            volume_progress: Optional[int],
             consuming_state: ConsumingState,
             list_name: str
     ):
@@ -63,6 +64,7 @@ class AnilistUserItem(AnilistItem):
         :param relations: Related media items identified by IDs
         :param score: The user's score for the series
         :param progress: The user's progress for the series
+        :param volume_progress: The user's volume progress
         :param consuming_state: The user's consumption state for the series
         :param list_name: Which of the user's lists this entry belongs to
         """
@@ -82,6 +84,7 @@ class AnilistUserItem(AnilistItem):
         )
         self.score = score
         self.progress = progress
+        self.volume_progress = volume_progress
         self.consuming_state = consuming_state
         self.list_name = list_name
 
@@ -116,6 +119,7 @@ class AnilistUserItem(AnilistItem):
             base.relations,
             data["score"],
             data["progress"],
+            data["progressVolumes"],
             consuming_state,
             data["list_name"]
         )

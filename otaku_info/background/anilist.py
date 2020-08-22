@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Tuple, Optional, cast
 from puffotter.flask.base import db, app
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
@@ -27,234 +27,72 @@ from otaku_info.db.MediaListItem import MediaListItem
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.ServiceUsername import ServiceUsername
 from otaku_info.external.anilist import load_anilist
-from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
-from otaku_info.enums import ListService, MediaType, MediaSubType
-from otaku_info.utils.db.updater import update_media_item, update_media_id, \
-    update_media_user_state
+from otaku_info.enums import ListService, MediaType
+from otaku_info.utils.db.updater import update_or_insert_item
+from otaku_info.utils.db.convert import anilist_item_to_media_id, \
+    anilist_item_to_media_item, anilist_user_item_to_media_user_state, \
+    anilist_user_item_to_media_list
 
 
-def fetch_anilist_data():
+def update_anilist_data(usernames: Optional[List[ServiceUsername]]):
     """
     Retrieves all entries on the anilists of all users that provided
     an anilist username
+    :param usernames: Can be used to override the usernames to use
     :return: None
     """
     start = time.time()
-    app.logger.debug("Starting Anilist Update")
-    usernames: List[ServiceUsername] = \
-        ServiceUsername.query.filter_by(service=ListService.ANILIST).all()
+    app.logger.info("Starting Anilist Update")
+
+    if usernames is None:
+        usernames = ServiceUsername.query\
+            .filter_by(service=ListService.ANILIST).all()
+
     anilist_data = {
-        user: {
-            media_type: load_anilist(user.username, media_type)
+        username: {
+            media_type: load_anilist(username.username, media_type)
             for media_type in MediaType
         }
-        for user in usernames
+        for username in usernames
     }
-    media_items, media_ids, media_user_states, media_lists, media_list_items\
-        = load_existing()
+    media_items, media_ids, media_user_states, media_lists, media_list_items \
+        = __load_existing()
 
-    app.logger.debug("Updating Media Entries")
-    update_media_entries(
-        anilist_data, media_items, media_ids
-    )
-    app.logger.debug("Updating Media User States")
-    update_media_user_entries(
-        anilist_data, media_items, media_ids, media_user_states
-    )
-    app.logger.debug("Updating Media Lists")
-    update_media_lists(
-        anilist_data,
-        media_items,
-        media_ids,
-        media_user_states,
-        media_lists,
-        media_list_items
-    )
-    app.logger.info(f"Completed anilist update in {time.time() - start}")
-
-
-def update_media_entries(
-        anilist_data: Dict[
-            ServiceUsername,
-            Dict[MediaType, List[AnilistUserItem]]
-        ],
-        media_items: Dict[Tuple[str, MediaType, MediaSubType, str], MediaItem],
-        media_ids: Dict[Tuple[ListService, int], MediaId]
-):
-    """
-    Updates the media entries and anilist IDs
-    :param anilist_data: The anilist data to store
-    :param media_items: The preloaded media items
-    :param media_ids: The preloaded media IDs
-    :return: None
-    """
-    updated_ids: List[Tuple[ListService, int]] = []
-    updated_items: List[Tuple[str, MediaType, MediaSubType, str]] = []
-
-    for media_type in MediaType:
-
-        anilist_entries: List[AnilistUserItem] = []
-        for data in anilist_data.values():
-            anilist_entries += data[media_type]
-
-        for anilist_entry in anilist_entries:
-            item_tuple, media_item = fetch_media_item(
-                anilist_entry, media_items
-            )
-            if item_tuple not in updated_items:
-                media_item = update_media_item(anilist_entry, media_item)
-                media_items[item_tuple] = media_item
-                updated_items.append(item_tuple)
-
-            id_tuple, media_id = fetch_media_id(
-                anilist_entry, media_items, media_ids, media_item
-            )
-            assert id_tuple is not None
-
-            if id_tuple not in updated_ids:
-                media_item = media_items[item_tuple]
-                media_id = update_media_id(anilist_entry, media_item, media_id)
-                media_ids[id_tuple] = media_id
-                updated_ids.append(id_tuple)
-
-    db.session.commit()
-    return media_ids
-
-
-def update_media_user_entries(
-        anilist_data: Dict[
-            ServiceUsername,
-            Dict[MediaType, List[AnilistUserItem]]
-        ],
-        media_items: Dict[Tuple[str, MediaType, MediaSubType, str], MediaItem],
-        media_ids: Dict[Tuple[ListService, int], MediaId],
-        media_user_states: Dict[Tuple[int, int], MediaUserState]
-):
-    """
-    Updates the individual users' current state for media items in
-    thei ranilist account.
-    :param anilist_data: The anilist data to enter into the database
-    :param media_items: Preloaded media items
-    :param media_ids: Preloaded media IDs
-    :param media_user_states: Preloaded media user states
-    :return: None
-    """
-    updated: List[Tuple[int, int]] = []
-
-    for service_user, anilist in anilist_data.items():
-        user_states = {
-            x: y for x, y in media_user_states.items()
-            if y.user_id == service_user.user_id
-        }
-
-        for media_type, anilist_entries in anilist.items():
-            for entry in anilist_entries:
-                id_tuple, media_id = \
-                    fetch_media_id(entry, media_items, media_ids)
-                assert media_id is not None
-
-                user_state_id = (media_id.id, service_user.user_id)
-
-                if user_state_id in updated:
-                    continue
-
-                media_user_state = media_user_states.get(user_state_id)
-
-                media_user_state = update_media_user_state(
-                    entry, media_id, service_user.user, media_user_state
+    for username, anilist_info in anilist_data.items():
+        for media_type, anilist_items in anilist_info.items():
+            for anilist_item in anilist_items:
+                media_item = anilist_item_to_media_item(anilist_item)
+                media_item = cast(MediaItem, update_or_insert_item(
+                    media_item, media_items
+                ))
+                media_id = anilist_item_to_media_id(anilist_item, media_item)
+                media_id = cast(MediaId, update_or_insert_item(
+                    media_id, media_ids
+                ))
+                user_state = anilist_user_item_to_media_user_state(
+                    anilist_item, media_id, username.user
                 )
-
-                updated.append(user_state_id)
-                media_user_states[user_state_id] = media_user_state
-
-        for user_state_tuple, user_state in user_states.items():
-            if user_state_tuple not in updated:
-                db.session.delete(user_state)
-                media_user_states.pop(user_state_tuple)
-
-        db.session.commit()
-
-
-def update_media_lists(
-        anilist_data: Dict[
-            ServiceUsername,
-            Dict[MediaType, List[AnilistUserItem]]
-        ],
-        media_items: Dict[Tuple[str, MediaType, MediaSubType, str], MediaItem],
-        media_ids: Dict[Tuple[ListService, int], MediaId],
-        media_user_states: Dict[Tuple[int, int], MediaUserState],
-        media_lists: Dict[Tuple[str, int, ListService, MediaType], MediaList],
-        media_list_items: Dict[Tuple[int, int], MediaListItem]
-):
-    """
-    Updates the database for anilist user lists.
-    This includes custom anilist lists.
-    :param anilist_data: The anilist data to enter into the database
-    :param media_items: Preloaded media items
-    :param media_ids: Preloaded media IDs
-    :param media_user_states: The current media user states in the database
-    :param media_lists: The media lists currently in the database
-    :param media_list_items: The media list items currently in the database
-    :return: None
-    """
-    list_tuples_to_remove = list(media_lists.keys())
-    list_item_tuples_to_remove = list(media_list_items.keys())
-
-    for service_user, anilist in anilist_data.items():
-        for media_type, entries in anilist.items():
-            for entry in entries:
-
-                list_tuple = (
-                    entry.list_name,
-                    service_user.user_id,
-                    ListService.ANILIST,
-                    media_type
+                user_state = cast(MediaUserState, update_or_insert_item(
+                    user_state, media_user_states
+                ))
+                media_list = anilist_user_item_to_media_list(
+                    anilist_item, username.user
                 )
-                if list_tuple in list_tuples_to_remove:
-                    list_tuples_to_remove.remove(list_tuple)
-                media_list = media_lists.get(list_tuple)
-
-                if media_list is None:
-                    media_list = MediaList(
-                        user_id=service_user.user_id,
-                        name=entry.list_name,
-                        service=ListService.ANILIST,
-                        media_type=media_type
-                    )
-                    db.session.add(media_list)
-                    db.session.commit()
-                    media_lists[list_tuple] = media_list
-
-                _, media_id = fetch_media_id(entry, media_items, media_ids)
-                assert media_id is not None
-
-                state_tuple = (media_id.id, service_user.user_id)
-                media_user_state = media_user_states[state_tuple]
-
-                list_item_tuple = (media_list.id, media_user_state.id)
-                if list_item_tuple in list_item_tuples_to_remove:
-                    list_item_tuples_to_remove.remove(list_item_tuple)
-
-                if list_item_tuple not in media_list_items:
-                    list_item = MediaListItem(
-                        media_list=media_list,
-                        media_user_state=media_user_state
-                    )
-                    db.session.add(list_item)
-
-            db.session.commit()
-
-    for list_tuple in list_tuples_to_remove:
-        if list_tuple in media_lists:
-            db.session.delete(media_lists.pop(list_tuple))
-    for list_item_tuple in list_item_tuples_to_remove:
-        if list_item_tuple in media_list_items:
-            db.session.delete(media_list_items.pop(list_item_tuple))
-
-    db.session.commit()
+                media_list = cast(MediaList, update_or_insert_item(
+                    media_list, media_lists
+                ))
+                media_list_item = MediaListItem(
+                    media_list_id=media_list.id,
+                    media_user_state_id=user_state.id
+                )
+                update_or_insert_item(
+                    media_list_item, media_list_items
+                )
+    db.session.commit()  # Commit Updates
+    app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
 
 
-def load_existing() -> Tuple[
+def __load_existing() -> Tuple[
     Dict[Tuple, MediaItem],
     Dict[Tuple, MediaId],
     Dict[Tuple, MediaUserState],
@@ -265,80 +103,30 @@ def load_existing() -> Tuple[
     Loads current database contents, mapped to unique identifer tuples
     :return: The database contents
     """
-    app.logger.debug("Loading Existing data for anilist update")
-    media_items: Dict[Tuple[str, MediaType, MediaSubType, str], MediaItem] = {
+    media_items: Dict[Tuple, MediaItem] = {
         x.identifier_tuple: x
-        for x in MediaItem.query.all()
+        for x in MediaItem.query.options(
+            db.joinedload(MediaItem.media_ids)
+              .subqueryload(MediaId.media_user_states)
+        ).all()
     }
-    app.logger.debug("Finished loading MediaItems")
-    media_ids: Dict[Tuple[ListService, int], MediaId] = {
+    media_ids: Dict[Tuple, MediaId] = {}
+    media_user_states: Dict[Tuple, MediaUserState] = {}
+    for media_item in media_items.values():
+        for media_id in media_item.media_ids:
+            media_ids[media_id.identifier_tuple] = media_id
+            for user_state in media_id.media_user_states:
+                media_user_states[user_state.identifier_tuple] = user_state
+    media_lists: Dict[Tuple, MediaList] = {
         x.identifier_tuple: x
-        for x in MediaId.query.all()
+        for x in MediaList.query.options(
+            db.joinedload(MediaList.media_list_items)
+        ).all()
     }
-    app.logger.debug("Finished loading MediaIds")
-    media_user_states: Dict[Tuple[int, int], MediaUserState] = {
-        x.identifier_tuple: x
-        for x in MediaUserState.query.all()
-    }
-    app.logger.debug("Finished loading MediaUserStates")
-    media_lists: Dict[Tuple[str, int, ListService, MediaType], MediaList] = {
-        x.identifier_tuple: x
-        for x in MediaList.query.all()
-    }
-    app.logger.debug("Finished loading MediaLists")
-    media_list_items: Dict[Tuple[int, int], MediaListItem] = {
-        x.identifier_tuple: x
-        for x in MediaListItem.query.all()
-    }
-    app.logger.debug("Finished loading MediaListItems")
+    media_list_items: Dict[Tuple, MediaListItem] = {}
+    for media_list in media_lists.values():
+        for list_item in media_list.media_list_items:
+            media_list_items[list_item.identifier_tuple] = list_item
+
     return media_items, media_ids, media_user_states, \
         media_lists, media_list_items
-
-
-def fetch_media_item(
-        anilist_entry: AnilistUserItem,
-        media_items: Dict[Tuple[str, MediaType, MediaSubType, str], MediaItem],
-) -> Tuple[
-    Tuple[str, MediaType, MediaSubType, str],
-    Optional[MediaItem]
-]:
-    """
-    Retrieves an existing media item based on anilist data
-    :param anilist_entry: The anilist entry to use
-    :param media_items: The preloaded media items
-    :return: The media item, or None if none exists
-    """
-    item_tuple = (
-        anilist_entry.romaji_title,
-        anilist_entry.media_type,
-        anilist_entry.media_subtype,
-        anilist_entry.cover_url
-    )
-    return item_tuple, media_items.get(item_tuple)
-
-
-def fetch_media_id(
-        anilist_entry: AnilistUserItem,
-        media_items: Dict[Tuple[str, MediaType, MediaSubType, str], MediaItem],
-        media_ids: Dict[Tuple[ListService, int], MediaId],
-        media_item: Optional[MediaId] = None
-) -> Tuple[Optional[Tuple[ListService, int]], Optional[MediaItem]]:
-    """
-    Retrieves an existing media ID based on anilist data
-    :param anilist_entry: The anilist entry to use
-    :param media_items: The preloaded media items
-    :param media_ids: The preloaded media IDs
-    :param media_item: Optional media item associated with the ID.
-                       If not provided, will figure out using anilist data
-    :return: The media ID, or None if none exists
-    """
-    if media_item is None:
-        _, media_item = fetch_media_item(anilist_entry, media_items)
-    if media_item is None:
-        return None, None
-    else:
-        id_tuple = (
-            ListService.ANILIST,
-            media_item.id
-        )
-        return id_tuple, media_ids.get(id_tuple)

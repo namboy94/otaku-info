@@ -75,7 +75,7 @@ class MangaChapterGuess(ModelMixin, db.Model):
     Timestamp from when the guess was last updated
     """
 
-    def update(self):
+    def update_guess(self):
         """
         Updates the manga chapter guess
         (if the latest guess is older than an hour)
@@ -94,6 +94,16 @@ class MangaChapterGuess(ModelMixin, db.Model):
         :return: A tuple that uniquely identifies this database entry
         """
         return self.media_id_id,
+
+    def update(self, new_data: "MangaChapterGuess"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_id_id = new_data.media_id_id
+        self.guess = new_data.guess
+        self.last_update = new_data.last_update
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

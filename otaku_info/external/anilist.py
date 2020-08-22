@@ -123,6 +123,7 @@ def load_anilist(
                 name
                 entries {
                     progress
+                    progressVolumes
                     score
                     status
                     media {@{MEDIA_QUERY}}
