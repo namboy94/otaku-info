@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import List, Optional, cast
+from typing import List, Optional, cast, Dict, Tuple
 from puffotter.flask.base import db, app
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
@@ -27,10 +27,11 @@ from otaku_info.db.MediaListItem import MediaListItem
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.ServiceUsername import ServiceUsername
 from otaku_info.external.anilist import load_anilist
+from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
 from otaku_info.enums import ListService, MediaType
 from otaku_info.utils.db.updater import update_or_insert_item
-from otaku_info.utils.db.convert import anilist_item_to_media_id, \
-    anilist_item_to_media_item, anilist_user_item_to_media_user_state, \
+from otaku_info.utils.db.convert import anime_list_item_to_media_id, \
+    anime_list_item_to_media_item, anilist_user_item_to_media_user_state, \
     anilist_user_item_to_media_list
 from otaku_info.utils.db.load import load_existing_media_data, \
     load_existing_media_list_data
@@ -50,7 +51,10 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]]):
         usernames = ServiceUsername.query\
             .filter_by(service=ListService.ANILIST).all()
 
-    anilist_data = {
+    anilist_data: Dict[
+        ServiceUsername,
+        Dict[MediaType, List[AnilistUserItem]]
+    ] = {
         username: {
             media_type: load_anilist(username.username, media_type)
             for media_type in MediaType
@@ -63,32 +67,69 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]]):
     for username, anilist_info in anilist_data.items():
         for media_type, anilist_items in anilist_info.items():
             for anilist_item in anilist_items:
-                media_item = anilist_item_to_media_item(anilist_item)
-                media_item = cast(MediaItem, update_or_insert_item(
-                    media_item, media_items
-                ))
-                media_id = anilist_item_to_media_id(anilist_item, media_item)
-                media_id = cast(MediaId, update_or_insert_item(
-                    media_id, media_ids
-                ))
-                user_state = anilist_user_item_to_media_user_state(
-                    anilist_item, media_id, username.user
+                __perform_update(
+                    anilist_item,
+                    username,
+                    media_items,
+                    media_ids,
+                    media_user_states,
+                    media_lists,
+                    media_list_items
                 )
-                user_state = cast(MediaUserState, update_or_insert_item(
-                    user_state, media_user_states
-                ))
-                media_list = anilist_user_item_to_media_list(
-                    anilist_item, username.user
-                )
-                media_list = cast(MediaList, update_or_insert_item(
-                    media_list, media_lists
-                ))
-                media_list_item = MediaListItem(
-                    media_list_id=media_list.id,
-                    media_user_state_id=user_state.id
-                )
-                update_or_insert_item(
-                    media_list_item, media_list_items
-                )
-    db.session.commit()  # Commit Updates
+
+    db.session.commit()  # Commit pending Updates
     app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
+
+
+def __perform_update(
+        anilist_item: AnilistUserItem,
+        username: ServiceUsername,
+        media_items: Dict[Tuple, MediaItem],
+        media_ids: Dict[Tuple, MediaId],
+        media_user_states: Dict[Tuple, MediaUserState],
+        media_lists: Dict[Tuple, MediaList],
+        media_list_items: Dict[Tuple, MediaListItem]
+):
+    """
+    Inserts or updates the contents of a single anilist user item
+    :param anilist_item: The anilist user item
+    :param username: The service username
+    :param media_items: Existing media items
+    :param media_ids: Existing media ids
+    :param media_user_states: Existing media user states
+    :param media_lists: Existing media lists
+    :param media_list_items: Existing media list items
+    :param myanimelist_ids: Existing myanimelist IDs
+    :return: None
+    """
+    media_item = anime_list_item_to_media_item(anilist_item)
+    media_item = cast(MediaItem, update_or_insert_item(
+        media_item, media_items
+    ))
+
+    media_id = anime_list_item_to_media_id(anilist_item, media_item)
+    media_id = cast(MediaId, update_or_insert_item(media_id, media_ids))
+
+    if anilist_item.myanimelist_id is not None:
+        mal_id = anime_list_item_to_media_id(
+            anilist_item, media_item, ListService.MYANIMELIST
+        )
+        update_or_insert_item(mal_id, media_ids)
+
+    user_state = anilist_user_item_to_media_user_state(
+        anilist_item, media_id, username.user
+    )
+    user_state = cast(MediaUserState, update_or_insert_item(
+        user_state, media_user_states
+    ))
+
+    media_list = anilist_user_item_to_media_list(anilist_item, username.user)
+    media_list = cast(MediaList, update_or_insert_item(
+        media_list, media_lists
+    ))
+
+    media_list_item = MediaListItem(
+        media_list_id=media_list.id,
+        media_user_state_id=user_state.id
+    )
+    update_or_insert_item(media_list_item, media_list_items)

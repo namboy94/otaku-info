@@ -17,48 +17,77 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+from typing import Optional
 from puffotter.flask.db.User import User
-from otaku_info.enums import ListService
+from otaku_info.enums import ListService, MediaType, MediaSubType
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaUserState import MediaUserState
-from otaku_info.external.entities.AnilistItem import AnilistItem
+from otaku_info.external.entities.AnimeListItem import AnimeListItem
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
+from otaku_info.external.entities.MangadexItem import MangadexItem
 
 
-def anilist_item_to_media_item(anilist_item: AnilistItem) -> MediaItem:
+def anime_list_item_to_media_item(anime_list_item: AnimeListItem) -> MediaItem:
     """
-    Converts an anilist item to a media item object
-    :param anilist_item: The anilist item
+    Converts an anime list item to a media item object
+    :param anime_list_item: The anime list item
     :return: The media item
     """
     return MediaItem(
-        media_type=anilist_item.media_type,
-        media_subtype=anilist_item.media_subtype,
-        english_title=anilist_item.english_title,
-        romaji_title=anilist_item.romaji_title,
-        cover_url=anilist_item.cover_url,
-        latest_release=anilist_item.latest_release,
-        latest_volume_release=anilist_item.volumes,
-        releasing_state=anilist_item.releasing_state
+        media_type=anime_list_item.media_type,
+        media_subtype=anime_list_item.media_subtype,
+        english_title=anime_list_item.english_title,
+        romaji_title=anime_list_item.romaji_title,
+        cover_url=anime_list_item.cover_url,
+        latest_release=anime_list_item.latest_release,
+        latest_volume_release=anime_list_item.volumes,
+        releasing_state=anime_list_item.releasing_state
     )
 
 
-def anilist_item_to_media_id(
-        anilist_item: AnilistItem,
-        media_item: MediaItem
+def mangadex_item_to_media_item(mangadex_item: MangadexItem) -> MediaItem:
+    """
+    Converts a mangadex item to a media item object
+    :param mangadex_item: The mangadex item
+    :return: The media item
+    """
+    return MediaItem(
+        media_type=MediaType.MANGA,
+        media_subtype=MediaSubType.MANGA,
+        english_title=mangadex_item.title,
+        romaji_title=mangadex_item.title,
+        cover_url=mangadex_item.cover_url,
+        latest_release=mangadex_item.total_chapters,
+        latest_volume_release=None,
+        releasing_state=mangadex_item.releasing_state
+    )
+
+
+def anime_list_item_to_media_id(
+        anime_list_item: AnimeListItem,
+        media_item: MediaItem,
+        list_service: Optional[ListService] = None
 ) -> MediaId:
     """
-    Converts an anilist item into a media id
-    :param anilist_item: The anilist item
+    Converts an anime list item into a media id
+    :param anime_list_item: The anime list item
     :param media_item: The corresponding media item
+    :param list_service: Uses an extra ID with the specified list service
     :return: The generated media id
     """
+    if list_service is not None:
+        service_id = anime_list_item.extra_ids[list_service]
+        service = ListService.MYANIMELIST
+    else:
+        service_id = anime_list_item.id
+        service = ListService.ANILIST
+
     return MediaId(
         media_item_id=media_item.id,
-        service_id=str(anilist_item.anilist_id),
-        service=ListService.ANILIST,
+        service_id=str(service_id),
+        service=service,
         media_type=media_item.media_type
     )
 

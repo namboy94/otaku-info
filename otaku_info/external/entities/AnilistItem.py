@@ -17,68 +17,27 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Optional, Dict, Any, Tuple
+from typing import Dict, Any, Optional
 from otaku_info.enums import MediaType, MediaSubType, \
-    ReleasingState, MediaRelationType
+    ReleasingState, MediaRelationType, ListService
+from otaku_info.external.entities.AnimeListItem import AnimeListItem
 
 
-class AnilistItem:
+class AnilistItem(AnimeListItem):
     """
     Class that models a general anilist list item
     Represents the information fetched using anilist's API
     """
-    def __init__(
-            self,
-            anilist_id: int,
-            myanimelist_id: Optional[int],
-            media_type: MediaType,
-            media_subtype: MediaSubType,
-            english_title: Optional[str],
-            romaji_title: str,
-            cover_url: str,
-            chapters: Optional[int],
-            volumes: Optional[str],
-            episodes: Optional[int],
-            releasing_state: ReleasingState,
-            relations: Dict[Tuple[MediaType, int], MediaRelationType]
-    ):
-        """
-        Initializes the AnilistItem object
-        :param anilist_id: The anilist ID of the series
-        :param myanimelist_id: The myanimelist ID of the series
-        :param media_type: The media type of the series
-        :param media_subtype: The media subtype of the series
-        :param english_title: The English title of the series
-        :param romaji_title: The Japanes title of the series written in romaji
-        :param cover_url: URL to a cover image for the series
-        :param chapters: The total amount of known manga chapters
-        :param volumes: The total amount of known manga/ln volumes
-        :param episodes: The total amount of known anime episodes
-        :param releasing_state: The current releasing state of the series
-        :param relations: Related media items identified by IDs
-        """
-        self.anilist_id = anilist_id
-        self.myanimelist_id = myanimelist_id
-        self.media_type = media_type
-        self.media_subtype = media_subtype
-        self.english_title = english_title
-        self.romaji_title = romaji_title
-        self.cover_url = cover_url
-        self.chapters = chapters
-        self.volumes = volumes
-        self.episodes = episodes
-        self.releasing_state = releasing_state
-        self.relations = relations
 
     @property
-    def latest_release(self) -> Optional[int]:
+    def myanimelist_id(self) -> Optional[int]:
         """
-        :return: The latest release. Chapters for manga, episodes for anime
+        :return: The myanimelist ID
         """
-        if self.media_type == MediaType.ANIME:
-            return self.episodes
-        else:
-            return self.chapters
+        try:
+            return int(self.extra_ids.get(ListService.MYANIMELIST))
+        except (ValueError, TypeError):
+            return None
 
     @classmethod
     def from_query(cls, media_type: MediaType, data: Dict[str, Any]) \
@@ -106,9 +65,15 @@ class AnilistItem:
             relation_type = MediaRelationType(edge["relationType"].lower())
             relations[(node_type, node_id)] = relation_type
 
+        extra_ids = {}
+        mal_id = data["idMal"]
+        if mal_id is not None:
+            extra_ids[ListService.MYANIMELIST] = str(mal_id)
+
         return AnilistItem(
             data["id"],
-            data["idMal"],
+            ListService.ANILIST,
+            extra_ids,
             media_type,
             media_subtype,
             data["title"]["english"],

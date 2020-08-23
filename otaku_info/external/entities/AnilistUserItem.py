@@ -20,7 +20,7 @@ LICENSE"""
 from typing import Optional, Dict, Any, Tuple
 from otaku_info.external.entities.AnilistItem import AnilistItem
 from otaku_info.enums import MediaType, MediaSubType, \
-    ReleasingState, ConsumingState, MediaRelationType
+    ReleasingState, ConsumingState, MediaRelationType, ListService
 
 
 class AnilistUserItem(AnilistItem):
@@ -30,8 +30,9 @@ class AnilistUserItem(AnilistItem):
     """
     def __init__(
             self,
-            anilist_id: int,
-            myanimelist_id: Optional[int],
+            _id: int,
+            service: ListService,
+            extra_ids: Dict[ListService, str],
             media_type: MediaType,
             media_subtype: MediaSubType,
             english_title: Optional[str],
@@ -50,8 +51,9 @@ class AnilistUserItem(AnilistItem):
     ):
         """
         Initializes the AnilistItem object
-        :param anilist_id: The anilist ID of the series
-        :param myanimelist_id: The myanimelist ID of the series
+        :param _id: The anilist ID
+        :param service: Anilist
+        :param extra_ids: The myanimelist ID of the series
         :param media_type: The media type of the series
         :param media_subtype: The media subtype of the series
         :param english_title: The English title of the series
@@ -69,8 +71,9 @@ class AnilistUserItem(AnilistItem):
         :param list_name: Which of the user's lists this entry belongs to
         """
         super().__init__(
-            anilist_id,
-            myanimelist_id,
+            _id,
+            service,
+            extra_ids,
             media_type,
             media_subtype,
             english_title,
@@ -104,9 +107,10 @@ class AnilistUserItem(AnilistItem):
         base = AnilistItem.from_query(media_type, data["media"])
         consuming_state = ConsumingState(data["status"].lower())
 
-        return AnilistUserItem(
-            base.anilist_id,
-            base.myanimelist_id,
+        return cls(
+            base.id,
+            base.service,
+            base.extra_ids,
             base.media_type,
             base.media_subtype,
             base.english_title,

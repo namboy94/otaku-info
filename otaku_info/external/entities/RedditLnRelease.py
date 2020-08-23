@@ -21,7 +21,7 @@ from datetime import datetime
 from typing import Optional, List
 from bs4.element import Tag
 from otaku_info.utils.dates import map_month_name_to_month_number
-from otaku_info.external.anilist import load_media_info
+from otaku_info.external.anilist import load_anilist_info
 from otaku_info.enums import ListService, MediaType
 
 
@@ -98,7 +98,7 @@ class RedditLnRelease:
         """
         :return: The anilist ID, if available
         """
-        anilist_info = load_media_info(
+        anilist_info = load_anilist_info(
             self.myanimelist_id, MediaType.MANGA, ListService.MYANIMELIST
         )
         if anilist_info is not None:

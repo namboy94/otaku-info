@@ -17,8 +17,9 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List, Optional
 from puffotter.flask.base import db
+from otaku_info.enums import ListService, MediaType
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaList import MediaList
@@ -73,3 +74,29 @@ def load_existing_media_list_data() -> Tuple[
             media_list_items[list_item.identifier_tuple] = list_item
 
     return media_lists, media_list_items
+
+
+def load_service_ids(
+        limit_media_type_to: Optional[MediaType] = None
+) -> Dict[ListService, Dict[str, MediaId]]:
+    """
+    Loads Media IDs from the database and maps them to their service id
+    :param limit_media_type_to: If set, limits the media type
+    :return: The mapped ids
+    """
+    media_ids: List[MediaId] = MediaId.query.options(
+        db.joinedload(MediaId.media_item)
+          .subqueryload(MediaItem.media_ids)
+    ).all()
+
+    if limit_media_type_to is not None:
+        media_ids = list(filter(
+            lambda x: x.media_type == limit_media_type_to,
+            media_ids
+        ))
+
+    mapped_ids = {x: {} for x in ListService}
+    for media_id in media_ids:
+        mapped_ids[media_id.service][media_id.service_id] = media_id
+
+    return mapped_ids

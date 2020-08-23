@@ -151,7 +151,7 @@ def load_anilist(
     return anilist_items
 
 
-def load_media_info(
+def load_anilist_info(
         service_id: int,
         media_type: MediaType,
         service: ListService = ListService.ANILIST

@@ -19,7 +19,7 @@ LICENSE"""
 
 from typing import Dict, Tuple, Callable
 from otaku_info.background.anilist import update_anilist_data
-from otaku_info.background.mangadex import load_id_mappings
+from otaku_info.background.mangadex import load_mangadex_data
 from otaku_info.background.manga_chapters import \
     update_manga_chapter_guesses
 from otaku_info.background.notifications import \

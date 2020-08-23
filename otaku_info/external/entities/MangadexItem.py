@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any
-from otaku_info.enums import ListService
+from typing import Dict, Any, Optional
+from otaku_info.enums import ListService, ReleasingState
 from otaku_info.utils.mappings import mangadex_external_id_names, \
     list_service_id_types
 
@@ -31,15 +31,30 @@ class MangadexItem:
     def __init__(
             self,
             mangadex_id: int,
-            external_ids: Dict[ListService, str]
+            external_ids: Dict[ListService, str],
+            title: str,
+            cover_url: str,
+            total_chapters: int,
+            latest_chapter: int,
+            releasing_state: ReleasingState
     ):
         """
         Initializes the MangadexItem object
         :param mangadex_id: The mangadex ID of the series
         :param external_ids: IDs for other services
+        :param title: The title of the series
+        :param cover_url: URL to a cover image for this series
+        :param total_chapters: The total amount of chapters
+        :param latest_chapter: The latest chapter
+        :param releasing_state: The releasing state
         """
         self.mangadex_id = mangadex_id
         self.external_ids = external_ids
+        self.title = title
+        self.cover_url = cover_url
+        self.total_chapters = total_chapters
+        self.latest_chapter = latest_chapter
+        self.releasing_state = releasing_state
 
     @classmethod
     def from_json(cls, mangadex_id: int, data: Dict[str, Any]) \
@@ -64,7 +79,59 @@ class MangadexItem:
                     except ValueError:
                         pass
 
+        total_chapters = cls.parse_chapter(data["manga"]["last_chapter"])
+        if total_chapters == 0:
+            total_chapters = None
+
+        english_chapters = [
+            cls.parse_chapter(x["chapter"])
+            for x in data.get("chapter", {}).values()
+            if x["lang_code"] == "gb"
+        ]
+        english_chapters = [x for x in english_chapters if x is not None]
+        english_chapters.sort(reverse=True)
+        newest_chapter = None
+        if len(english_chapters) > 0:
+            newest_chapter = english_chapters[0]
+
+        releasing_state = cls.resolve_releasing_state(data["manga"]["status"])
+
         return MangadexItem(
             mangadex_id,
-            ids
+            ids,
+            data["manga"]["title"],
+            data["manga"]["cover_url"],
+            total_chapters,
+            newest_chapter,
+            releasing_state
         )
+
+    @staticmethod
+    def parse_chapter(chapter_string: str) -> Optional[int]:
+        """
+        Converts a mangadex chapter string into an integer
+        :param chapter_string: The chapter string to convert
+        :return: The converted integer
+        """
+        chapter_string = chapter_string.split(".")[0]
+        chapter_string = "".join([
+            x for x in chapter_string if x.isdigit()
+        ])
+        try:
+            return int(chapter_string)
+        except (ValueError, TypeError):
+            return None
+
+    @staticmethod
+    def resolve_releasing_state(state_code: int) -> ReleasingState:
+        """
+        Translates mangadex status codes to releasing states
+        :param state_code: The status code to translate
+        :return: The releasing state
+        """
+        return {
+            1: ReleasingState.RELEASING,
+            2: ReleasingState.FINISHED,
+            3: ReleasingState.CANCELLED,
+            4: ReleasingState.UNKNOWN  # Hiatus
+        }[state_code]
