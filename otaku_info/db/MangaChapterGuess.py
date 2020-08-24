@@ -45,9 +45,7 @@ class MangaChapterGuess(ModelMixin, db.Model):
 
     media_id_id: int = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "media_ids.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
+        db.ForeignKey("media_ids.id"),
         nullable=False,
         unique=True
     )
@@ -56,10 +54,7 @@ class MangaChapterGuess(ModelMixin, db.Model):
     """
 
     media_id: MediaId = db.relationship(
-        "MediaId",
-        backref=db.backref(
-            "manga_chapter_guesses", lazy=True, cascade="all,delete"
-        )
+        "MediaId", back_populates="chapter_guess"
     )
     """
     The media ID referenced by this manga chapter guess

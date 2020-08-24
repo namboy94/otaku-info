@@ -31,10 +31,10 @@ from otaku_info.utils.db.updater import update_or_insert_item
 from otaku_info.utils.db.convert import mangadex_item_to_media_item, \
     anime_list_item_to_media_item
 from otaku_info.utils.db.load import load_existing_media_data, load_service_ids
-from otaku_info.utils.mappings import list_service_priorities
+from otaku_info.mappings import list_service_priorities
 
 
-def load_mangadex_data(
+def update_mangadex_data(
         start: int = 1,
         end: Optional[int] = None,
         refresh: bool = False
@@ -58,6 +58,7 @@ def load_mangadex_data(
         mangadex_id += 1
 
         if mangadex_id % 100 == 0:
+            db.session.commit()
             existing_ids, existing_media_items, existing_media_ids = \
                 __update_cache()
 
@@ -83,6 +84,7 @@ def load_mangadex_data(
             existing_media_ids
         )
 
+    db.session.commit()
     app.logger.info(f"Finished Mangadex Update in "
                     f"{time.time() - start_time}s.")
 

@@ -18,6 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
+from typing import Dict
 from puffotter.flask.base import db, app
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
@@ -36,7 +37,7 @@ def update_manga_chapter_guesses():
         if x.media_id.media_item.media_type == MediaType.MANGA
         and x.media_id.service == ListService.ANILIST
     }
-    guesses = {
+    guesses: Dict[str, MangaChapterGuess] = {
         x.media_id.service_id: x
         for x in MangaChapterGuess.query.all()
     }
@@ -56,7 +57,7 @@ def update_manga_chapter_guesses():
             app.logger.debug(f"Deleting stale chapter guess for {anilist_id}")
         else:
             app.logger.debug(f"Updating chapter guess for {anilist_id}")
-            guess.update()
+            guess.update_guess()
             time.sleep(1)
 
         db.session.commit()

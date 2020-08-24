@@ -43,26 +43,19 @@ class LnRelease(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_item_id: Optional[int] = db.Column(
-        db.Integer,
-        db.ForeignKey(
-            "media_items.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
-        nullable=True,
-        unique=False
+    media_item_id: int = db.Column(
+        db.Integer, db.ForeignKey("media_items.id"), nullable=True
     )
     """
-    The ID of the media item referenced by this light novel release
+    The ID of the media item referenced by this release
     """
 
-    media_item: Optional[MediaItem] = db.relationship(
+    media_item: MediaItem = db.relationship(
         "MediaItem",
-        backref=db.backref(
-            "ln_releases", lazy=True, cascade="all,delete"
-        )
+        back_populates="ln_releases"
     )
     """
-    The media item referenced by this light novel release
+    The media item referenced by this release
     """
 
     release_date_string: str = db.Column(db.String(10), nullable=False)
@@ -108,11 +101,11 @@ class LnRelease(ModelMixin, db.Model):
         return datetime.strptime(self.release_date_string, "%Y-%m-%d")
 
     @property
-    def identifier_tuple(self) -> Tuple[int, str, bool, bool]:
+    def identifier_tuple(self) -> Tuple[str, str, bool, bool]:
         """
         :return: A tuple that uniquely identifies this database entry
         """
-        return self.media_item_id, self.volume, self.digital, self.physical
+        return self.series_name, self.volume, self.digital, self.physical
 
     def update(self, new_data: "LnRelease"):
         """

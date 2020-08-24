@@ -37,7 +37,7 @@ from otaku_info.utils.db.load import load_existing_media_data, \
     load_existing_media_list_data
 
 
-def update_anilist_data(usernames: Optional[List[ServiceUsername]]):
+def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
     """
     Retrieves all entries on the anilists of all users that provided
     an anilist username
@@ -99,7 +99,6 @@ def __perform_update(
     :param media_user_states: Existing media user states
     :param media_lists: Existing media lists
     :param media_list_items: Existing media list items
-    :param myanimelist_ids: Existing myanimelist IDs
     :return: None
     """
     media_item = anime_list_item_to_media_item(anilist_item)

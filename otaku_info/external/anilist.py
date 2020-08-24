@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import time
 from typing import Optional, List
 from puffotter.graphql import GraphQlClient
 from otaku_info.enums import MediaType, ListService
@@ -98,6 +99,7 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
     progresses = progresses[0:20]
     progresses.sort(key=lambda x: progresses.count(x), reverse=True)
     progresses = sorted(progresses, key=progresses.count, reverse=True)
+    time.sleep(0.5)
 
     try:
         return progresses[0]

@@ -20,31 +20,31 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 <li class="list-group-item">
     <div class="row">
         <div class="col-md-1">
-            <img class="manga_update_image" src="{{ entry.cover_url }}" alt="{{ entry.title }}">
+            <img class="manga_update_image" src="{{ update.cover_url }}" alt="{{ update.title }}">
         </div>
         <div class="col-md-5 name">
-            <a style="padding-right: 30px" href="{{ entry.url }}">{{ entry.title }}</a>
+            <a style="padding-right: 30px" href="{{ update.url }}">{{ update.title }}</a>
         </div>
         <div class="col-md-2">
-            {% for related_id in entry.related_ids %}
+            {% for related_id in update.related_ids %}
                 <span style="padding-right:3px; padding-top: 3px; display:inline-block;">
-                    <a href="{{ related_id.url }}">
-                        <img style="max-height: 30px" src="{{ related_id.icon }}" alt="{{ related_id.service.name }}"/>
+                    <a href="{{ related_id.service_url }}">
+                        <img style="max-height: 30px" src="{{ related_id.service_icon }}" alt="{{ related_id.service.name }}"/>
                     </a>
                 </span>
             {%  endfor %}
         </div>
         <div class="col-md-1 user_score">
-            {{  entry.score }}
+            {{  update.score }}
         </div>
         <div class="col-md-1 user_progress">
-            {{  entry.progress }}
+            {{  update.progress }}
         </div>
         <div class="col-md-1 latest">
-            {{ entry.latest }}
+            {{ update.latest }}
         </div>
         <div class="col-md-1 diff">
-            <span class="badge badge-pill badge-danger">{{ entry.diff }}</span>
+            <span class="badge badge-pill badge-danger">{{ update.diff }}</span>
         </div>
     </div>
 </li>

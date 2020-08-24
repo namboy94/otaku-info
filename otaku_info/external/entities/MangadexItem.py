@@ -19,7 +19,7 @@ LICENSE"""
 
 from typing import Dict, Any, Optional
 from otaku_info.enums import ListService, ReleasingState
-from otaku_info.utils.mappings import mangadex_external_id_names, \
+from otaku_info.mappings import mangadex_external_id_names, \
     list_service_id_types
 
 

@@ -80,6 +80,13 @@ class RedditLnRelease:
         return datetime(year=self.year, month=month, day=day)
 
     @property
+    def release_date_string(self) -> str:
+        """
+        :return: The release date as a string (ISO 8601)
+        """
+        return self.release_date.strftime("%Y-%m-%d")
+
+    @property
     def myanimelist_id(self) -> Optional[int]:
         """
         :return: The myanimelist ID, if available
@@ -102,7 +109,7 @@ class RedditLnRelease:
             self.myanimelist_id, MediaType.MANGA, ListService.MYANIMELIST
         )
         if anilist_info is not None:
-            return anilist_info.anilist_id
+            return anilist_info.id
         else:
             return None
 

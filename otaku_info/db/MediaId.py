@@ -18,14 +18,15 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from flask import url_for
-from typing import Dict, Any, List, TYPE_CHECKING, Tuple
+from typing import Dict, Any, List, TYPE_CHECKING, Tuple, Optional
 from puffotter.flask.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.enums import ListService, MediaType
-from otaku_info.utils.db_model_helper import build_service_url
+from otaku_info.mappings import list_service_url_formats
 from otaku_info.db.MediaItem import MediaItem
 if TYPE_CHECKING:
     from otaku_info.db.MediaUserState import MediaUserState
+    from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 
 
 class MediaId(ModelMixin, db.Model):
@@ -104,14 +105,26 @@ class MediaId(ModelMixin, db.Model):
     Media user states associated with this media ID
     """
 
+    chapter_guess: Optional["MangaChapterGuess"] = db.relationship(
+        "MangaChapterGuess",
+        uselist=False,
+        back_populates="media_id",
+        cascade="all, delete"
+    )
+    """
+    Chapter Guess for this media ID (Only applicable if this is a manga title)
+    """
+
     @property
     def service_url(self) -> str:
         """
         :return: The URL to the series for the given service
         """
-        return build_service_url(
-            self.media_item.media_type, self.service, self.service_id
-        )
+        url_format = list_service_url_formats[self.service]
+        url = url_format \
+            .replace("@{media_type}", f"{self.media_type.value}") \
+            .replace("@{id}", self.service_id)
+        return url
 
     @property
     def service_icon(self) -> str:
@@ -119,7 +132,7 @@ class MediaId(ModelMixin, db.Model):
         :return: The path to the service's icon file
         """
         return url_for(
-            "static", filename="service_logos/" + self.service.value + ".png"
+            "static", filename=f"service_logos/{self.service.value}.png"
         )
 
     @property

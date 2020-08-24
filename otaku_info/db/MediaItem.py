@@ -17,14 +17,15 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+from flask import url_for
 from typing import Dict, Any, Optional, List, Tuple, TYPE_CHECKING
 from puffotter.flask.base import db
 from otaku_info.db.ModelMixin import ModelMixin
-from otaku_info.utils.db_model_helper import build_title
 from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
     ListService
 if TYPE_CHECKING:
     from otaku_info.db.MediaId import MediaId
+    from otaku_info.db.LnRelease import LnRelease
 
 
 class MediaItem(ModelMixin, db.Model):
@@ -112,6 +113,13 @@ class MediaItem(ModelMixin, db.Model):
     Media IDs associated with this Media item
     """
 
+    ln_releases: List["LnRelease"] = db.relationship(
+        "LnRelease", back_populates="media_item", cascade="all, delete"
+    )
+    """
+    Light novel releases associated with this Media item
+    """
+
     @property
     def media_id_mapping(self) -> Dict[ListService, "MediaId"]:
         """
@@ -149,7 +157,17 @@ class MediaItem(ModelMixin, db.Model):
         """
         :return: The default title for the media item.
         """
-        return build_title(self.english_title, self.romaji_title)
+        if self.english_title is None:
+            return self.romaji_title
+        else:
+            return self.english_title
+
+    @property
+    def own_url(self) -> str:
+        """
+        :return: The URL to the item's page on the otaku-info site
+        """
+        return url_for("media.media", media_item_id=self.id)
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

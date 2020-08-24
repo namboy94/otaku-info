@@ -45,28 +45,4 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             media_ids=media_ids
         )
 
-    @blueprint.route("/test")
-    def test():
-        from otaku_info.db.ServiceUsername import ServiceUsername
-        from otaku_info.background.anilist import update_anilist_data
-        update_anilist_data(ServiceUsername.query.all())
-        from otaku_info.background.mangadex import load_mangadex_data
-        load_mangadex_data(950)
-        return "OK"
-
-    @blueprint.route("/setup")
-    def testsetup():
-        from puffotter.flask.base import db
-        from puffotter.flask.db.User import User
-        from otaku_info.db.ServiceUsername import ServiceUsername
-        from otaku_info.enums import ListService
-        user = User(id=100, username="test", email="test@example.com",
-                    confirmed=True, confirmation_hash="", password_hash="")
-        username = ServiceUsername(user=user, username="namboy94",
-                                   service=ListService.ANILIST)
-        db.session.add(user)
-        db.session.add(username)
-        db.session.commit()
-        return "OK"
-
     return blueprint

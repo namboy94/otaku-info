@@ -19,7 +19,7 @@ LICENSE"""
 
 from typing import Dict, Tuple, Callable
 from otaku_info.background.anilist import update_anilist_data
-from otaku_info.background.mangadex import load_mangadex_data
+from otaku_info.background.mangadex import update_mangadex_data
 from otaku_info.background.manga_chapters import \
     update_manga_chapter_guesses
 from otaku_info.background.notifications import \
@@ -30,9 +30,9 @@ from otaku_info.background.ln_releases import update_ln_releases
 bg_tasks: Dict[str, Tuple[int, Callable]] = {
     # "anilist_update": (60, update_anilist_data),
     # "update_manga_chapter_guesses": (60, update_manga_chapter_guesses),
-    # "load_id_mappings": (60 * 60 * 24, load_id_mappings),
+    # "mangadex_update": (60 * 60 * 24, update_mangadex_data),
     # "manga_chapter_notifications": (60, send_new_manga_chapter_notifications),
-    # "ln_release_updates": (60 * 60 * 24, update_ln_releases)
+    "ln_release_updates": (60 * 60 * 24, update_ln_releases)
 }
 """
 A dictionary containing background tasks for the flask application

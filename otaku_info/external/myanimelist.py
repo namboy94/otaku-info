@@ -21,6 +21,7 @@ import time
 import json
 import requests
 from typing import Optional
+from puffotter.flask.base import app
 from otaku_info.enums import MediaType
 from otaku_info.external.entities.MyanimelistItem import MyanimelistItem
 
@@ -44,5 +45,12 @@ def load_myanimelist_item(myanimelist_id: int, media_type: MediaType) \
         return None
 
     data = json.loads(response.text)
+    if data["type"] == "BadResponseException":
+        return None
+    elif data["type"] == "RateLimitException":
+        time.sleep(30)
+        app.logger.warning("Rate limited by jikan")
+        return load_myanimelist_item(myanimelist_id, media_type)
+
     mal_item = MyanimelistItem.from_query(media_type, data)
     return mal_item

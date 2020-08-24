@@ -59,7 +59,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
             {% else %}
 
                 <li class="nav-item {% if request.path == "/manga/updates" %} active {% endif %}">
-                    <a class="nav-link" href="{{ url_for("manga.show_manga_updates") }}">Manga Updates</a>
+                    <a class="nav-link" href="{{ url_for("updates.show_updates") }}">Updates</a>
                 </li>
                 <li class="nav-item {% if request.path == "/ln/releases" %} active {% endif %}">
                     <a class="nav-link" href="{{ url_for("ln.ln_releases") }}">LN Releases</a>

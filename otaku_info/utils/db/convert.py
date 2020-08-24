@@ -24,9 +24,11 @@ from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaUserState import MediaUserState
+from otaku_info.db.LnRelease import LnRelease
 from otaku_info.external.entities.AnimeListItem import AnimeListItem
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
 from otaku_info.external.entities.MangadexItem import MangadexItem
+from otaku_info.external.entities.RedditLnRelease import RedditLnRelease
 
 
 def anime_list_item_to_media_item(anime_list_item: AnimeListItem) -> MediaItem:
@@ -129,4 +131,27 @@ def anilist_user_item_to_media_list(
         name=anilist_user_item.list_name,
         service=ListService.ANILIST,
         media_type=anilist_user_item.media_type
+    )
+
+
+def ln_release_from_reddit_item(
+        ln_release: RedditLnRelease,
+        media_item: Optional[MediaItem]
+) -> LnRelease:
+    """
+    Creates an LnRelease object based on a RedditLnRelease object
+    :param ln_release: The RedditLnRelease object
+    :param media_item: An associated MediaItem
+    :return: The LnRelease object
+    """
+    media_item_id = None if media_item is None else media_item.id
+    return LnRelease(
+        media_item_id=media_item_id,
+        release_date_string=ln_release.release_date_string,
+        series_name=ln_release.series_name,
+        volume=ln_release.volume,
+        publisher=ln_release.publisher,
+        purchase_link=ln_release.purchase_link,
+        digital=ln_release.digital,
+        physical=ln_release.physical
     )
