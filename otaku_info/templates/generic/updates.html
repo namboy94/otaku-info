@@ -17,94 +17,15 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-<!--static/index.html-->
+<!--generic/updates.html-->
 {% extends "components/base_layout.html" %}
 {% block body %}
     {% if updates is defined %}
         <h1>[{{service.value.title()}} ({{media_type.value.title()}})] {{list_name}}</h1>
-        <div id="update-list">
-            <div class="row text-center">
-                <div class="col-md-1">
-                    Image
-                </div>
-                <div class="col-md-5">
-                    <button class="sort" data-sort="name">Name</button>
-                </div>
-                <div class="col-md-2">
-                    Links
-                </div>
-                <div class="col-md-1">
-                    <button class="sort" data-sort="user_score">Score</button>
-                </div>
-                <div class="col-md-1">
-                    <button class="sort" data-sort="user_progress">Progress</button>
-                </div>
-                <div class="col-md-1">
-                    <button class="sort" data-sort="latest">Latest</button>
-                </div>
-                <div class="col-md-1">
-                    <button class="sort" data-sort="diff">New</button>
-                </div>
-            </div>
-            <ul class="list-group list">
-                {% for update in updates %}
-                    {% include "generic/update_item.html" %}
-                {% endfor %}
-            </ul>
-        </div>
-        <!--suppress JSUnresolvedFunction, ES6ConvertVarToLetConst -->
-        <script>
-            var userList = new List('update-list', {
-                valueNames: [
-                    "diff",
-                    "name",
-                    "user_score",
-                    "user_progress",
-                    "latest"
-                ]
-            });
-        </script>
+        {% include "generic/update_list.html" %}
 
     {% else %}
         <h1>Updates</h1>
-        <div class="container form-container">
-            <form method="post" action="{{ url_for("updates.show_updates") }}">
-                <div class="form-row align-items-center">
-                    <div class="col-md-3">
-                        <label class="sr-only" for="list_input">List</label>
-                        <select id="list_input" name="list_ident" class="form-control mb-2">
-                            {% for media_list in media_lists %}
-                                {% set name = media_list.name %}
-                                {% set media_type = media_list.media_type.value %}
-                                {% set service = media_list.service.value %}
-                                <option value="{{service}}:{{media_type}}:{{name}}">
-                                    [{{service.title()}} ({{media_type.title()}})] {{name.title()}}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="sr-only" for="mincount_input">Minimum Update Count</label>
-                        <div class="input-group mb-2">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">Minimum Update Count</div>
-                            </div>
-                            <input type="number" class="form-control" id="mincount_input" value=0 name="mincount">
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-check mb-2">
-                           <input class="form-check-input" type="checkbox" id="include_complete_check">
-                           <label class="form-check-label" for="include_complete_check">
-                               Include Complete
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary mb-2">Go</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+        {% include "generic/update_config.html" %}
     {% endif %}
 {% endblock %}

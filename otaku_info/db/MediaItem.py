@@ -47,6 +47,12 @@ class MediaItem(ModelMixin, db.Model):
             "cover_url",  # Sometimes, there legitimately exist some media
                           # items with the same name
                           # (for example pre-serialization & serialized works)
+            name="unique_media_item_data"
+        ),
+        db.UniqueConstraint(
+            "id",
+            "media_type",
+            "media_subtype",
             name="unique_media_item"
         ),
     )

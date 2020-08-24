@@ -1,0 +1,1 @@
+docker run --rm -d -v otakutestdb:/var/lib/postgresql/data -p 5432:5432 -e POSTGRES_USER=otaku -e POSTGRES_PASSWORD=0000 -e POSTGRES_DB=otaku_info postgres

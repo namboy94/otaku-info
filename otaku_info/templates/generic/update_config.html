@@ -1,0 +1,58 @@
+{#
+Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
+
+This file is part of otaku-info.
+
+otaku-info is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+otaku-info is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+<div class="container form-container">
+    <form method="post" action="{{ url_for("updates.show_updates") }}">
+        <div class="form-row align-items-center">
+            <div class="col-md-3">
+                <label class="sr-only" for="list_input">List</label>
+                <select id="list_input" name="list_ident" class="form-control mb-2">
+                    {% for media_list in media_lists %}
+                        {% set name = media_list.name %}
+                        {% set media_type = media_list.media_type.value %}
+                        {% set service = media_list.service.value %}
+                        <option value="{{service}}:{{media_type}}:{{name}}">
+                            [{{service.title()}} ({{media_type.title()}})] {{name.title()}}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="sr-only" for="mincount_input">Minimum Update Count</label>
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">Minimum Update Count</div>
+                    </div>
+                    <input type="number" class="form-control" id="mincount_input" value=0 name="mincount">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mb-2">
+                   <input class="form-check-input" type="checkbox" id="include_complete_check">
+                   <label class="form-check-label" for="include_complete_check">
+                       Include Complete
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary mb-2">Go</button>
+            </div>
+        </div>
+    </form>
+</div>

@@ -21,7 +21,6 @@ import time
 from typing import Dict, Tuple, cast, Optional
 from puffotter.flask.base import app, db
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaId import MediaId
 from otaku_info.db.LnRelease import LnRelease
 from otaku_info.enums import MediaType, ListService
 from otaku_info.external.reddit import load_ln_releases
@@ -31,7 +30,6 @@ from otaku_info.external.entities.RedditLnRelease import RedditLnRelease
 from otaku_info.utils.db.updater import update_or_insert_item
 from otaku_info.utils.db.convert import anime_list_item_to_media_item, \
     anime_list_item_to_media_id, ln_release_from_reddit_item
-from otaku_info.utils.db.load import load_existing_media_data
 
 
 def update_ln_releases():
@@ -45,8 +43,8 @@ def update_ln_releases():
     existing_releases: Dict[Tuple, LnRelease] = {
         x.identifier_tuple: x
         for x in LnRelease.query.all()
-    }
-    media_items, media_ids, _ = load_existing_media_data()
+    }  # TODO Use DbCache
+
     series_media_items = {}
     for existing in existing_releases.values():
         key = existing.series_name
@@ -63,9 +61,7 @@ def update_ln_releases():
         existing = existing_releases.get(identifier)
 
         if existing is None:
-            media_item = create_media_item_from_reddit_ln_release(
-                ln_release, media_items, media_ids
-            )
+            media_item = create_media_item_from_reddit_ln_release(ln_release)
             media_item_id = None if media_item is None else media_item.id
             release.media_item_id = media_item_id
         elif existing.media_item_id is None:
@@ -74,14 +70,14 @@ def update_ln_releases():
                     series_media_items[release.series_name].media_item_id
             else:
                 media_item = create_media_item_from_reddit_ln_release(
-                    ln_release, media_items, media_ids
+                    ln_release
                 )
                 media_item_id = None if media_item is None else media_item.id
                 release.media_item_id = media_item_id
         else:
             release.media_item_id = existing.media_item_id
 
-        update_or_insert_item(release, existing_releases)
+        update_or_insert_item(release)
 
     db.session.commit()
     app.logger.info(f"Finished Light Novel Release Update "
@@ -89,16 +85,12 @@ def update_ln_releases():
 
 
 def create_media_item_from_reddit_ln_release(
-        ln_release: RedditLnRelease,
-        media_items: Dict[Tuple, MediaItem],
-        media_ids: Dict[Tuple, MediaId]
+        ln_release: RedditLnRelease
 ) -> Optional[MediaItem]:
     """
     Creates a media item based on a reddit ln release
     Fills any missing entries in the database
     :param ln_release: The ln release
-    :param media_items: Existing media items
-    :param media_ids: Existing media ids
     :return: The media item
     """
 
@@ -116,15 +108,13 @@ def create_media_item_from_reddit_ln_release(
         return None
     else:
         media_item = anime_list_item_to_media_item(info)
-        media_item = cast(MediaItem, update_or_insert_item(
-            media_item, media_items
-        ))
+        media_item = cast(MediaItem, update_or_insert_item(media_item))
         media_id = anime_list_item_to_media_id(info, media_item)
-        update_or_insert_item(media_id, media_ids)
+        update_or_insert_item(media_id)
         if info.service == ListService.ANILIST:
             media_id = anime_list_item_to_media_id(
                 info, media_item, ListService.MYANIMELIST
             )
-            update_or_insert_item(media_id, media_ids)
+            update_or_insert_item(media_id)
 
         return media_item

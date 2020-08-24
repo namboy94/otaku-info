@@ -18,37 +18,47 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import traceback
-from typing import Dict, Tuple
 from sqlalchemy.exc import IntegrityError
 from puffotter.flask.base import db, app
+from otaku_info.utils.db.DbCache import DbCache
 from otaku_info.db.ModelMixin import ModelMixin
 
 
 def update_or_insert_item(
         to_add: ModelMixin,
-        existing: Dict[Tuple, ModelMixin],
-        commit_updates: bool = False
+        commit_updates: bool = False,
+        reload_cache: bool = False
 ) -> ModelMixin:
     """
     Updates or creates an item that can be identified based on a unique tuple.
+    Ensures that no duplicates are inserted across threads
     :param to_add: The item to add
-    :param existing: The existing items
     :param commit_updates: Whether or not to commit updates
+    :param reload_cache: Reloads the cached data if set to True
     :return: None
     """
-    existing_item = existing.get(to_add.identifier_tuple)
-    try:
-        if existing_item is None:
-            db.session.add(to_add)
-            existing[to_add.identifier_tuple] = to_add
-            db.session.commit()
-        else:
-            existing_item.update(to_add)
-            if commit_updates:
-                db.session.commit()
-    except IntegrityError as e:
-        app.logger.error(f"Failed to insert/update: {e}\n"
-                         f"{traceback.format_exc()}")
-        raise e
+    with DbCache.lock:
+        existing_item = DbCache.get_existing_item(to_add)
 
-    return existing[to_add.identifier_tuple]
+        try:
+            if existing_item is None:
+                db.session.add(to_add)
+                DbCache.update_item(to_add)
+                db.session.commit()
+            else:
+                existing_item.update(to_add)
+                if commit_updates or not commit_updates:  # TODO Fix this
+                    # Might be the cause of DetachedInstance issues
+                    db.session.commit()
+
+        except IntegrityError as e:
+            if not reload_cache:
+                app.logger.warning("Retrying Insert/Update")
+                update_or_insert_item(to_add, commit_updates, True)
+            else:
+                app.logger.error(f"Failed to insert/update: {e}\n"
+                                 f"{traceback.format_exc()}")
+                db.session.rollback()
+                raise e
+
+    return DbCache.get_existing_item(to_add)

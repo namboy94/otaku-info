@@ -46,7 +46,7 @@ def load_ln_releases(year: Optional[int] = None) -> List[RedditLnRelease]:
             release = RedditLnRelease.from_parts(year, entry.find_all("td"))
 
             if month_number != release.release_date.month:
-                app.logger.warning(
+                app.logger.debug(
                     f"Incorrect month: "
                     f"{month_number} != {release.release_date.month} "
                     f"({release.release_date}/{release.series_name})"
