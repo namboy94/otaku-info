@@ -49,7 +49,7 @@ def update_mangadex_data(
     :return: None
     """
     start_time = time.time()
-    app.logger.info("Starting Mangadex ID Mapping Update")
+    app.logger.info("Starting Mangadex Update")
     endcounter = 0
     mangadex_id = start - 1
 

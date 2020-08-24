@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import time
 from typing import Dict, Tuple, cast, Optional
 from puffotter.flask.base import app, db
 from otaku_info.db.MediaItem import MediaItem
@@ -38,6 +39,7 @@ def update_ln_releases():
     Updates the light novel releases
     :return: None
     """
+    start = time.time()
     app.logger.info("Starting Light Novel Release Update")
     ln_releases = load_ln_releases()
     existing_releases: Dict[Tuple, LnRelease] = {
@@ -56,40 +58,34 @@ def update_ln_releases():
             series_media_items[key] = existing
 
     for ln_release in ln_releases:
-        print(f"{ln_release.series_name}:{ln_release.release_date_string}")
-
         release = ln_release_from_reddit_item(ln_release, None)
         identifier = release.identifier_tuple
         existing = existing_releases.get(identifier)
 
         if existing is None:
-            print("New")
             media_item = create_media_item_from_reddit_ln_release(
                 ln_release, media_items, media_ids
             )
             media_item_id = None if media_item is None else media_item.id
             release.media_item_id = media_item_id
         elif existing.media_item_id is None:
-            print("Exists, Not Item")
             if release.series_name in series_media_items:
-                print("Update")
                 release.media_item_id = \
                     series_media_items[release.series_name].media_item_id
             else:
-                print("Reload")
                 media_item = create_media_item_from_reddit_ln_release(
                     ln_release, media_items, media_ids
                 )
                 media_item_id = None if media_item is None else media_item.id
                 release.media_item_id = media_item_id
         else:
-            print("Skip")
             release.media_item_id = existing.media_item_id
 
         update_or_insert_item(release, existing_releases)
 
     db.session.commit()
-    app.logger.info("Finished Light Novel Release Update")
+    app.logger.info(f"Finished Light Novel Release Update "
+                    f"in {time.time() - start}s.")
 
 
 def create_media_item_from_reddit_ln_release(

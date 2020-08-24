@@ -17,12 +17,14 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, TYPE_CHECKING
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaId import MediaId
 from otaku_info.enums import ConsumingState
+if TYPE_CHECKING:
+    from otaku_info.db.MediaNotification import MediaNotification
 
 
 class MediaUserState(ModelMixin, db.Model):
@@ -112,6 +114,16 @@ class MediaUserState(ModelMixin, db.Model):
         = db.Column(db.Enum(ConsumingState), nullable=False)
     """
     The current consuming state of the user for this media item
+    """
+
+    media_notification: Optional["MediaNotification"] = db.relationship(
+        "MediaNotification",
+        uselist=False,
+        back_populates="media_user_state",
+        cascade="all, delete"
+    )
+    """
+    Notification object for this user state
     """
 
     @property

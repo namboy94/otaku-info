@@ -37,6 +37,13 @@ from otaku_info.utils.db.load import load_existing_media_data, \
     load_existing_media_list_data
 
 
+# TODO Delete removed items from the database
+# For example, user deletes a MediaList
+# Or: user remove a media user state from his account
+# Or: Anilist removes an entry
+# Remark: Not really a priority tbh.
+# Maybe do this in another, separate bg thread?
+# -> Nope, then we don't have the anilist info
 def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
     """
     Retrieves all entries on the anilists of all users that provided

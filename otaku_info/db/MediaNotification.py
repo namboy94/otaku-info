@@ -43,9 +43,7 @@ class MediaNotification(ModelMixin, db.Model):
 
     media_user_state_id: int = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "media_user_states.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
+        db.ForeignKey("media_user_states.id"),
         nullable=False,
         unique=True
     )
@@ -54,10 +52,7 @@ class MediaNotification(ModelMixin, db.Model):
     """
 
     media_user_state: MediaUserState = db.relationship(
-        "MediaUserState",
-        backref=db.backref(
-            "media_notifications", lazy=True, cascade="all,delete"
-        )
+        "MediaUserState", back_populates="media_notification"
     )
     """
     The media user state this notification references

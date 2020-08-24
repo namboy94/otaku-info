@@ -90,7 +90,8 @@ def anime_list_item_to_media_id(
         media_item_id=media_item.id,
         service_id=str(service_id),
         service=service,
-        media_type=media_item.media_type
+        media_type=media_item.media_type,
+        media_subtype=media_item.media_subtype
     )
 
 

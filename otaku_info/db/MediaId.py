@@ -21,7 +21,7 @@ from flask import url_for
 from typing import Dict, Any, List, TYPE_CHECKING, Tuple, Optional
 from puffotter.flask.base import db
 from otaku_info.db.ModelMixin import ModelMixin
-from otaku_info.enums import ListService, MediaType
+from otaku_info.enums import ListService, MediaType, MediaSubType
 from otaku_info.mappings import list_service_url_formats
 from otaku_info.db.MediaItem import MediaItem
 if TYPE_CHECKING:
@@ -54,8 +54,16 @@ class MediaId(ModelMixin, db.Model):
             name="unique_service_id"
         ),
         db.ForeignKeyConstraint(
-            ["media_item_id", "media_type"],
-            ["media_items.id", "media_items.media_type"]
+            [
+                "media_item_id",
+                "media_type",
+                "media_subtype"
+            ],
+            [
+                "media_items.id",
+                "media_items.media_type",
+                "media_items.media_subtype"
+            ]
         ),
     )
     """
@@ -86,6 +94,12 @@ class MediaId(ModelMixin, db.Model):
     media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
     """
     The media type of the list item
+    """
+
+    media_subtype: MediaSubType = \
+        db.Column(db.Enum(MediaSubType), nullable=False)
+    """
+    The media subtype of the list item
     """
 
     service_id: str = db.Column(db.String(255), nullable=False)
