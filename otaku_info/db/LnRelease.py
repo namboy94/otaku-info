@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import re
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Tuple
 from puffotter.flask.base import db
@@ -99,6 +100,28 @@ class LnRelease(ModelMixin, db.Model):
         :return: The release date as a datetime object
         """
         return datetime.strptime(self.release_date_string, "%Y-%m-%d")
+
+    @property
+    def volume_number(self) -> int:
+        """
+        :return: The volume number as an integer
+        """
+        try:
+            if re.match(r"^p[0-9]+[ ]*v[0-9]+$", self.volume.lower()):
+                return int(self.volume.lower().split("v")[1])
+            else:
+                stripped = ""
+                for char in self.volume:
+                    if char.isdigit() or char in [".", "-"]:
+                        stripped += char
+                if "-" in stripped:
+                    stripped = stripped.split("-")[1]
+                if "." in stripped:
+                    stripped = stripped.split(".")[0]
+                return int(stripped)
+
+        except (TypeError, ValueError):
+            return 0
 
     @property
     def identifier_tuple(self) -> Tuple[str, str, bool, bool]:

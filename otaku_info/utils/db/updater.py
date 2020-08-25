@@ -50,13 +50,13 @@ def update_or_insert_item(
                 db.session.commit()
 
     except IntegrityError as e:
+        db.session.rollback()
         if not reload_cache:
             app.logger.warning("Retrying Insert/Update")
             update_or_insert_item(to_add, commit_updates, True)
         else:
             app.logger.error(f"Failed to insert/update: {e}\n"
                              f"{traceback.format_exc()}")
-            db.session.rollback()
             raise e
 
     retval = DbCache.get_existing_item(to_add)

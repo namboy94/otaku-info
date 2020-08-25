@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from flask import request, render_template, redirect, url_for
+from flask import request, render_template, redirect, url_for, flash
 from flask.blueprints import Blueprint
 from flask_login import login_required, current_user
 from otaku_info.enums import ListService, MediaType, MediaSubType
@@ -44,6 +44,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         service, media_type, list_name = \
             request.form["list_ident"].split(":", 2)
         mincount = request.form.get("mincount", "0")
+        print(request.form)
         include_complete = request.form.get("include_complete", "off") == "on"
         filter_subtype = request.form.get("filter_subtype")
 
@@ -83,15 +84,20 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             media_lists.sort(key=lambda x: x.service.value)
             return render_template(
                 "generic/updates.html",
-                media_lists=media_lists
+                media_lists=media_lists,
+                subtypes=[x for x in MediaSubType]
             )
         else:
-            service = ListService(service_name)
-            media_type = MediaType(media_type_name)
-            if subtype_name is None:
-                subtype = None
-            else:
-                subtype = MediaSubType(subtype_name)
+            try:
+                service = ListService(service_name)
+                media_type = MediaType(media_type_name)
+                if subtype_name is None or subtype_name == "":
+                    subtype = None
+                else:
+                    subtype = MediaSubType(subtype_name)
+            except ValueError:
+                flash("Invalid configuration", "danger")
+                return redirect(url_for("updates.show_updates"))
 
             updates = UpdateWrapper.from_db(
                 current_user,

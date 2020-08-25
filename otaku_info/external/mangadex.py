@@ -20,6 +20,7 @@ LICENSE"""
 import json
 import requests
 from typing import Optional
+from requests.exceptions import ConnectionError
 from otaku_info.external.entities.MangadexItem import MangadexItem
 
 
@@ -35,5 +36,5 @@ def fetch_mangadex_item(mangadex_id: int) -> Optional[MangadexItem]:
                 return MangadexItem.from_json(mangadex_id, data)
             else:
                 return None
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, ConnectionError):
         return None

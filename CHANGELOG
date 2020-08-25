@@ -1,3 +1,6 @@
+V 0.3.1:
+  - Various bugfixes
+  - Added subtypes to UI
 V 0.3.0:
   - Generic updates for any media type
   - Overhaul of database schema
