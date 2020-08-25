@@ -51,7 +51,9 @@ class TestMediaId(_TestFramework):
         media_id = MediaId(
             media_item=media_item,
             service_id="101177",
-            service=ListService.ANILIST
+            service=ListService.ANILIST,
+            media_type=media_item.media_type,
+            media_subtype=media_item.media_subtype
         )
         db.session.add(media_item)
         db.session.add(media_id)
@@ -71,7 +73,9 @@ class TestMediaId(_TestFramework):
                 "id": media_id.id,
                 "media_item_id": media_item.id,
                 "service": media_id.service.value,
-                "service_id": media_id.service_id
+                "service_id": media_id.service_id,
+                "media_type": media_id.media_type.value,
+                "media_subtype": media_id.media_subtype.value
             }
         )
         self.assertEqual(
@@ -81,7 +85,9 @@ class TestMediaId(_TestFramework):
                 "media_item": media_item.__json__(True),
                 "media_item_id": media_item.id,
                 "service": media_id.service.value,
-                "service_id": media_id.service_id
+                "service_id": media_id.service_id,
+                "media_type": media_id.media_type.value,
+                "media_subtype": media_id.media_subtype.value
             }
         )
 
@@ -191,6 +197,8 @@ class TestMediaId(_TestFramework):
         standard_kwargs = media_id.__json__(False)
         standard_kwargs.pop("id")
         standard_kwargs["service"] = media_id.service
+        standard_kwargs["media_type"] = media_id.media_type
+        standard_kwargs["media_subtype"] = media_id.media_subtype
 
         try:
             duplicate = MediaId(**standard_kwargs)
@@ -201,7 +209,7 @@ class TestMediaId(_TestFramework):
             db.session.rollback()
 
         for key, value, error_expected in [
-            ("media_item_id", media_item_two.id, False),
+            ("media_item_id", media_item_two.id, True),
             ("service", ListService.KITSU, False),
             ("service_id", "100", True)
         ]:
@@ -215,5 +223,6 @@ class TestMediaId(_TestFramework):
                     self.fail()
             except IntegrityError as e:
                 db.session.rollback()
+                print(key)
                 if not error_expected:
                     raise e

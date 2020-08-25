@@ -178,7 +178,9 @@ class MediaId(ModelMixin, db.Model):
             "id": self.id,
             "media_item_id": self.media_item_id,
             "service_id": self.service_id,
-            "service": self.service.value
+            "service": self.service.value,
+            "media_type": self.media_type.value,
+            "media_subtype": self.media_subtype.value
         }
         if include_children:
             data["media_item"] = self.media_item.__json__(include_children)
