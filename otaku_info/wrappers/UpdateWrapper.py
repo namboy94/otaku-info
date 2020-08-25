@@ -75,10 +75,15 @@ class UpdateWrapper:
         """
         :return: The latest release number
         """
-        media_type = self.user_state.media_id.media_type
+        media_item = self.user_state.media_id.media_item
+        media_type = media_item.media_type
         subtype = self.user_state.media_id.media_item.media_subtype
         if media_type == MediaType.MANGA and subtype == MediaSubType.NOVEL:
-            latest = self.user_state.media_id.media_item.latest_volume_release
+            ln_releases = self.user_state.media_id.media_item.ln_releases
+            if len(ln_releases) == 0:
+                latest = media_item.latest_volume_release
+            else:
+                latest = max([x.volume_number for x in ln_releases])
         elif media_type == MediaType.MANGA:
             chapter_guess = self.user_state.media_id.chapter_guess
             if chapter_guess is None:

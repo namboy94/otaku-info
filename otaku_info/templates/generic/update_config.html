@@ -33,7 +33,18 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-1">
+                <label class="sr-only" for="list_subtype">List</label>
+                <select id="list_subtype" name="filter_subtype" class="form-control mb-2">
+                    <option value=""></option>
+                    {% for subtype in subtypes %}
+                        <option value="{{subtype.value}}">
+                            {{subtype.value.title().replace("_", " ")}}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
                 <label class="sr-only" for="mincount_input">Minimum Update Count</label>
                 <div class="input-group mb-2">
                     <div class="input-group-prepend">
@@ -44,7 +55,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
             </div>
             <div class="col-md-2">
                 <div class="form-check mb-2">
-                   <input class="form-check-input" type="checkbox" id="include_complete_check">
+                   <input class="form-check-input" type="checkbox" id="include_complete_check" name="include_complete">
                    <label class="form-check-label" for="include_complete_check">
                        Include Complete
                     </label>
