@@ -19,7 +19,7 @@ LICENSE"""
 
 from typing import Dict, Any
 from flask_login import current_user
-from otaku_info.utils.enums import ListService
+from otaku_info.enums import ListService
 from otaku_info.db.ServiceUsername import ServiceUsername
 
 

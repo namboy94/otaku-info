@@ -20,9 +20,9 @@ LICENSE"""
 from flask import request, render_template, redirect, url_for
 from flask.blueprints import Blueprint
 from flask_login import login_required, current_user
-from otaku_info.utils.enums import MediaType, ListService
-from otaku_info.utils.manga_updates.generator import prepare_manga_updates
+from otaku_info.enums import ListService, MediaType, MediaSubType
 from otaku_info.db.MediaList import MediaList
+from otaku_info.wrappers.UpdateWrapper import UpdateWrapper
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:
@@ -33,63 +33,81 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
     """
     blueprint = Blueprint(blueprint_name, __name__)
 
-    @blueprint.route("/manga/updates", methods=["POST"])
+    @blueprint.route("/updates", methods=["POST"])
     @login_required
-    def redirect_manga_updates():
+    def redirect_updates():
         """
         Redirects a POST requests to the appropriate GET request for
-        the /manga/updates route
+        the /updates route
         :return: The response
         """
-        service, list_name = request.form["list_ident"].split(":", 1)
+        service, media_type, list_name = \
+            request.form["list_ident"].split(":", 2)
         mincount = request.form.get("mincount", "0")
         include_complete = request.form.get("include_complete", "off") == "on"
+        filter_subtype = request.form.get("filter_subtype")
 
-        get_url = url_for("manga.show_manga_updates")
-        get_url += f"?service={service}" \
-                   f"&list_name={list_name}" \
-                   f"&mincount={mincount}" \
-                   f"&include_complete={1 if include_complete else 0}"
-
+        get_url = url_for(
+            "updates.show_updates",
+            service=service,
+            media_type=media_type,
+            list_name=list_name,
+            mincount=mincount,
+            include_complete=1 if include_complete else 0,
+            filter_subtype=filter_subtype
+        )
         return redirect(get_url)
 
-    @blueprint.route("/manga/updates", methods=["GET"])
+    @blueprint.route("/updates", methods=["GET"])
     @login_required
-    def show_manga_updates():
+    def show_updates():
         """
         Shows the user's manga updates for a specified service and list
         :return: The response
         """
-        service = request.args.get("service")
+        service_name = request.args.get("service")
+        media_type_name = request.args.get("media_type")
         list_name = request.args.get("list_name")
         mincount = int(request.args.get("mincount", "0"))
         include_complete = request.args.get("include_complete", "0") == "1"
+        subtype_name = request.args.get("filter_subtype")
 
-        if service is None or list_name is None:
+        if service_name is None \
+                or list_name is None \
+                or media_type_name is None:
             media_lists = [
-                x for x in MediaList.query.filter_by(
-                    user=current_user, media_type=MediaType.MANGA
-                )
+                x for x in MediaList.query.filter_by(user=current_user)
             ]
+            media_lists.sort(key=lambda x: x.name)
+            media_lists.sort(key=lambda x: x.media_type.value)
+            media_lists.sort(key=lambda x: x.service.value)
             return render_template(
-                "manga/manga_updates.html",
+                "generic/updates.html",
                 media_lists=media_lists
             )
         else:
-            list_entries = \
-                prepare_manga_updates(
-                    current_user,
-                    ListService(service),
-                    list_name,
-                    include_complete,
-                    mincount
-                )
-            list_entries.sort(key=lambda x: x.score, reverse=True)
+            service = ListService(service_name)
+            media_type = MediaType(media_type_name)
+            if subtype_name is None:
+                subtype = None
+            else:
+                subtype = MediaSubType(subtype_name)
+
+            updates = UpdateWrapper.from_db(
+                current_user,
+                list_name,
+                service,
+                media_type,
+                subtype,
+                mincount,
+                include_complete
+            )
             return render_template(
-                "manga/manga_updates.html",
-                entries=list_entries,
+                "generic/updates.html",
+                updates=updates,
                 list_name=list_name,
-                service=service
+                service=service,
+                media_type=media_type
             )
 
     return blueprint

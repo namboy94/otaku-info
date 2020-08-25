@@ -1,4 +1,4 @@
-"""LICENSE
+{#
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
 This file is part of otaku-info.
@@ -15,25 +15,17 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
-LICENSE"""
+#}
 
-from unittest import TestCase
-from otaku_info.enums import ListService
-from otaku_info.mappings import list_service_id_types, \
-    list_service_url_formats, mangadex_external_id_names
+<!--generic/updates.html-->
+{% extends "components/base_layout.html" %}
+{% block body %}
+    {% if updates is defined %}
+        <h1>[{{service.value.title()}} ({{media_type.value.title()}})] {{list_name}}</h1>
+        {% include "generic/update_list.html" %}
 
-
-class TestMappings(TestCase):
-    """
-    Class that tests enum mappings
-    """
-
-    def test_completeness(self):
-        """
-        Tests that mappings include all possible enum types
-        :return: None
-        """
-        for list_service in ListService:
-            self.assertTrue(list_service in list_service_id_types)
-            self.assertTrue(list_service in list_service_url_formats)
-            self.assertTrue(list_service in mangadex_external_id_names)
+    {% else %}
+        <h1>Updates</h1>
+        {% include "generic/update_config.html" %}
+    {% endif %}
+{% endblock %}

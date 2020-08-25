@@ -16,3 +16,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
+
+from typing import Tuple
+from puffotter.flask.db.ModelMixin import ModelMixin as PuffotterModelMixin
+
+
+class ModelMixin(PuffotterModelMixin):
+    """
+    Class that define methods that greatly ease working with existing database
+    entries
+    """
+
+    @property
+    def identifier_tuple(self) -> Tuple:
+        """
+        :return: A tuple that's unique to this database entry
+        """
+        raise NotImplementedError()
+
+    def update(self, new_data: "ModelMixin"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        raise NotImplementedError()

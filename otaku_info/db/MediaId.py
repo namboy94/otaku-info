@@ -18,12 +18,15 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from flask import url_for
-from typing import Dict, Any
+from typing import Dict, Any, List, TYPE_CHECKING, Tuple, Optional
 from puffotter.flask.base import db
-from puffotter.flask.db.ModelMixin import ModelMixin
-from otaku_info.utils.enums import ListService
-from otaku_info.utils.db_model_helper import build_service_url
+from otaku_info.db.ModelMixin import ModelMixin
+from otaku_info.enums import ListService, MediaType, MediaSubType
+from otaku_info.mappings import list_service_url_formats
 from otaku_info.db.MediaItem import MediaItem
+if TYPE_CHECKING:
+    from otaku_info.db.MediaUserState import MediaUserState
+    from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 
 
 class MediaId(ModelMixin, db.Model):
@@ -42,7 +45,25 @@ class MediaId(ModelMixin, db.Model):
         db.UniqueConstraint(
             "media_item_id",
             "service",
-            name="unique_media_id"
+            name="unique_media_item_service_id"
+        ),
+        db.UniqueConstraint(
+            "media_type",
+            "service",
+            "service_id",
+            name="unique_service_id"
+        ),
+        db.ForeignKeyConstraint(
+            [
+                "media_item_id",
+                "media_type",
+                "media_subtype"
+            ],
+            [
+                "media_items.id",
+                "media_items.media_type",
+                "media_items.media_subtype"
+            ]
         ),
     )
     """
@@ -57,23 +78,28 @@ class MediaId(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_item_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey(
-            "media_items.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
-        nullable=False
-    )
+    media_item_id: int = db.Column(db.Integer, nullable=False)
     """
     The ID of the media item referenced by this ID
     """
 
     media_item: MediaItem = db.relationship(
         "MediaItem",
-        backref=db.backref("media_ids", lazy=True, cascade="all,delete")
+        back_populates="media_ids"
     )
     """
     The media item referenced by this ID
+    """
+
+    media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
+    """
+    The media type of the list item
+    """
+
+    media_subtype: MediaSubType = \
+        db.Column(db.Enum(MediaSubType), nullable=False)
+    """
+    The media subtype of the list item
     """
 
     service_id: str = db.Column(db.String(255), nullable=False)
@@ -86,14 +112,33 @@ class MediaId(ModelMixin, db.Model):
     The service for which this object represents an ID
     """
 
+    media_user_states: List["MediaUserState"] = db.relationship(
+        "MediaUserState", back_populates="media_id", cascade="all, delete"
+    )
+    """
+    Media user states associated with this media ID
+    """
+
+    chapter_guess: Optional["MangaChapterGuess"] = db.relationship(
+        "MangaChapterGuess",
+        uselist=False,
+        back_populates="media_id",
+        cascade="all, delete"
+    )
+    """
+    Chapter Guess for this media ID (Only applicable if this is a manga title)
+    """
+
     @property
     def service_url(self) -> str:
         """
         :return: The URL to the series for the given service
         """
-        return build_service_url(
-            self.media_item.media_type, self.service, self.service_id
-        )
+        url_format = list_service_url_formats[self.service]
+        url = url_format \
+            .replace("@{media_type}", f"{self.media_type.value}") \
+            .replace("@{id}", self.service_id)
+        return url
 
     @property
     def service_icon(self) -> str:
@@ -101,8 +146,26 @@ class MediaId(ModelMixin, db.Model):
         :return: The path to the service's icon file
         """
         return url_for(
-            "static", filename="service_logos/" + self.service.value + ".png"
+            "static", filename=f"service_logos/{self.service.value}.png"
         )
+
+    @property
+    def identifier_tuple(self) -> Tuple[MediaType, ListService, str]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.media_type, self.service, self.service_id
+
+    def update(self, new_data: "MediaId"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_item_id = new_data.media_item_id
+        self.media_type = new_data.media_type
+        self.service = new_data.service
+        self.service_id = new_data.service_id
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
@@ -115,7 +178,9 @@ class MediaId(ModelMixin, db.Model):
             "id": self.id,
             "media_item_id": self.media_item_id,
             "service_id": self.service_id,
-            "service": self.service.value
+            "service": self.service.value,
+            "media_type": self.media_type.value,
+            "media_subtype": self.media_subtype.value
         }
         if include_children:
             data["media_item"] = self.media_item.__json__(include_children)

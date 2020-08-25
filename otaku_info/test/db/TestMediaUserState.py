@@ -24,7 +24,7 @@ from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaUserState import MediaUserState
-from otaku_info.utils.enums import ListService, MediaType, MediaSubType, \
+from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState, ConsumingState
 from otaku_info.test.TestFramework import _TestFramework
 
@@ -54,7 +54,9 @@ class TestMediaUserState(_TestFramework):
         media_id = MediaId(
             media_item=media_item,
             service_id="101177",
-            service=ListService.ANILIST
+            service=ListService.ANILIST,
+            media_type=media_item.media_type,
+            media_subtype=media_item.media_subtype
         )
         media_user_state = MediaUserState(
             media_id=media_id,
@@ -188,6 +190,8 @@ class TestMediaUserState(_TestFramework):
         media_id_kwargs = media_id.__json__(False)
         media_id_kwargs.pop("id")
         media_id_kwargs["service"] = ListService.KITSU
+        media_id_kwargs["media_type"] = media_id.media_type
+        media_id_kwargs["media_subtype"] = media_id.media_subtype
         new_media_id = MediaId(**media_id_kwargs)
         db.session.add(new_media_id)
         db.session.commit()

@@ -21,7 +21,7 @@ from flask import request, redirect, url_for
 from flask.blueprints import Blueprint
 from flask_login import login_required, current_user
 from puffotter.flask.base import db
-from otaku_info.utils.enums import ListService
+from otaku_info.enums import ListService
 from otaku_info.db.ServiceUsername import ServiceUsername
 
 

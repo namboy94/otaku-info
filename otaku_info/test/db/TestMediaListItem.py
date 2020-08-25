@@ -26,7 +26,7 @@ from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaListItem import MediaListItem
-from otaku_info.utils.enums import ListService, MediaType, MediaSubType, \
+from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState, ConsumingState
 from otaku_info.test.TestFramework import _TestFramework
 
@@ -58,7 +58,9 @@ class TestMediaListItem(_TestFramework):
         media_id = MediaId(
             media_item=media_item,
             service_id="101177",
-            service=ListService.ANILIST
+            service=ListService.ANILIST,
+            media_type=media_item.media_type,
+            media_subtype=media_item.media_subtype
         )
         media_user_state = MediaUserState(
             media_id=media_id,

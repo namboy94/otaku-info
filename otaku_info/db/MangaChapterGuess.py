@@ -18,11 +18,11 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from puffotter.flask.base import db
-from puffotter.flask.db.ModelMixin import ModelMixin
+from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaId import MediaId
-from otaku_info.utils.anilist.api import guess_latest_manga_chapter
+from otaku_info.external.anilist import guess_latest_manga_chapter
 
 
 class MangaChapterGuess(ModelMixin, db.Model):
@@ -45,9 +45,7 @@ class MangaChapterGuess(ModelMixin, db.Model):
 
     media_id_id: int = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "media_ids.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
+        db.ForeignKey("media_ids.id"),
         nullable=False,
         unique=True
     )
@@ -56,10 +54,7 @@ class MangaChapterGuess(ModelMixin, db.Model):
     """
 
     media_id: MediaId = db.relationship(
-        "MediaId",
-        backref=db.backref(
-            "manga_chapter_guesses", lazy=True, cascade="all,delete"
-        )
+        "MediaId", back_populates="chapter_guess"
     )
     """
     The media ID referenced by this manga chapter guess
@@ -75,7 +70,7 @@ class MangaChapterGuess(ModelMixin, db.Model):
     Timestamp from when the guess was last updated
     """
 
-    def update(self):
+    def update_guess(self):
         """
         Updates the manga chapter guess
         (if the latest guess is older than an hour)
@@ -84,7 +79,26 @@ class MangaChapterGuess(ModelMixin, db.Model):
         delta = time.time() - self.last_update
         if delta > 60 * 60:
             self.last_update = int(time.time())
-            self.guess = guess_latest_manga_chapter(self.media_id.service_id)
+            self.guess = guess_latest_manga_chapter(
+                int(self.media_id.service_id)
+            )
+
+    @property
+    def identifier_tuple(self) -> Tuple[int]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.media_id_id,
+
+    def update(self, new_data: "MangaChapterGuess"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_id_id = new_data.media_id_id
+        self.guess = new_data.guess
+        self.last_update = new_data.last_update
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

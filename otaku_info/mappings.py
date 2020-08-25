@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Type
-from otaku_info.utils.enums import ListService
+from typing import Dict, Type, List
+from otaku_info.enums import ListService
 
 
 mangadex_external_id_names: Dict[ListService, str] = {
@@ -59,4 +59,16 @@ list_service_id_types: Dict[ListService, Type] = {
 }
 """
 Which type a list service ID should have
+"""
+
+list_service_priorities: List[ListService] = [
+    ListService.ANILIST,
+    ListService.MYANIMELIST,
+    ListService.MANGADEX,
+    ListService.KITSU,
+    ListService.MANGAUPDATES,
+    ListService.ANIMEPLANET
+]
+"""
+Specifies the order in which list service data is prioritized
 """

@@ -17,16 +17,19 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import time
 from typing import Optional, List
 from puffotter.graphql import GraphQlClient
-from otaku_info.utils.enums import MediaType
-from otaku_info.utils.anilist.AnilistItem \
-    import AnilistItem, AnilistUserItem
+from otaku_info.enums import MediaType, ListService
+from otaku_info.external.entities.AnilistItem import AnilistItem
+from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
 
 
 MEDIA_QUERY = """
     id
+    idMal
     chapters
+    volumes
     episodes
     status
     format
@@ -96,6 +99,7 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
     progresses = progresses[0:20]
     progresses.sort(key=lambda x: progresses.count(x), reverse=True)
     progresses = sorted(progresses, key=progresses.count, reverse=True)
+    time.sleep(0.5)
 
     try:
         return progresses[0]
@@ -121,6 +125,7 @@ def load_anilist(
                 name
                 entries {
                     progress
+                    progressVolumes
                     score
                     status
                     media {@{MEDIA_QUERY}}
@@ -148,55 +153,38 @@ def load_anilist(
     return anilist_items
 
 
-def load_media_info(anilist_id: int, media_type: MediaType) \
-        -> Optional[AnilistItem]:
+def load_anilist_info(
+        service_id: int,
+        media_type: MediaType,
+        service: ListService = ListService.ANILIST
+) -> Optional[AnilistItem]:
     """
     Loads information for a single anilist media item
-    :param anilist_id: The anilist media ID
+    :param service_id: The anilist or myanimelist media ID
     :param media_type: The media type
+    :param service: The service the ID belongs to
+                    (either anilist or myanimelist)
     :return: The fetched AnilistItem
     """
     graphql = GraphQlClient("https://graphql.anilist.co")
     query = """
         query ($id: Int, $media_type: MediaType) {
-            Media(id: $id, type: $media_type) {
+            Media(@{ID}: $id, type: $media_type) {
                 @{MEDIA_QUERY}
             }
         }
     """.replace("@{MEDIA_QUERY}", MEDIA_QUERY)
+    if service == ListService.ANILIST:
+        query = query.replace("@{ID}", "id")
+    elif service == ListService.MYANIMELIST:
+        query = query.replace("@{ID}", "idMal")
+    else:
+        return None
     resp = graphql.query(
         query,
-        {"id": anilist_id, "media_type": media_type.value.upper()}
+        {"id": service_id, "media_type": media_type.value.upper()}
     )
     if resp is None:
         return None
     else:
         return AnilistItem.from_query(media_type, resp["data"]["Media"])
-
-
-def map_myanimelist_id_to_anilist_id(
-        myanimelist_id: int,
-        media_type: MediaType
-) -> Optional[int]:
-    """
-    Translates a myanimelist ID to an Anilist ID
-    :param myanimelist_id: The myanimelist ID
-    :param media_type: The media type
-    :return: The anilist ID
-    """
-    graphql = GraphQlClient("https://graphql.anilist.co")
-    query = """
-        query ($mal_id: Int, $type: MediaType) {
-            Media(idMal: $mal_id, type: $type) {
-                id
-            }
-        }
-    """
-    resp = graphql.query(
-        query,
-        {"mal_id": myanimelist_id, "media_type": media_type.value.upper()}
-    )
-    if resp is None:
-        return None
-    else:
-        return int(resp["data"]["Media"]["id"])

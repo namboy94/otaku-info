@@ -17,11 +17,13 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any
+from typing import Dict, Any, List, TYPE_CHECKING, Tuple
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
-from puffotter.flask.db.ModelMixin import ModelMixin
-from otaku_info.utils.enums import ListService, MediaType
+from otaku_info.db.ModelMixin import ModelMixin
+from otaku_info.enums import ListService, MediaType
+if TYPE_CHECKING:
+    from otaku_info.db.MediaListItem import MediaListItem
 
 
 class MediaList(ModelMixin, db.Model):
@@ -55,11 +57,6 @@ class MediaList(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    name: str = db.Column(db.Unicode(255), nullable=False)
-    """
-    The name of this list
-    """
-
     user_id: int = db.Column(
         db.Integer,
         db.ForeignKey(
@@ -79,6 +76,11 @@ class MediaList(ModelMixin, db.Model):
     The user associated with this list
     """
 
+    name: str = db.Column(db.Unicode(255), nullable=False)
+    """
+    The name of this list
+    """
+
     service: ListService = db.Column(db.Enum(ListService), nullable=False)
     """
     The service for which this list applies to
@@ -88,6 +90,31 @@ class MediaList(ModelMixin, db.Model):
     """
     The media type for this list
     """
+
+    media_list_items: List["MediaListItem"] = db.relationship(
+        "MediaListItem", back_populates="media_list", cascade="all, delete"
+    )
+    """
+    Media List Items that are a part of this media list
+    """
+
+    @property
+    def identifier_tuple(self) -> Tuple[str, int, ListService, MediaType]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.name, self.user_id, self.service, self.media_type
+
+    def update(self, new_data: "MediaList"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.user_id = new_data.user_id
+        self.name = new_data.name
+        self.service = new_data.service
+        self.media_type = new_data.media_type
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

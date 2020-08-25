@@ -17,12 +17,14 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple, TYPE_CHECKING
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
-from puffotter.flask.db.ModelMixin import ModelMixin
+from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaId import MediaId
-from otaku_info.utils.enums import ConsumingState
+from otaku_info.enums import ConsumingState
+if TYPE_CHECKING:
+    from otaku_info.db.MediaNotification import MediaNotification
 
 
 class MediaUserState(ModelMixin, db.Model):
@@ -57,9 +59,7 @@ class MediaUserState(ModelMixin, db.Model):
 
     media_id_id: int = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "media_ids.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
+        db.ForeignKey("media_ids.id"),
         nullable=False
     )
     """
@@ -68,9 +68,7 @@ class MediaUserState(ModelMixin, db.Model):
 
     media_id: MediaId = db.relationship(
         "MediaId",
-        backref=db.backref(
-            "media_user_states", lazy=True, cascade="all,delete"
-        )
+        back_populates="media_user_states"
     )
     """
     The media ID referenced by this user state
@@ -102,6 +100,11 @@ class MediaUserState(ModelMixin, db.Model):
     The user's current progress consuming the media item
     """
 
+    volume_progress: Optional[int] = db.Column(db.Integer, nullable=True)
+    """
+    The user's current 'volume' progress.
+    """
+
     score: Optional[int] = db.Column(db.Integer, nullable=True)
     """
     The user's score for the references media item
@@ -112,6 +115,36 @@ class MediaUserState(ModelMixin, db.Model):
     """
     The current consuming state of the user for this media item
     """
+
+    media_notification: Optional["MediaNotification"] = db.relationship(
+        "MediaNotification",
+        uselist=False,
+        back_populates="media_user_state",
+        cascade="all, delete"
+    )
+    """
+    Notification object for this user state
+    """
+
+    @property
+    def identifier_tuple(self) -> Tuple[int, int]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.media_id_id, self.user_id
+
+    def update(self, new_data: "MediaUserState"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_id_id = new_data.media_id_id
+        self.user_id = new_data.user_id
+        self.progress = new_data.progress
+        self.volume_progress = new_data.volume_progress
+        self.score = new_data.score
+        self.consuming_state = new_data.consuming_state
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

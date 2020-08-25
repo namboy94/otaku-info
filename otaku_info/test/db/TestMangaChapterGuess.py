@@ -24,7 +24,7 @@ from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
-from otaku_info.utils.enums import ListService, MediaType, MediaSubType, \
+from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState
 from otaku_info.test.TestFramework import _TestFramework
 
@@ -54,7 +54,9 @@ class TestMangaChapterGuess(_TestFramework):
         media_id = MediaId(
             media_item=media_item,
             service_id="101177",
-            service=ListService.ANILIST
+            service=ListService.ANILIST,
+            media_type=media_item.media_type,
+            media_subtype=media_item.media_subtype
         )
         chapter_guess = MangaChapterGuess(
             media_id=media_id,
@@ -130,6 +132,8 @@ class TestMangaChapterGuess(_TestFramework):
         media_id_kwargs = media_id.__json__(False)
         media_id_kwargs.pop("id")
         media_id_kwargs["service"] = ListService.ANIMEPLANET
+        media_id_kwargs["media_type"] = media_id.media_type
+        media_id_kwargs["media_subtype"] = media_id.media_subtype
         new_media_id = MediaId(**media_id_kwargs)
         db.session.add(new_media_id)
         db.session.commit()
@@ -158,6 +162,8 @@ class TestMangaChapterGuess(_TestFramework):
         media_id_kwargs = media_id.__json__(False)
         media_id_kwargs.pop("id")
         media_id_kwargs["service"] = ListService.ANIMEPLANET
+        media_id_kwargs["media_type"] = media_id.media_type
+        media_id_kwargs["media_subtype"] = media_id.media_subtype
         new_media_id = MediaId(**media_id_kwargs)
         db.session.add(new_media_id)
         db.session.commit()
@@ -182,16 +188,16 @@ class TestMangaChapterGuess(_TestFramework):
                    ".guess_latest_manga_chapter", lambda _: 105):
             self.assertEqual(chapter_guess.guess, None)
             self.assertEqual(chapter_guess.last_update, 0)
-            chapter_guess.update()
+            chapter_guess.update_guess()
             self.assertEqual(chapter_guess.guess, 105)
             self.assertGreater(chapter_guess.last_update, 0)
             chapter_guess.guess = 77
             last_update = chapter_guess.last_update
-            chapter_guess.update()
+            chapter_guess.update_guess()
             self.assertEqual(chapter_guess.guess, 77)
             self.assertEqual(chapter_guess.last_update, last_update)
             chapter_guess.last_update = 0
-            chapter_guess.update()
+            chapter_guess.update_guess()
             self.assertEqual(chapter_guess.guess, 105)
             self.assertGreaterEqual(chapter_guess.last_update, last_update)
 

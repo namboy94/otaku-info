@@ -18,11 +18,11 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from puffotter.flask.base import db
-from puffotter.flask.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
+from otaku_info.db.ModelMixin import ModelMixin
 
 
 class LnRelease(ModelMixin, db.Model):
@@ -43,26 +43,19 @@ class LnRelease(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_item_id: Optional[int] = db.Column(
-        db.Integer,
-        db.ForeignKey(
-            "media_items.id", ondelete="CASCADE", onupdate="CASCADE"
-        ),
-        nullable=True,
-        unique=False
+    media_item_id: int = db.Column(
+        db.Integer, db.ForeignKey("media_items.id"), nullable=True
     )
     """
-    The ID of the media item referenced by this light novel release
+    The ID of the media item referenced by this release
     """
 
-    media_item: Optional[MediaItem] = db.relationship(
+    media_item: MediaItem = db.relationship(
         "MediaItem",
-        backref=db.backref(
-            "ln_releases", lazy=True, cascade="all,delete"
-        )
+        back_populates="ln_releases"
     )
     """
-    The media item referenced by this light novel release
+    The media item referenced by this release
     """
 
     release_date_string: str = db.Column(db.String(10), nullable=False)
@@ -106,6 +99,28 @@ class LnRelease(ModelMixin, db.Model):
         :return: The release date as a datetime object
         """
         return datetime.strptime(self.release_date_string, "%Y-%m-%d")
+
+    @property
+    def identifier_tuple(self) -> Tuple[str, str, bool, bool]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.series_name, self.volume, self.digital, self.physical
+
+    def update(self, new_data: "LnRelease"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.media_item_id = new_data.media_item_id
+        self.series_name = new_data.series_name
+        self.volume = new_data.volume
+        self.release_date_string = new_data.release_date_string
+        self.purchase_link = new_data.purchase_link
+        self.publisher = new_data.publisher
+        self.physical = new_data.physical
+        self.digital = new_data.digital
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """

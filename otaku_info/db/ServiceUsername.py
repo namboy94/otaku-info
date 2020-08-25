@@ -17,11 +17,11 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from puffotter.flask.base import db
 from puffotter.flask.db.User import User
 from puffotter.flask.db.ModelMixin import ModelMixin
-from otaku_info.utils.enums import ListService
+from otaku_info.enums import ListService
 
 
 class ServiceUsername(ModelMixin, db.Model):
@@ -84,6 +84,23 @@ class ServiceUsername(ModelMixin, db.Model):
     """
     The external service this item is a username for
     """
+
+    @property
+    def identifier_tuple(self) -> Tuple[int, str, ListService]:
+        """
+        :return: A tuple that uniquely identifies this database entry
+        """
+        return self.user_id, self.username, self.service
+
+    def update(self, new_data: "ServiceUsername"):
+        """
+        Updates the data in this record based on another object
+        :param new_data: The object from which to use the new values
+        :return: None
+        """
+        self.user_id = new_data.user_id
+        self.username = new_data.username
+        self.service = new_data.service
 
     def __json__(self, include_children: bool = False) -> Dict[str, Any]:
         """
