@@ -23,6 +23,7 @@ from puffotter.flask.base import app, db
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
 from otaku_info.enums import ListService, MediaType
+from otaku_info.utils.db.DbCache import DbCache
 from otaku_info.external.anilist import load_anilist_info
 from otaku_info.external.myanimelist import load_myanimelist_item
 from otaku_info.external.mangadex import fetch_mangadex_item
@@ -50,16 +51,18 @@ def update_mangadex_data(
     """
     start_time = time.time()
     app.logger.info("Starting Mangadex Update")
+    DbCache.cleanup()
+
     endcounter = 0
     mangadex_id = start - 1
 
-    existing_ids = __update_cache()
+    existing_ids = load_service_ids(MediaType.MANGA)
     while True:
         mangadex_id += 1
 
         if mangadex_id % 100 == 0:
             db.session.commit()
-            existing_ids = __update_cache()
+            DbCache.cleanup()
 
         if mangadex_id == end or endcounter > 100:
             break
@@ -82,16 +85,9 @@ def update_mangadex_data(
         )
 
     db.session.commit()
+    DbCache.cleanup()
     app.logger.info(f"Finished Mangadex Update in "
                     f"{time.time() - start_time}s.")
-
-
-def __update_cache() -> Dict[ListService, Dict[str, MediaId]]:
-    """
-    :return: Existing database content used for mangadex operations
-    """
-    app.logger.debug("Refreshing mangadex cache")
-    return load_service_ids(MediaType.MANGA)
 
 
 def __update_database_with_mangadex_item(

@@ -18,8 +18,9 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Optional
-from threading import Lock, get_ident
+from threading import get_ident
 from typing import Dict, Tuple, Type
+from puffotter.flask.base import app
 from otaku_info.db.ModelMixin import ModelMixin
 
 
@@ -28,12 +29,6 @@ class DbCache:
     Class that helps identifying existing items by caching all
     database entries
     """
-
-    lock = Lock()
-    """
-    Lock used to ensure thread safety
-    """
-
     __cached = {}
     """
     This dictionary stores the cached results for each class.
@@ -41,6 +36,16 @@ class DbCache:
     must all have unique names (which should be the case anyways).
     The first layer of the dictionary is mapped to thread IDs
     """
+
+    @staticmethod
+    def cleanup():
+        """
+        Removes any cached items for the current thread
+        :return: None
+        """
+        thread_id = get_ident()
+        if thread_id in DbCache.__cached:
+            DbCache.__cached.pop(thread_id)
 
     @staticmethod
     def get_existing_item(item: ModelMixin) -> Optional[ModelMixin]:
@@ -53,7 +58,7 @@ class DbCache:
         class_name = item.__class__
         class_key = item.__class__.__name__
 
-        existing_items = DbCache.__load_existing_items(class_name, False)
+        existing_items = DbCache.load_existing_items(class_name, False)
         existing_item = existing_items.get(identifier)
 
         needs_reload = False
@@ -67,7 +72,7 @@ class DbCache:
                     break
 
         if needs_reload:
-            existing_items = DbCache.__load_existing_items(class_name, True)
+            existing_items = DbCache.load_existing_items(class_name, True)
             existing_item = existing_items.get(identifier)
 
         return existing_item
@@ -79,11 +84,11 @@ class DbCache:
         :param item: The new item
         :return: None
         """
-        existing_items = DbCache.__load_existing_items(item.__class__, False)
+        existing_items = DbCache.load_existing_items(item.__class__, False)
         existing_items[item.identifier_tuple] = item
 
     @staticmethod
-    def __load_existing_items(cls: Type[ModelMixin], reload: bool) \
+    def load_existing_items(cls: Type[ModelMixin], reload: bool = False) \
             -> Dict[Tuple, ModelMixin]:
         """
         Retrieves all existing items for a database class mapped to their
@@ -117,5 +122,6 @@ class DbCache:
         :param cls: The database class
         :return: The database data
         """
+        app.logger.debug(f"Caching db content for {cls.__name__}")
         # noinspection PyUnresolvedReferences
         return {x.identifier_tuple: x for x in cls.query.all()}

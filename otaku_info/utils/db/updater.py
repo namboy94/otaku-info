@@ -37,28 +37,26 @@ def update_or_insert_item(
     :param reload_cache: Reloads the cached data if set to True
     :return: None
     """
-    with DbCache.lock:
-        existing_item = DbCache.get_existing_item(to_add)
+    existing_item = DbCache.get_existing_item(to_add)
 
-        try:
-            if existing_item is None:
-                db.session.add(to_add)
-                DbCache.update_item(to_add)
+    try:
+        if existing_item is None:
+            db.session.add(to_add)
+            DbCache.update_item(to_add)
+            db.session.commit()
+        else:
+            existing_item.update(to_add)
+            if commit_updates:
                 db.session.commit()
-            else:
-                existing_item.update(to_add)
-                if commit_updates or not commit_updates:  # TODO Fix this
-                    # Might be the cause of DetachedInstance issues
-                    db.session.commit()
 
-        except IntegrityError as e:
-            if not reload_cache:
-                app.logger.warning("Retrying Insert/Update")
-                update_or_insert_item(to_add, commit_updates, True)
-            else:
-                app.logger.error(f"Failed to insert/update: {e}\n"
-                                 f"{traceback.format_exc()}")
-                db.session.rollback()
-                raise e
+    except IntegrityError as e:
+        if not reload_cache:
+            app.logger.warning("Retrying Insert/Update")
+            update_or_insert_item(to_add, commit_updates, True)
+        else:
+            app.logger.error(f"Failed to insert/update: {e}\n"
+                             f"{traceback.format_exc()}")
+            db.session.rollback()
+            raise e
 
     return DbCache.get_existing_item(to_add)

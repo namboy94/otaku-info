@@ -22,6 +22,7 @@ from typing import Dict, Tuple, cast, Optional
 from puffotter.flask.base import app, db
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.LnRelease import LnRelease
+from otaku_info.utils.db.DbCache import DbCache
 from otaku_info.enums import MediaType, ListService
 from otaku_info.external.reddit import load_ln_releases
 from otaku_info.external.myanimelist import load_myanimelist_item
@@ -39,11 +40,11 @@ def update_ln_releases():
     """
     start = time.time()
     app.logger.info("Starting Light Novel Release Update")
+    DbCache.cleanup()
+
     ln_releases = load_ln_releases()
-    existing_releases: Dict[Tuple, LnRelease] = {
-        x.identifier_tuple: x
-        for x in LnRelease.query.all()
-    }  # TODO Use DbCache
+    existing_releases: Dict[Tuple, LnRelease] = \
+        cast(Dict[Tuple, LnRelease], DbCache.load_existing_items(LnRelease))
 
     series_media_items = {}
     for existing in existing_releases.values():
@@ -80,6 +81,7 @@ def update_ln_releases():
         update_or_insert_item(release)
 
     db.session.commit()
+    DbCache.cleanup()
     app.logger.info(f"Finished Light Novel Release Update "
                     f"in {time.time() - start}s.")
 
@@ -93,7 +95,6 @@ def create_media_item_from_reddit_ln_release(
     :param ln_release: The ln release
     :return: The media item
     """
-
     mal_id = ln_release.myanimelist_id
     anilist_id = ln_release.anilist_id
 

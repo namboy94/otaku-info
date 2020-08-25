@@ -29,6 +29,7 @@ from otaku_info.db.ServiceUsername import ServiceUsername
 from otaku_info.external.anilist import load_anilist
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
 from otaku_info.enums import ListService, MediaType
+from otaku_info.utils.db.DbCache import DbCache
 from otaku_info.utils.db.updater import update_or_insert_item
 from otaku_info.utils.db.convert import anime_list_item_to_media_id, \
     anime_list_item_to_media_item, anilist_user_item_to_media_user_state, \
@@ -51,6 +52,7 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
     """
     start = time.time()
     app.logger.info("Starting Anilist Update")
+    DbCache.cleanup()
 
     if usernames is None:
         usernames = ServiceUsername.query\
@@ -76,6 +78,7 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
                 )
 
     db.session.commit()  # Commit pending Updates
+    DbCache.cleanup()
     app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
 
 

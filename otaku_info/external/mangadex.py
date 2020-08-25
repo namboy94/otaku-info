@@ -29,10 +29,11 @@ def fetch_mangadex_item(mangadex_id: int) -> Optional[MangadexItem]:
     """
     endpoint = "https://mangadex.org/api/manga/{}".format(mangadex_id)
     try:
-        response = json.loads(requests.get(endpoint).text)
-        if response["status"] == "OK":
-            return MangadexItem.from_json(mangadex_id, response)
-        else:
-            return None
+        with requests.get(endpoint) as response:
+            data = json.loads(response.text)
+            if data["status"] == "OK":
+                return MangadexItem.from_json(mangadex_id, data)
+            else:
+                return None
     except json.JSONDecodeError:
         return None
