@@ -59,4 +59,6 @@ def update_or_insert_item(
             db.session.rollback()
             raise e
 
-    return DbCache.get_existing_item(to_add)
+    retval = DbCache.get_existing_item(to_add)
+    assert retval is not None
+    return retval

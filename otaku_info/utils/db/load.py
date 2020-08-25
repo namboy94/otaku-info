@@ -43,7 +43,9 @@ def load_service_ids(
             media_ids
         ))
 
-    mapped_ids = {x: {} for x in ListService}
+    mapped_ids: Dict[ListService, Dict[str, MediaId]] = {
+        x: {} for x in ListService
+    }
     for media_id in media_ids:
         mapped_ids[media_id.service][media_id.service_id] = media_id
 

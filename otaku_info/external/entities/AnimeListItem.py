@@ -37,7 +37,7 @@ class AnimeListItem:
             romaji_title: str,
             cover_url: str,
             chapters: Optional[int],
-            volumes: Optional[str],
+            volumes: Optional[int],
             episodes: Optional[int],
             releasing_state: ReleasingState,
             relations: Dict[Tuple[MediaType, int], MediaRelationType]

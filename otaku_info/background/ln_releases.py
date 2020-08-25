@@ -27,6 +27,7 @@ from otaku_info.enums import MediaType, ListService
 from otaku_info.external.reddit import load_ln_releases
 from otaku_info.external.myanimelist import load_myanimelist_item
 from otaku_info.external.anilist import load_anilist_info
+from otaku_info.external.entities.AnimeListItem import AnimeListItem
 from otaku_info.external.entities.RedditLnRelease import RedditLnRelease
 from otaku_info.utils.db.updater import update_or_insert_item
 from otaku_info.utils.db.convert import anime_list_item_to_media_item, \
@@ -98,6 +99,8 @@ def create_media_item_from_reddit_ln_release(
     mal_id = ln_release.myanimelist_id
     anilist_id = ln_release.anilist_id
 
+    # noinspection PyUnusedLocal
+    info: Optional[AnimeListItem] = None
     if mal_id is None:
         return None
     elif anilist_id is not None:

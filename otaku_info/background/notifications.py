@@ -101,7 +101,7 @@ def handle_notification(
     if notification.last_update < update.latest:
         notification.last_update = update.latest
 
-        if update.score >= settings.minimum_score:
+        if update.score is not None and update.score >= settings.minimum_score:
 
             media_item = media_user_state.media_id.media_item
             if media_item.media_type == MediaType.ANIME:

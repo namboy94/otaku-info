@@ -69,7 +69,7 @@ class NotificationSetting(ModelMixin, db.Model):
     The notification type
     """
 
-    minimum_score: int = db.Column(db.Integer, default=0)
+    minimum_score: int = db.Column(db.Integer, default=0, nullable=False)
     """
     The minimum score for notification items
     """

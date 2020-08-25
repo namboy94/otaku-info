@@ -105,6 +105,8 @@ class RedditLnRelease:
         """
         :return: The anilist ID, if available
         """
+        if self.myanimelist_id is None:
+            return None
         anilist_info = load_anilist_info(
             self.myanimelist_id, MediaType.MANGA, ListService.MYANIMELIST
         )

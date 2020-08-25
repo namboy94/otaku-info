@@ -83,7 +83,7 @@ def anime_list_item_to_media_id(
         service_id = anime_list_item.extra_ids[list_service]
         service = ListService.MYANIMELIST
     else:
-        service_id = anime_list_item.id
+        service_id = str(anime_list_item.id)
         service = ListService.ANILIST
 
     return MediaId(

@@ -132,7 +132,7 @@ class MediaItem(ModelMixin, db.Model):
         :return: A dictionary mapping list services to IDs for this media item
         """
         return {
-            x.service: x.service_id for x in self.media_ids
+            x.service: x for x in self.media_ids
         }
 
     @property

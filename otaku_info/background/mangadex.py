@@ -27,6 +27,7 @@ from otaku_info.utils.db.DbCache import DbCache
 from otaku_info.external.anilist import load_anilist_info
 from otaku_info.external.myanimelist import load_myanimelist_item
 from otaku_info.external.mangadex import fetch_mangadex_item
+from otaku_info.external.entities.AnimeListItem import AnimeListItem
 from otaku_info.external.entities.MangadexItem import MangadexItem
 from otaku_info.utils.db.updater import update_or_insert_item
 from otaku_info.utils.db.convert import mangadex_item_to_media_item, \
@@ -121,7 +122,7 @@ def __update_database_with_mangadex_item(
 def __update_or_insert_mangadex_media_item(
         mangadex_item: MangadexItem,
         existing_ids: Dict[ListService, Dict[str, MediaId]]
-) -> Optional[MediaItem]:
+) -> MediaItem:
     """
     Resolves the media item for a mangadex item
     Will create the media item and prune superfluous media items
@@ -158,6 +159,7 @@ def __update_or_insert_mangadex_media_item(
                 db.session.delete(media_id.media_item)
                 db.session.commit()
 
+    assert media_item is not None
     return media_item
 
 
@@ -172,12 +174,11 @@ def __load_anime_list_based_media_item(
     """
     service_id = mangadex_item.external_ids[service]
 
+    service_item: Optional[AnimeListItem] = None
     if service == ListService.ANILIST:
         service_item = load_anilist_info(int(service_id), MediaType.MANGA)
     elif service == ListService.MYANIMELIST:
         service_item = load_myanimelist_item(int(service_id), MediaType.MANGA)
-    else:
-        service_item = None
 
     if service_item is None:
         return None

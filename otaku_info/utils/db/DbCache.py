@@ -29,7 +29,7 @@ class DbCache:
     Class that helps identifying existing items by caching all
     database entries
     """
-    __cached = {}
+    __cached: Dict[int, Dict[str, Dict[Tuple, ModelMixin]]] = {}
     """
     This dictionary stores the cached results for each class.
     Attention: This is mapped by class name, so database classes

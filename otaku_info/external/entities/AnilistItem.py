@@ -34,9 +34,10 @@ class AnilistItem(AnimeListItem):
         """
         :return: The myanimelist ID
         """
-        try:
-            return int(self.extra_ids.get(ListService.MYANIMELIST))
-        except (ValueError, TypeError):
+        mal_id = self.extra_ids.get(ListService.MYANIMELIST)
+        if mal_id is not None and mal_id.isdigit():
+            return int(mal_id)
+        else:
             return None
 
     @classmethod

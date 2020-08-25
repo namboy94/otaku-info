@@ -34,8 +34,8 @@ class MangadexItem:
             external_ids: Dict[ListService, str],
             title: str,
             cover_url: str,
-            total_chapters: int,
-            latest_chapter: int,
+            total_chapters: Optional[int],
+            latest_chapter: Optional[int],
             releasing_state: ReleasingState
     ):
         """
