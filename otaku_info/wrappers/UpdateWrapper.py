@@ -81,11 +81,15 @@ class UpdateWrapper:
         subtype = self.user_state.media_id.media_item.media_subtype
         if media_type == MediaType.MANGA and subtype == MediaSubType.NOVEL:
             now = datetime.utcnow()
-            latest = max([
+            volumes = [
                 x.volume_number
                 for x in self.user_state.media_id.media_item.ln_releases
                 if x.release_date < now
-            ] + [media_item.latest_volume_release])
+            ]
+            if len(volumes) == 0:
+                latest = media_item.latest_volume_release
+            else:
+                latest = max(volumes)
         elif media_type == MediaType.MANGA:
             chapter_guess = self.user_state.media_id.chapter_guess
             if chapter_guess is None:
