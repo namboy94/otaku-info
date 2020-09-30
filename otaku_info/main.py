@@ -18,8 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from puffotter.env import load_env_file
-from puffotter.flask.initialize import init_flask
-from puffotter.flask.wsgi import start_server
+from jerrycan.initialize import init_flask
+from jerrycan.wsgi import start_server
 from otaku_info import sentry_dsn, root_path
 from otaku_info.background import bg_tasks
 from otaku_info.Config import Config

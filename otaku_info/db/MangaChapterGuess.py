@@ -19,7 +19,7 @@ LICENSE"""
 
 import time
 from typing import Dict, Any, Tuple
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaId import MediaId
 from otaku_info.external.anilist import guess_latest_manga_chapter

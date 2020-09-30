@@ -19,8 +19,8 @@ LICENSE"""
 
 import time
 from typing import Dict, List
-from puffotter.flask.base import db, app
-from puffotter.flask.db.User import User
+from jerrycan.base import db, app
+from jerrycan.db.User import User
 from otaku_info.enums import MediaType, MediaSubType
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaNotification import MediaNotification

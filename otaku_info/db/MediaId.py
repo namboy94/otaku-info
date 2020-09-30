@@ -19,7 +19,7 @@ LICENSE"""
 
 from flask import url_for
 from typing import Dict, Any, List, TYPE_CHECKING, Tuple, Optional
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.enums import ListService, MediaType, MediaSubType
 from otaku_info.mappings import list_service_url_formats

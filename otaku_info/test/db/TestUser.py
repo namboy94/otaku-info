@@ -65,7 +65,7 @@ class TestUser(_TestFramework):
         code = repr(user)
 
         # noinspection PyUnresolvedReferences
-        from puffotter.flask.db.User import User
+        from jerrycan.db.User import User
 
         exec("generated['value'] = " + code)
         self.assertEqual(generated["value"], user)

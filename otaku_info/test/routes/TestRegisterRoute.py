@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from unittest.mock import patch
-from puffotter.flask.db.User import User
+from jerrycan.db.User import User
 from otaku_info.test.TestFramework import _TestFramework
 from otaku_info.Config import Config
 
@@ -44,7 +44,7 @@ class TestRegisterRoute(_TestFramework):
         self.assertEqual(len(User.query.all()), 0)
         with self.client:
 
-            with patch("puffotter.flask.routes.user_management.send_email") \
+            with patch("jerrycan.routes.user_management.send_email") \
                     as m:
                 self.assertEqual(0, m.call_count)
                 resp = self.client.post(
@@ -99,7 +99,7 @@ class TestRegisterRoute(_TestFramework):
                 data = dict(base)
                 data.update(params)
 
-                with patch("puffotter.flask.routes.user_management."
+                with patch("jerrycan.routes.user_management."
                            "send_email") as m:
                     self.assertEqual(0, m.call_count)
                     resp = self.client.post(
@@ -121,9 +121,9 @@ class TestRegisterRoute(_TestFramework):
         :return: None
         """
         with self.client:
-            with patch("puffotter.flask.routes.user_management.send_email") \
+            with patch("jerrycan.routes.user_management.send_email") \
                     as m:
-                with patch("puffotter.flask.routes.user_management."
+                with patch("jerrycan.routes.user_management."
                            "verify_recaptcha", lambda x, y, z: False):
                     self.assertEqual(0, m.call_count)
                     resp = self.client.post(

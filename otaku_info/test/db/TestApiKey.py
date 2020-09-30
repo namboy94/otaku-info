@@ -18,8 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from puffotter.flask.db.ApiKey import ApiKey
-from puffotter.flask.Config import Config
+from jerrycan.db.ApiKey import ApiKey
+from jerrycan.Config import Config
 from otaku_info.test.TestFramework import _TestFramework
 
 

@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from sqlalchemy.exc import IntegrityError
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, MediaSubType, ReleasingState
 from otaku_info.test.TestFramework import _TestFramework

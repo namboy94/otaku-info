@@ -20,7 +20,7 @@ LICENSE"""
 from typing import Optional
 from threading import get_ident
 from typing import Dict, Tuple, Type
-from puffotter.flask.base import app
+from jerrycan.base import app
 from otaku_info.db.ModelMixin import ModelMixin
 
 

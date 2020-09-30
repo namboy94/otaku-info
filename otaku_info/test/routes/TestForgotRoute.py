@@ -41,9 +41,9 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("puffotter.flask.routes.user_management.send_email") \
+            with patch("jerrycan.routes.user_management.send_email") \
                     as m:
-                with patch("puffotter.flask.routes.user_management."
+                with patch("jerrycan.routes.user_management."
                            "generate_random", lambda x: "testpass"):
                     self.assertEqual(0, m.call_count)
                     resp = self.client.post(
@@ -68,9 +68,9 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("puffotter.flask.routes.user_management.send_email") \
+            with patch("jerrycan.routes.user_management.send_email") \
                     as m:
-                with patch("puffotter.flask.routes.user_management."
+                with patch("jerrycan.routes.user_management."
                            "generate_random", lambda x: "testpass"):
                     self.assertEqual(0, m.call_count)
                     resp = self.client.post(
@@ -95,11 +95,11 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("puffotter.flask.routes.user_management.send_email") \
+            with patch("jerrycan.routes.user_management.send_email") \
                     as m:
-                with patch("puffotter.flask.routes.user_management"
+                with patch("jerrycan.routes.user_management"
                            ".generate_random", lambda x: "testpass"):
-                    with patch("puffotter.flask.routes.user_management"
+                    with patch("jerrycan.routes.user_management"
                                ".verify_recaptcha",
                                lambda x, y, z: False):
                         self.assertEqual(0, m.call_count)

@@ -19,7 +19,7 @@ LICENSE"""
 
 import json
 from otaku_info.test.TestFramework import _TestFramework
-from puffotter.flask.db.ApiKey import ApiKey
+from jerrycan.db.ApiKey import ApiKey
 
 
 class TestApiKeyRoute(_TestFramework):

@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 # noinspection PyProtectedMember
-from puffotter.flask.test.TestFramework import \
+from jerrycan.test.TestFramework import \
     _TestFramework as __TestFrameWork
 from otaku_info.main import root_path
 from otaku_info.Config import Config

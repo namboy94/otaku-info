@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Dict, List, Optional
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.enums import ListService, MediaType
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem

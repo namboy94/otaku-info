@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from otaku_info.test.TestFramework import _TestFramework
-from puffotter.flask.db.User import User
+from jerrycan.db.User import User
 
 
 class TestProfileRoute(_TestFramework):

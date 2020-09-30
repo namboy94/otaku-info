@@ -45,11 +45,12 @@ if __name__ == "__main__":
             "werkzeug",
             "flask_sqlalchemy",
             "flask_login",
-            "puffotter[flask,crypto]",
+            "puffotter[crypto]",
             "requests",
             "sqlalchemy",
             "bokkichat",
-            "beautifulsoup4"
+            "beautifulsoup4",
+            "jerrycan"
         ],
         include_package_data=True,
         zip_safe=False

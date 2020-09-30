@@ -20,7 +20,7 @@ LICENSE"""
 import re
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Tuple
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.ModelMixin import ModelMixin

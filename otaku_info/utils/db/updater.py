@@ -19,7 +19,7 @@ LICENSE"""
 
 import traceback
 from sqlalchemy.exc import IntegrityError
-from puffotter.flask.base import db, app
+from jerrycan.base import db, app
 from otaku_info.utils.db.DbCache import DbCache
 from otaku_info.db.ModelMixin import ModelMixin
 

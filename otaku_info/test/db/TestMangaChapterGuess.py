@@ -19,7 +19,7 @@ LICENSE"""
 
 from typing import Tuple
 from unittest.mock import patch
-from puffotter.flask.base import db
+from jerrycan.base import db
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
