@@ -96,19 +96,3 @@ class NotificationSetting(ModelMixin, db.Model):
         self.notification_type = new_data.notification_type
         self.value = new_data.value
         self.minimum_score = new_data.minimum_score
-
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "notification_type": self.notification_type,
-            "value": self.value
-        }
-        if include_children:
-            data["user"] = self.user.__json__(include_children)
-        return data

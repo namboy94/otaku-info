@@ -60,18 +60,22 @@ class TestMediaItem(_TestFramework):
             media_item.__json__(False),
             {
                 "id": media_item.id,
-                "media_type": media_item.media_type.value,
-                "media_subtype": media_item.media_subtype.value,
+                "media_type": media_item.media_type.name,
+                "media_subtype": media_item.media_subtype.name,
                 "english_title": media_item.english_title,
                 "romaji_title": media_item.romaji_title,
                 "cover_url": media_item.cover_url,
                 "latest_release": media_item.latest_release,
-                "releasing_state": media_item.releasing_state.value
+                "latest_volume_release": None,
+                "releasing_state": media_item.releasing_state.name
             }
         )
+        should = media_item.__json__(False)
+        should["ln_releases"] = []
+        should["media_ids"] = []
         self.assertEqual(
             media_item.__json__(True),
-            media_item.__json__(False)
+            should
         )
 
     def test_string_representation(self):

@@ -105,21 +105,3 @@ class MediaListItem(ModelMixin, db.Model):
         """
         self.media_list_id = new_data.media_list_id
         self.media_user_state_id = new_data.media_user_state_id
-
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "media_list_id": self.media_list_id,
-            "media_user_state_id": self.media_user_state_id
-        }
-        if include_children:
-            data["media_list"] = self.media_list.__json__(include_children)
-            data["media_user_state"] = \
-                self.media_user_state.__json__(include_children)
-        return data

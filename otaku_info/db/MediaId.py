@@ -166,22 +166,3 @@ class MediaId(ModelMixin, db.Model):
         self.media_type = new_data.media_type
         self.service = new_data.service
         self.service_id = new_data.service_id
-
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "media_item_id": self.media_item_id,
-            "service_id": self.service_id,
-            "service": self.service.value,
-            "media_type": self.media_type.value,
-            "media_subtype": self.media_subtype.value
-        }
-        if include_children:
-            data["media_item"] = self.media_item.__json__(include_children)
-        return data

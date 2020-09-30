@@ -86,21 +86,25 @@ class TestMediaUserState(_TestFramework):
                 "media_id_id": media_id.id,
                 "user_id": user.id,
                 "progress": media_user_state.progress,
+                "volume_progress": None,
                 "score": media_user_state.score,
-                "consuming_state": media_user_state.consuming_state.value
+                "consuming_state": media_user_state.consuming_state.name
             }
         )
         self.assertEqual(
             media_user_state.__json__(True),
             {
                 "id": media_id.id,
-                "media_id": media_id.__json__(True),
+                "media_id": media_id.__json__(True, ["media_user_states"]),
                 "media_id_id": media_id.id,
                 "user_id": user.id,
-                "user": user.__json__(True),
+                "user": user.__json__(True, ["media_user_states"]),
                 "progress": media_user_state.progress,
+                "volume_progress": None,
                 "score": media_user_state.score,
-                "consuming_state": media_user_state.consuming_state.value
+                "consuming_state": media_user_state.consuming_state.name,
+                "media_notification": None,
+                "media_list_items": []
             }
         )
 

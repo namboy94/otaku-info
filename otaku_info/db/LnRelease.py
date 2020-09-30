@@ -145,31 +145,6 @@ class LnRelease(ModelMixin, db.Model):
         self.physical = new_data.physical
         self.digital = new_data.digital
 
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "media_item_id": self.media_item_id,
-            "release_date_string": self.release_date_string,
-            "series_name": self.series_name,
-            "volume": self.volume,
-            "publisher": self.publisher,
-            "purchase_link": self.purchase_link,
-            "digital": self.digital,
-            "physical": self.physical
-        }
-        if include_children:
-            if self.media_item is None:
-                data["media_item"] = None
-            else:
-                data["media_item"] = self.media_item.__json__(include_children)
-        return data
-
     def get_ids(self) -> List[MediaId]:
         """
         :return: Any related Media IDs

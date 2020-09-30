@@ -60,8 +60,8 @@ class TestMediaList(_TestFramework):
                 "id": media_list.id,
                 "name": media_list.name,
                 "user_id": user.id,
-                "service": media_list.service.value,
-                "media_type": media_list.media_type.value
+                "service": media_list.service.name,
+                "media_type": media_list.media_type.name
             }
         )
         self.assertEqual(
@@ -70,9 +70,10 @@ class TestMediaList(_TestFramework):
                 "id": media_list.id,
                 "name": media_list.name,
                 "user_id": user.id,
-                "user": user.__json__(True),
-                "service": media_list.service.value,
-                "media_type": media_list.media_type.value
+                "user": user.__json__(True, ["media_lists"]),
+                "service": media_list.service.name,
+                "media_type": media_list.media_type.name,
+                "media_list_items": []
             }
         )
 

@@ -72,22 +72,24 @@ class TestMediaId(_TestFramework):
             {
                 "id": media_id.id,
                 "media_item_id": media_item.id,
-                "service": media_id.service.value,
+                "service": media_id.service.name,
                 "service_id": media_id.service_id,
-                "media_type": media_id.media_type.value,
-                "media_subtype": media_id.media_subtype.value
+                "media_type": media_id.media_type.name,
+                "media_subtype": media_id.media_subtype.name
             }
         )
         self.assertEqual(
             media_id.__json__(True),
             {
                 "id": media_id.id,
-                "media_item": media_item.__json__(True),
+                "media_item": media_item.__json__(True, ["media_ids"]),
                 "media_item_id": media_item.id,
-                "service": media_id.service.value,
+                "service": media_id.service.name,
                 "service_id": media_id.service_id,
-                "media_type": media_id.media_type.value,
-                "media_subtype": media_id.media_subtype.value
+                "media_type": media_id.media_type.name,
+                "media_subtype": media_id.media_subtype.name,
+                "media_user_states": [],
+                "chapter_guess": None
             }
         )
 

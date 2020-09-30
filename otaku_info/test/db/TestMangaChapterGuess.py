@@ -89,7 +89,7 @@ class TestMangaChapterGuess(_TestFramework):
             chapter_guess.__json__(True),
             {
                 "id": chapter_guess.id,
-                "media_id": media_id.__json__(True),
+                "media_id": media_id.__json__(True, ["chapter_guess"]),
                 "media_id_id": media_id.id,
                 "guess": chapter_guess.guess,
                 "last_update": chapter_guess.last_update

@@ -174,22 +174,3 @@ class MediaItem(ModelMixin, db.Model):
         :return: The URL to the item's page on the otaku-info site
         """
         return url_for("media.media", media_item_id=self.id)
-
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "media_type": self.media_type.value,
-            "media_subtype": self.media_subtype.value,
-            "english_title": self.english_title,
-            "romaji_title": self.romaji_title,
-            "cover_url": self.cover_url,
-            "latest_release": self.latest_release,
-            "releasing_state": self.releasing_state.value
-        }
-        return data
