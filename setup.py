@@ -19,10 +19,30 @@ LICENSE"""
 
 # imports
 import os
+import sys
+from subprocess import Popen, check_output
 from setuptools import setup, find_packages
 
 
 if __name__ == "__main__":
+
+    if sys.argv[1] == "install":
+        # Static dependencies (JS and CSS)
+        Popen([
+            "npm", "install", "--prefix", "otaku_info/static"
+        ]).wait()
+        Popen(["sass", "--update", "--force", "--style", "compressed",
+               "otaku_info/static/scss/style.scss",
+               "otaku_info/static/scss"]).wait()
+        js_dir = "otaku_info/static/javascript"
+        minified = b""
+        for js_file in os.listdir(js_dir):
+            if js_file == "min.js":
+                continue
+            js_path = os.path.join(js_dir, js_file)
+            minified += check_output(["yui-compressor", js_path]) + b"\n"
+        with open(os.path.join(js_dir, "min.js"), "wb") as f:
+            f.write(minified)
 
     setup(
         name="otaku-info",

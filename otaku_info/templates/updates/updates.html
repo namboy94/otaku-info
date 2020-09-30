@@ -17,15 +17,15 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                {{ message }}
-            </div>
-        {% endfor %}
+<!--generic/updates.html-->
+{% extends "core/base_layout.html" %}
+{% block body %}
+    {% if updates is defined %}
+        <h1>[{{service.value.title()}} ({{media_type.value.title()}})] {{list_name}}</h1>
+        {% include "generic/update_list.html" %}
+
+    {% else %}
+        <h1>Updates</h1>
+        {% include "generic/update_config.html" %}
     {% endif %}
-{% endwith %}
+{% endblock %}
