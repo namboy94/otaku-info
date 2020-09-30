@@ -44,9 +44,6 @@ class MediaItem(ModelMixin, db.Model):
             "media_type",
             "media_subtype",
             "romaji_title",
-            "cover_url",  # Sometimes, there legitimately exist some media
-                          # items with the same name
-                          # (for example pre-serialization & serialized works)
             name="unique_media_item_data"
         ),
         db.UniqueConstraint(
@@ -136,12 +133,11 @@ class MediaItem(ModelMixin, db.Model):
         }
 
     @property
-    def identifier_tuple(self) -> Tuple[str, MediaType, MediaSubType, str]:
+    def identifier_tuple(self) -> Tuple[str, MediaType, MediaSubType]:
         """
         :return: A tuple that uniquely identifies this database entry
         """
-        return self.romaji_title, self.media_type, \
-            self.media_subtype, self.cover_url
+        return self.romaji_title, self.media_type, self.media_subtype
 
     def update(self, new_data: "MediaItem"):
         """
