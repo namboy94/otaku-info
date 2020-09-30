@@ -17,20 +17,13 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-<!--user_management/forgot.html-->
-{% extends "core/base_layout.html" %}
-{% block body %}
-    <h1> Reset Password </h1>
-    <hr>
-
-    <form id="reset-form" method="post" action="{{ url_for("user_management.forgot") }}">
-        {% with label_name="Email Address", placeholder="Email",
-                var_name="email", icon_name="envelope" %}
-            {% include "components/forms/text_input.html" %}
-        {% endwith %}
-        {% with button_name="Reset", use_recaptcha=True, form_name="reset-form" %}
-            {% include "components/forms/submit_button.html" %}
-        {% endwith %}
-    </form>
-
-{% endblock %}
+<div class="field">
+    <div class="control">
+        <label class="checkbox">
+            <input type="checkbox"
+                   name="{{ var_name }}"
+                   {% if checked %}checked{% endif %}>
+            {{ label_name }}
+        </label>
+    </div>
+</div>

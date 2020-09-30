@@ -21,38 +21,6 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 {% extends "core/base_layout.html" %}
 {% block body %}
     <h1> Notification Settings </h1>
-    <br>
-
-    <h3>Telegram</h3>
-    <p>
-        To enable Telegram Notifications, you need to know your Telegram Chat ID.
-        To get your chat ID, send a message to
-        <a href="http://t.me/otaku_info_bot">the Telegram bot</a>
-        with the content "/whoami".
-    </p>
-
-    <div class="container form-container">
-        <form method="post" action="{{ url_for("user_management.register_telegram") }}">
-            <div class="form-group">
-                <label for="telegram_chat_id_input">Telegram Chat ID</label>
-                <input class="form-control"
-                       type="text"
-                       autocomplete="on"
-                       id="telegram_chat_id_input"
-                       aria-label="{{ site_name }}"
-                       value="{{ "" if telegram_chat_id is none else telegram_chat_id.chat_id }}"
-                       name="telegram_chat_id">
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
-
-    <br>
-
-    <h3>Notification Settings</h3>
-
-    <br>
-
 
     <div class="container form-container">
         <form method="post" action="{{ url_for("notifications.set_notification_settings") }}">

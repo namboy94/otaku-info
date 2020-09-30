@@ -22,44 +22,27 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 {% block body %}
     <h1>Login</h1>
 
-    <br>
+    <hr>
 
-    <div class="container form-container">
-        <form method="post" action="{{ url_for("user_management.login") }}">
-            <div class="form-group">
-                <label for="username_input">Username</label>
-                <input class="form-control"
-                       type="text"
-                       autocomplete="on"
-                       id="username_input"
-                       aria-label="username"
-                       placeholder="Username"
-                       name="username">
-            </div>
-            <div class="form-group">
-                <label for="password_input">Password</label>
-                <input class="form-control"
-                       type="password"
-                       autocomplete="on"
-                       id="password_input"
-                       aria-label="password"
-                       placeholder="Password"
-                       name="password">
-            </div>
-            <div class="form-check">
-                <input type="checkbox"
-                       class="form-check-input"
-                       id="remember_me_check"
-                       name="remember_me"
-                       checked>
-                <label class="form-check-label" for="remember_me_check">Remember Me</label>
-            </div>
-            <br>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
+    <form method="post" action="{{ url_for("user_management.login") }}">
+        {% with label_name="Username or Email Address",
+                placeholder="Username / Email",
+                var_name="username", icon_name="user" %}
+            {% include "components/forms/text_input.html" %}
+        {% endwith %}
+        {% with label_name="Password", placeholder="Password",
+                var_name="password", icon_name="lock" %}
+            {% include "components/forms/password_input.html" %}
+        {% endwith %}
+        {% with label_name="Remember me?", var_name="remember_me", checked=True %}
+            {% include "components/forms/bool_input.html" %}
+        {% endwith %}
+        {% with button_name="Login" %}
+            {% include "components/forms/submit_button.html" %}
+        {% endwith %}
+    </form>
 
-    <br>
+    <hr>
 
     <p>
         <a href="{{ url_for("user_management.forgot") }}">Forgot Password?</a>
