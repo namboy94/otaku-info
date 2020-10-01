@@ -146,7 +146,7 @@ class MediaId(ModelMixin, db.Model):
         :return: The path to the service's icon file
         """
         return url_for(
-            "static", filename=f"service_logos/{self.service.value}.png"
+            "static", filename=f"images/service_logos/{self.service.value}.png"
         )
 
     @property

@@ -17,9 +17,25 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-@import "../node_modules/bulma/bulma";
-@import "navbar";
-@import "base_layout";
-@import "footer";
-@import "content";
-@import "updates";
+@import "colors";
+
+
+
+/**
+ Styling for an update item / row
+ */
+.update-item {
+    border: solid 1px $black-color;
+    background: $white-color;
+    .cover-image {
+        max-height: 60px;
+    }
+    .service-button {
+        padding-right:3px;
+        padding-top: 3px;
+        display:inline-block;
+        img {
+            max-height: 20px;
+        }
+    }
+}

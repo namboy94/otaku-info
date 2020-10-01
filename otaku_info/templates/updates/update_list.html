@@ -17,45 +17,8 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-<div id="update-list">
-    <div class="row text-center">
-        <div class="col-md-1">
-            Image
-        </div>
-        <div class="col-md-5">
-            <button class="sort" data-sort="name">Name</button>
-        </div>
-        <div class="col-md-2">
-            Links
-        </div>
-        <div class="col-md-1">
-            <button class="sort" data-sort="user_score">Score</button>
-        </div>
-        <div class="col-md-1">
-            <button class="sort" data-sort="user_progress">Progress</button>
-        </div>
-        <div class="col-md-1">
-            <button class="sort" data-sort="latest">Latest</button>
-        </div>
-        <div class="col-md-1">
-            <button class="sort" data-sort="diff">New</button>
-        </div>
-    </div>
-    <ul class="list-group list">
-        {% for update in updates %}
-            {% include "updates/update_item.html" %}
-        {% endfor %}
-    </ul>
+<div class="container is-fluid">
+    {% for update in updates %}
+        {% include "updates/update_item.html" %}
+    {% endfor %}
 </div>
-<!--suppress JSUnresolvedFunction, ES6ConvertVarToLetConst -->
-<script>
-    var userList = new List('update-list', {
-        valueNames: [
-            "diff",
-            "name",
-            "user_score",
-            "user_progress",
-            "latest"
-        ]
-    });
-</script>

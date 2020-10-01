@@ -17,53 +17,25 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-<div class="container form-container">
-    <form method="post" action="{{ url_for("updates.show_updates") }}">
-        <div class="form-row align-items-center">
-            <div class="col-md-3">
-                <label class="sr-only" for="list_input">List</label>
-                <select id="list_input" name="list_ident" class="form-control mb-2">
-                    {% for media_list in media_lists %}
-                        {% set name = media_list.name %}
-                        {% set media_type = media_list.media_type.value %}
-                        {% set service = media_list.service.value %}
-                        <option value="{{service}}:{{media_type}}:{{name}}">
-                            [{{service.title()}} ({{media_type.title()}})] {{name.title()}}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-1">
-                <label class="sr-only" for="list_subtype">List</label>
-                <select id="list_subtype" name="filter_subtype" class="form-control mb-2">
-                    <option value=""></option>
-                    {% for subtype in subtypes %}
-                        <option value="{{subtype.value}}">
-                            {{subtype.value.title().replace("_", " ")}}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="sr-only" for="mincount_input">Minimum Update Count</label>
-                <div class="input-group mb-2">
-                    <div class="input-group-prepend">
-                        <div class="input-group-text">Minimum Update Count</div>
-                    </div>
-                    <input type="number" class="form-control" id="mincount_input" value=0 name="mincount">
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="form-check mb-2">
-                   <input class="form-check-input" type="checkbox" id="include_complete_check" name="include_complete">
-                   <label class="form-check-label" for="include_complete_check">
-                       Include Complete
-                    </label>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary mb-2">Go</button>
-            </div>
-        </div>
-    </form>
-</div>
+<form method="post" action="{{ url_for("updates.show_updates") }}">
+    {% with label_name="List", var_name="list_ident",
+            selected=media_lists[0][0], options=media_lists %}
+        {% include "components/forms/dropdown_input.html" %}
+    {% endwith %}
+    {% with label_name="Type", var_name="list_subtype",
+            selected=None, options=subtypes %}
+        {% include "components/forms/dropdown_input.html" %}
+    {% endwith %}
+    {% with label_name="Minimum Update Count",
+            min_value=0, step=1, value=1,
+            var_name="mincount" %}
+        {% include "components/forms/number_input.html" %}
+    {% endwith %}
+    {% with label_name="Include Complete", var_name=include_complete,
+            checked=False %}
+        {% include "components/forms/bool_input.html" %}
+    {% endwith %}
+    {% with button_name="Go" %}
+        {% include "components/forms/submit_button.html" %}
+    {% endwith %}
+</form>

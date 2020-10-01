@@ -81,8 +81,8 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         return render_template(
             "ln/ln_releases.html",
             releases=releases,
-            years=years,
-            months=MONTHS + ["all"],
+            years=[(x, x) for x in years],
+            months=[(x, x.title()) for x in MONTHS + ["all"]],
             selected_year=year,
             selected_month=month_name
         )

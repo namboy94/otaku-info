@@ -49,22 +49,17 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
     <h2>Set external service usernames</h2>
 
     {% for service, username in service_usernames.items() %}
-        <div class="container form-container">
-            <form method="post" action="{{ url_for("external_service.set_service_username") }}">
-                <div class="form-group">
-                    <label for="{{ site_name }}_input">{{ service.value.title() }} username</label>
-                    <input class="form-control"
-                           type="text"
-                           autocomplete="on"
-                           id="{{ site_name }}_input"
-                           aria-label="{{ site_name }}"
-                           value="{{ "" if username is none else username.username }}"
-                           name="username">
-                    <input type="hidden" value="{{ service.value }}" name="service">
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-        </div>
+        <form method="post" action="{{ url_for("external_service.set_service_username") }}">
+            {% with label_name=service.value.title(),
+                    var_name="username", icon_name="user",
+                    value="" if username is none else username.username %}
+                {% include "components/forms/password_input.html" %}
+            {% endwith %}
+            <input type="hidden" value="{{ service.value }}" name="service">
+            {% with button_name="Submit" %}
+                {% include "components/forms/submit_button.html" %}
+            {% endwith %}
+        </form>
     {% endfor %}
 
     <hr>
@@ -92,20 +87,14 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 
     <h2>Delete Account</h2>
 
-    <div class="container form-container">
-        <form method="post" action="{{ url_for("user_management.delete_user") }}">
-            <div class="form-group">
-                <label for="password_input">Current Password</label>
-                <input class="form-control"
-                       type="password"
-                       autocomplete="on"
-                       id="password_input"
-                       aria-label="password"
-                       placeholder="Password"
-                       name="password">
-            </div>
-            <button type="submit" class="btn btn-danger">Delete</button>
-        </form>
-    </div>
+    <form method="post" action="{{ url_for("user_management.delete_user") }}">
+        {% with label_name="Current Password", placeholder="Password",
+                var_name="password", icon_name="lock" %}
+            {% include "components/forms/password_input.html" %}
+        {% endwith %}
+        {% with button_name="Delete", category="danger" %}
+            {% include "components/forms/submit_button.html" %}
+        {% endwith %}
+    </form>
 
 {% endblock %}

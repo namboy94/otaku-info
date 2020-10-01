@@ -22,43 +22,23 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 {% block body %}
     <h1> Notification Settings </h1>
 
-    <div class="container form-container">
-        <form method="post" action="{{ url_for("notifications.set_notification_settings") }}">
-            {% for notification_type, setting in notification_settings.items() %}
-            <div class="form-check">
-                <input type="checkbox"
-                       class="form-check-input"
-                       id="{{notification_type.value}}_check"
-                       name="{{notification_type.value}}"
-                       {% if setting.value %}
-                           checked
-                       {% endif %}
-                       >
-                <label class="form-check-label" for="{{notification_type.value}}_check">
-                    {{ notification_type.value.title().replace("_", " ") }}
-                </label>
-                <label class="form-check-label" for="{{notification_type.value}}_min_score">
-                    Minimum Score
-                </label>
-                <input class="form-control"
-                       id="{{notification_type.value}}_min_score"
-                       name="{{ notification_type.value }}_min_score"
-                       title="Minimum Score"
-                       pattern="[0-9]*"
-                       maxlength="3"
-                       {% if setting.value %}
-                           value="{{ setting.minimum_score }}"
-                       {% else %}
-                           value="0"
-                       {% endif %}
-                       >
-            </div>
-            <br>
-            {% endfor %}
-            <br>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
-
+    <form method="post" action="{{ url_for("notifications.set_notification_settings") }}">
+        {% for notification_type, setting in notification_settings.items() %}
+            {% with label_name=notification_type.value.title().replace("_", " "),
+                var_name=notification_type.value,
+                checked=setting.value %}
+                {% include "components/forms/bool_input.html" %}
+            {% endwith %}
+            {% with label_name="Minimum Score",
+                min_value=0, max_value=100, step=1,
+                value=0 if not setting.value else setting.minimum_score,
+                var_name="mincount" %}
+            {% include "components/forms/number_input.html" %}
+            {% endwith %}
+        {% endfor %}
+        {% with button_name="Submit" %}
+            {% include "components/forms/submit_button.html" %}
+        {% endwith %}
+    </form>
 
 {% endblock %}
