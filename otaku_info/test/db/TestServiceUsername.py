@@ -18,8 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Tuple
-from puffotter.flask.base import db
-from puffotter.flask.db.User import User
+from jerrycan.base import db
+from jerrycan.db.User import User
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.ServiceUsername import ServiceUsername
 from otaku_info.enums import ListService
@@ -59,7 +59,7 @@ class TestServiceUsername(_TestFramework):
                 "id": service_username.id,
                 "user_id": user.id,
                 "username": service_username.username,
-                "service": service_username.service.value
+                "service": service_username.service.name
             }
         )
         self.assertEqual(
@@ -67,9 +67,9 @@ class TestServiceUsername(_TestFramework):
             {
                 "id": service_username.id,
                 "user_id": user.id,
-                "user": user.__json__(True),
+                "user": user.__json__(True, ["service_usernames"]),
                 "username": service_username.username,
-                "service": service_username.service.value
+                "service": service_username.service.name,
             }
         )
 

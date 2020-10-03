@@ -71,6 +71,15 @@ class AnilistItem(AnimeListItem):
         if mal_id is not None:
             extra_ids[ListService.MYANIMELIST] = str(mal_id)
 
+        # Special cases
+        # TODO figure out how to get this info from the API
+        doujins = [113181, 108352, 115939, 106890, 114527, 103608, 101236]
+        if data["id"] in doujins:
+            data["title"]["romaji"] += " (Doujin)"
+        new = [109302]
+        if data["id"] in new:
+            data["title"]["romaji"] += " (New)"
+
         return AnilistItem(
             data["id"],
             ListService.ANILIST,

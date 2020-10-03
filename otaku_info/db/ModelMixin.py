@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Tuple
-from puffotter.flask.db.ModelMixin import ModelMixin as PuffotterModelMixin
+from jerrycan.db.ModelMixin import ModelMixin as PuffotterModelMixin
 
 
 class ModelMixin(PuffotterModelMixin):

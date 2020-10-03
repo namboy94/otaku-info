@@ -18,8 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Dict, Any, Optional, Tuple, TYPE_CHECKING
-from puffotter.flask.base import db
-from puffotter.flask.db.User import User
+from jerrycan.base import db
+from jerrycan.db.User import User
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaId import MediaId
 from otaku_info.enums import ConsumingState
@@ -145,23 +145,3 @@ class MediaUserState(ModelMixin, db.Model):
         self.volume_progress = new_data.volume_progress
         self.score = new_data.score
         self.consuming_state = new_data.consuming_state
-
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "media_id_id": self.media_id_id,
-            "user_id": self.user_id,
-            "progress": self.progress,
-            "score": self.score,
-            "consuming_state": self.consuming_state.value
-        }
-        if include_children:
-            data["media_id"] = self.media_id.__json__(include_children)
-            data["user"] = self.user.__json__(include_children)
-        return data

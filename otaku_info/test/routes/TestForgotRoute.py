@@ -18,6 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from unittest.mock import patch
+from jerrycan.test.mocks import send_email_mock, verify_recaptcha_mock, \
+    negative_verify_recaptcha_mock, generate_random_mock
 from otaku_info.test.TestFramework import _TestFramework
 
 
@@ -41,20 +43,19 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("puffotter.flask.routes.user_management.send_email") \
-                    as m:
-                with patch("puffotter.flask.routes.user_management."
-                           "generate_random", lambda x: "testpass"):
-                    self.assertEqual(0, m.call_count)
-                    resp = self.client.post(
-                        "/forgot",
-                        follow_redirects=True,
-                        data={
-                            "email": user.email,
-                            "g-recaptcha-response": ""
-                        }
-                    )
-                    self.assertEqual(1, m.call_count)
+            with send_email_mock as m:
+                with generate_random_mock:
+                    with verify_recaptcha_mock:
+                        self.assertEqual(0, m.call_count)
+                        resp = self.client.post(
+                            "/forgot",
+                            follow_redirects=True,
+                            data={
+                                "email": user.email,
+                                "g-recaptcha-response": ""
+                            }
+                        )
+                        self.assertEqual(1, m.call_count)
 
             self.assertTrue(b"Password was reset successfully" in resp.data)
             self.assertTrue(b"<!--static/index.html-->" in resp.data)
@@ -68,20 +69,19 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("puffotter.flask.routes.user_management.send_email") \
-                    as m:
-                with patch("puffotter.flask.routes.user_management."
-                           "generate_random", lambda x: "testpass"):
-                    self.assertEqual(0, m.call_count)
-                    resp = self.client.post(
-                        "/forgot",
-                        follow_redirects=True,
-                        data={
-                            "email": user.email + "AAA",
-                            "g-recaptcha-response": ""
-                        }
-                    )
-                    self.assertEqual(0, m.call_count)
+            with send_email_mock as m:
+                with generate_random_mock:
+                    with verify_recaptcha_mock:
+                        self.assertEqual(0, m.call_count)
+                        resp = self.client.post(
+                            "/forgot",
+                            follow_redirects=True,
+                            data={
+                                "email": user.email + "AAA",
+                                "g-recaptcha-response": ""
+                            }
+                        )
+                        self.assertEqual(0, m.call_count)
 
             self.assertTrue(b"Password was reset successfully" in resp.data)
             self.assertTrue(b"<!--static/index.html-->" in resp.data)
@@ -95,13 +95,9 @@ class TestForgotRoute(_TestFramework):
         """
         user, password, _ = self.generate_sample_user()
         with self.client:
-            with patch("puffotter.flask.routes.user_management.send_email") \
-                    as m:
-                with patch("puffotter.flask.routes.user_management"
-                           ".generate_random", lambda x: "testpass"):
-                    with patch("puffotter.flask.routes.user_management"
-                               ".verify_recaptcha",
-                               lambda x, y, z: False):
+            with send_email_mock as m:
+                with generate_random_mock:
+                    with negative_verify_recaptcha_mock:
                         self.assertEqual(0, m.call_count)
                         resp = self.client.post(
                             "/forgot",

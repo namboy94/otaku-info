@@ -1,4 +1,4 @@
-{#
+/**
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
 This file is part of otaku-info.
@@ -15,17 +15,11 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
-#}
+*/
 
-<!--generic/updates.html-->
-{% extends "components/base_layout.html" %}
-{% block body %}
-    {% if updates is defined %}
-        <h1>[{{service.value.title()}} ({{media_type.value.title()}})] {{list_name}}</h1>
-        {% include "generic/update_list.html" %}
-
-    {% else %}
-        <h1>Updates</h1>
-        {% include "generic/update_config.html" %}
-    {% endif %}
-{% endblock %}
+@import "../node_modules/bulma/bulma";
+@import "navbar";
+@import "base_layout";
+@import "footer";
+@import "content";
+@import "updates";

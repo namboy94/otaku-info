@@ -18,24 +18,16 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>otaku-info</title>
-        <link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
-        {% include "components/header.html" %}
-        {% block head %}{% endblock %}
-    </head>
+<html lang="de" class="has-navbar-fixed-top">
+    {% include "core/header.html" %}
     <body>
-        <div id="container">
-            <div id="header">{% include "components/navbar.html" %}</div>
-            <div id="body">
-                <div class="container content">
-                    {% include "components/alerts.html" %}
-                    {% block body %}{% endblock %}
-                </div>
+        <div id="navbar">{% include "core/navbar.html" %}</div>
+        <div class="container is-widescreen main-container">
+            <div class="content main-content">
+                {% include "core/alerts.html" %}
+                {% block body %}{% endblock %}
             </div>
-            <div id="footer">{% include "components/footer.html" %}</div>
         </div>
+        <div id="footer">{% include "core/footer.html" %}</div>
     </body>
 </html>

@@ -19,8 +19,8 @@ LICENSE"""
 
 from typing import List
 from flask.blueprints import Blueprint
-from puffotter.flask.routes.decorators import api
-from puffotter.flask.exceptions import ApiException
+from jerrycan.routes.decorators import api
+from jerrycan.exceptions import ApiException
 from otaku_info.Config import Config
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem

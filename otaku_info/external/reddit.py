@@ -21,7 +21,7 @@ import requests
 from typing import List, Optional
 from datetime import datetime
 from bs4 import BeautifulSoup
-from puffotter.flask.base import app
+from jerrycan.base import app
 from otaku_info.external.entities.RedditLnRelease import RedditLnRelease
 
 

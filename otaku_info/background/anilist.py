@@ -19,7 +19,7 @@ LICENSE"""
 
 import time
 from typing import List, Optional, cast, Dict
-from puffotter.flask.base import db, app
+from jerrycan.base import db, app
 from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaList import MediaList

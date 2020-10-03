@@ -10,3 +10,9 @@ build/
 .mypy_cache/
 __pycache__/
 venv/
+.sass-cache/
+otaku_info/static/javascript/min.js
+otaku_info/static/node_modules/
+otaku_info/static/scss/*.css
+otaku_info/static/scss/*.css.map
+otaku_info/static/package-lock.json

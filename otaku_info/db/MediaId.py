@@ -19,7 +19,7 @@ LICENSE"""
 
 from flask import url_for
 from typing import Dict, Any, List, TYPE_CHECKING, Tuple, Optional
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.enums import ListService, MediaType, MediaSubType
 from otaku_info.mappings import list_service_url_formats
@@ -146,7 +146,7 @@ class MediaId(ModelMixin, db.Model):
         :return: The path to the service's icon file
         """
         return url_for(
-            "static", filename=f"service_logos/{self.service.value}.png"
+            "static", filename=f"images/service_logos/{self.service.value}.png"
         )
 
     @property
@@ -166,22 +166,3 @@ class MediaId(ModelMixin, db.Model):
         self.media_type = new_data.media_type
         self.service = new_data.service
         self.service_id = new_data.service_id
-
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "media_item_id": self.media_item_id,
-            "service_id": self.service_id,
-            "service": self.service.value,
-            "media_type": self.media_type.value,
-            "media_subtype": self.media_subtype.value
-        }
-        if include_children:
-            data["media_item"] = self.media_item.__json__(include_children)
-        return data

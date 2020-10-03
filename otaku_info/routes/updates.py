@@ -44,7 +44,6 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         service, media_type, list_name = \
             request.form["list_ident"].split(":", 2)
         mincount = request.form.get("mincount", "0")
-        print(request.form)
         include_complete = request.form.get("include_complete", "off") == "on"
         filter_subtype = request.form.get("filter_subtype")
 
@@ -83,9 +82,17 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             media_lists.sort(key=lambda x: x.media_type.value)
             media_lists.sort(key=lambda x: x.service.value)
             return render_template(
-                "generic/updates.html",
-                media_lists=media_lists,
-                subtypes=[x for x in MediaSubType]
+                "updates/updates.html",
+                media_lists=[
+                    (
+                        f"{x.service.value}:{x.media_type.value}:{x.name}",
+                        f"{x.service.value.title()}:"
+                        f"{x.media_type.value.title()}:{x.name.title()}"
+
+                    )
+                    for x in media_lists
+                ],
+                subtypes=[(x.value, x.value.title()) for x in MediaSubType]
             )
         else:
             try:
@@ -109,7 +116,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
                 include_complete
             )
             return render_template(
-                "generic/updates.html",
+                "updates/updates.html",
                 updates=updates,
                 list_name=list_name,
                 service=service,

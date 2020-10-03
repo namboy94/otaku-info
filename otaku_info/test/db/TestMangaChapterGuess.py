@@ -19,7 +19,7 @@ LICENSE"""
 
 from typing import Tuple
 from unittest.mock import patch
-from puffotter.flask.base import db
+from jerrycan.base import db
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
@@ -89,7 +89,7 @@ class TestMangaChapterGuess(_TestFramework):
             chapter_guess.__json__(True),
             {
                 "id": chapter_guess.id,
-                "media_id": media_id.__json__(True),
+                "media_id": media_id.__json__(True, ["chapter_guess"]),
                 "media_id_id": media_id.id,
                 "guess": chapter_guess.guess,
                 "last_update": chapter_guess.last_update

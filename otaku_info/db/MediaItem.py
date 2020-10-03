@@ -19,7 +19,7 @@ LICENSE"""
 
 from flask import url_for
 from typing import Dict, Any, Optional, List, Tuple, TYPE_CHECKING
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
     ListService
@@ -44,9 +44,6 @@ class MediaItem(ModelMixin, db.Model):
             "media_type",
             "media_subtype",
             "romaji_title",
-            "cover_url",  # Sometimes, there legitimately exist some media
-                          # items with the same name
-                          # (for example pre-serialization & serialized works)
             name="unique_media_item_data"
         ),
         db.UniqueConstraint(
@@ -136,12 +133,11 @@ class MediaItem(ModelMixin, db.Model):
         }
 
     @property
-    def identifier_tuple(self) -> Tuple[str, MediaType, MediaSubType, str]:
+    def identifier_tuple(self) -> Tuple[str, MediaType, MediaSubType]:
         """
         :return: A tuple that uniquely identifies this database entry
         """
-        return self.romaji_title, self.media_type, \
-            self.media_subtype, self.cover_url
+        return self.romaji_title, self.media_type, self.media_subtype
 
     def update(self, new_data: "MediaItem"):
         """
@@ -174,22 +170,3 @@ class MediaItem(ModelMixin, db.Model):
         :return: The URL to the item's page on the otaku-info site
         """
         return url_for("media.media", media_item_id=self.id)
-
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "media_type": self.media_type.value,
-            "media_subtype": self.media_subtype.value,
-            "english_title": self.english_title,
-            "romaji_title": self.romaji_title,
-            "cover_url": self.cover_url,
-            "latest_release": self.latest_release,
-            "releasing_state": self.releasing_state.value
-        }
-        return data

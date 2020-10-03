@@ -18,7 +18,9 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from unittest.mock import patch
-from puffotter.flask.db.User import User
+from jerrycan.db.User import User
+from jerrycan.test.mocks import send_email_mock, verify_recaptcha_mock, \
+    negative_verify_recaptcha_mock
 from otaku_info.test.TestFramework import _TestFramework
 from otaku_info.Config import Config
 
@@ -44,21 +46,21 @@ class TestRegisterRoute(_TestFramework):
         self.assertEqual(len(User.query.all()), 0)
         with self.client:
 
-            with patch("puffotter.flask.routes.user_management.send_email") \
-                    as m:
-                self.assertEqual(0, m.call_count)
-                resp = self.client.post(
-                    "/register",
-                    follow_redirects=True,
-                    data={
-                        "username": "testuser",
-                        "password": "testpass",
-                        "password-repeat": "testpass",
-                        "email": "test@example.com",
-                        "g-recaptcha-response": ""
-                    }
-                )
-                self.assertEqual(1, m.call_count)
+            with send_email_mock as m:
+                with verify_recaptcha_mock:
+                    self.assertEqual(0, m.call_count)
+                    resp = self.client.post(
+                        "/register",
+                        follow_redirects=True,
+                        data={
+                            "username": "testuser",
+                            "password": "testpass",
+                            "password-repeat": "testpass",
+                            "email": "test@example.com",
+                            "g-recaptcha-response": ""
+                        }
+                    )
+                    self.assertEqual(1, m.call_count)
 
             self.assertTrue(b"Registered Successfully" in resp.data)
             self.assertTrue(b"<!--static/index.html-->" in resp.data)
@@ -99,8 +101,7 @@ class TestRegisterRoute(_TestFramework):
                 data = dict(base)
                 data.update(params)
 
-                with patch("puffotter.flask.routes.user_management."
-                           "send_email") as m:
+                with send_email_mock as m:
                     self.assertEqual(0, m.call_count)
                     resp = self.client.post(
                         "/register",
@@ -121,10 +122,8 @@ class TestRegisterRoute(_TestFramework):
         :return: None
         """
         with self.client:
-            with patch("puffotter.flask.routes.user_management.send_email") \
-                    as m:
-                with patch("puffotter.flask.routes.user_management."
-                           "verify_recaptcha", lambda x, y, z: False):
+            with send_email_mock as m:
+                with negative_verify_recaptcha_mock:
                     self.assertEqual(0, m.call_count)
                     resp = self.client.post(
                         "/register",

@@ -18,7 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from sqlalchemy.exc import IntegrityError
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, MediaSubType, ReleasingState
 from otaku_info.test.TestFramework import _TestFramework
@@ -60,18 +60,22 @@ class TestMediaItem(_TestFramework):
             media_item.__json__(False),
             {
                 "id": media_item.id,
-                "media_type": media_item.media_type.value,
-                "media_subtype": media_item.media_subtype.value,
+                "media_type": media_item.media_type.name,
+                "media_subtype": media_item.media_subtype.name,
                 "english_title": media_item.english_title,
                 "romaji_title": media_item.romaji_title,
                 "cover_url": media_item.cover_url,
                 "latest_release": media_item.latest_release,
-                "releasing_state": media_item.releasing_state.value
+                "latest_volume_release": None,
+                "releasing_state": media_item.releasing_state.name
             }
         )
+        should = media_item.__json__(False)
+        should["ln_releases"] = []
+        should["media_ids"] = []
         self.assertEqual(
             media_item.__json__(True),
-            media_item.__json__(False)
+            should
         )
 
     def test_string_representation(self):
@@ -179,7 +183,6 @@ class TestMediaItem(_TestFramework):
             ("media_type", MediaType.ANIME, False),
             ("media_subtype", MediaSubType.NOVEL, False),
             ("romaji_title", "XYZ", False),
-            ("cover_url", "AAA", False),
             ("english_title", "ABCDE", True),
         ]:
             kwargs = dict(standard_kwargs)

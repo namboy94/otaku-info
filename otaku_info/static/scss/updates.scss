@@ -1,4 +1,4 @@
-{#
+/**
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
 This file is part of otaku-info.
@@ -15,17 +15,27 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
-#}
+*/
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+@import "colors";
+
+
+
+/**
+ Styling for an update item / row
+ */
+.update-item {
+    border: solid 1px $black-color;
+    background: $white-color;
+    .cover-image {
+        max-height: 60px;
+    }
+    .service-button {
+        padding-right:3px;
+        padding-top: 3px;
+        display:inline-block;
+        img {
+            max-height: 20px;
+        }
+    }
+}

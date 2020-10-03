@@ -18,8 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Tuple
-from puffotter.flask.base import db
-from puffotter.flask.db.User import User
+from jerrycan.base import db
+from jerrycan.db.User import User
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
@@ -110,9 +110,10 @@ class TestMediaListItem(_TestFramework):
             {
                 "id": media_id.id,
                 "media_list_id": media_list.id,
-                "media_list": media_list.__json__(True),
+                "media_list": media_list.__json__(True, ["media_list_items"]),
                 "media_user_state_id": media_user_state.id,
-                "media_user_state": media_user_state.__json__(True)
+                "media_user_state":
+                    media_user_state.__json__(True, ["media_list_items"])
             }
         )
 

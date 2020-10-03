@@ -19,7 +19,7 @@ LICENSE"""
 
 import os
 from typing import Type
-from puffotter.flask.Config import Config as BaseConfig
+from jerrycan.Config import Config as BaseConfig
 from bokkichat.settings.impl.TelegramBotSettings import TelegramBotSettings
 from bokkichat.connection.impl.TelegramBotConnection import \
     TelegramBotConnection

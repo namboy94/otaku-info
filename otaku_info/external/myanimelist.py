@@ -21,7 +21,7 @@ import time
 import json
 import requests
 from typing import Optional
-from puffotter.flask.base import app
+from jerrycan.base import app
 from otaku_info.enums import MediaType
 from otaku_info.external.entities.MyanimelistItem import MyanimelistItem
 

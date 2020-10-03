@@ -1,0 +1,41 @@
+{#
+Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
+
+This file is part of otaku-info.
+
+otaku-info is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+otaku-info is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+<form method="post" action="{{ url_for("updates.show_updates") }}">
+    {% with label_name="List", var_name="list_ident",
+            selected=media_lists[0][0], options=media_lists %}
+        {% include "components/forms/dropdown_input.html" %}
+    {% endwith %}
+    {% with label_name="Type", var_name="list_subtype",
+            selected=None, options=subtypes %}
+        {% include "components/forms/dropdown_input.html" %}
+    {% endwith %}
+    {% with label_name="Minimum Update Count",
+            min_value=0, step=1, value=1,
+            var_name="mincount" %}
+        {% include "components/forms/number_input.html" %}
+    {% endwith %}
+    {% with label_name="Include Complete", var_name=include_complete,
+            checked=False %}
+        {% include "components/forms/bool_input.html" %}
+    {% endwith %}
+    {% with button_name="Go" %}
+        {% include "components/forms/submit_button.html" %}
+    {% endwith %}
+</form>

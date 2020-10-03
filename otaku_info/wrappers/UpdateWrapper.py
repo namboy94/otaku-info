@@ -17,9 +17,10 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+from datetime import datetime
 from typing import List, Optional
-from puffotter.flask.base import db
-from puffotter.flask.db.User import User
+from jerrycan.base import db
+from jerrycan.db.User import User
 from otaku_info.enums import MediaType, MediaSubType, ListService, \
     ReleasingState
 from otaku_info.db.MediaList import MediaList
@@ -79,11 +80,16 @@ class UpdateWrapper:
         media_type = media_item.media_type
         subtype = self.user_state.media_id.media_item.media_subtype
         if media_type == MediaType.MANGA and subtype == MediaSubType.NOVEL:
-            ln_releases = self.user_state.media_id.media_item.ln_releases
-            if len(ln_releases) == 0:
+            now = datetime.utcnow()
+            volumes = [
+                x.volume_number
+                for x in self.user_state.media_id.media_item.ln_releases
+                if x.release_date < now
+            ]
+            if len(volumes) == 0:
                 latest = media_item.latest_volume_release
             else:
-                latest = max([x.volume_number for x in ln_releases])
+                latest = max(volumes)
         elif media_type == MediaType.MANGA:
             chapter_guess = self.user_state.media_id.chapter_guess
             if chapter_guess is None:

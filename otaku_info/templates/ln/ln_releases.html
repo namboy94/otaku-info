@@ -18,88 +18,29 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
 <!--static/index.html-->
-{% extends "components/base_layout.html" %}
+{% extends "core/base_layout.html" %}
 {% block body %}
     <h1>Light Novel Releases</h1>
 
-    <div class="container form-container">
-        <form method="post" action="{{ url_for("ln.ln_releases") }}">
-            <div class="form-row align-items-center">
-                <div class="col-md-5">
-                    <label class="sr-only" for="year_input">Year</label>
-                    <select id="year_input" name="year" class="form-control mb-2">
-                        {% for year in years %}
-                            {% if year == selected_year %}
-                                <option value="{{year}}" selected>{{year}}</option>
-                            {% else %}
-                                <option value="{{year}}">{{year}}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-5">
-                    <label class="sr-only" for="month_input">Month</label>
-                    <select id="month_input" name="month" class="form-control mb-2">
-                        {% for month in months %}
-                            {% if month == selected_month %}
-                                <option value="{{month}}" selected>{{month.title()}}</option>
-                            {% else %}
-                                <option value="{{month}}">{{month.title()}}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary mb-2">Go</button>
-                </div>
-            </div>
-        </form>
-    </div>
+    <form method="post" action="{{ url_for("ln.ln_releases") }}">
+        {% with label_name="Year", var_name="year",
+                selected=selected_year, options=years %}
+            {% include "components/forms/dropdown_input.html" %}
+        {% endwith %}
+        {% with label_name="Month", var_name="month",
+                selected=selected_month, options=months %}
+            {% include "components/forms/dropdown_input.html" %}
+        {% endwith %}
+        {% with button_name="Go" %}
+            {% include "components/forms/submit_button.html" %}
+        {% endwith %}
+    </form>
 
-
-    <div id="ln-list">
-        <div class="row text-center">
-            <div class="col-md-1">
-                Image
-            </div>
-            <div class="col-md-2">
-                Links
-            </div>
-            <div class="col-md-2">
-                <button class="sort" data-sort="release">Release Date</button>
-            </div>
-            <div class="col-md-3">
-                <button class="sort" data-sort="series">Series</button>
-            </div>
-            <div class="col-md-1">
-                Volume
-            </div>
-            <div class="col-md-1">
-                <button class="sort" data-sort="publisher">Publisher</button>
-            </div>
-            <div class="col-md-1">
-                Digital
-            </div>
-            <div class="col-md-1">
-                Physical
-            </div>
-        </div>
-        <ul class="list-group list">
-            {% for release in releases %}
-                {% with release=release %}
-                    {% include "ln/ln_release_item.html" %}
-                {% endwith %}
-            {% endfor %}
-        </ul>
+    <div class="container is-fluid">
+        {% for release in releases %}
+            {% with release=release %}
+                {% include "ln/ln_release_item.html" %}
+            {% endwith %}
+        {% endfor %}
     </div>
-    <!--suppress JSUnresolvedFunction, ES6ConvertVarToLetConst -->
-    <script>
-        var userList = new List('ln-list', {
-            valueNames: [
-                "series",
-                "release",
-                "publisher"
-            ]
-        });
-    </script>
 {% endblock %}

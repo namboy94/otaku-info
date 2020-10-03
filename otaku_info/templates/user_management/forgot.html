@@ -18,33 +18,19 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
 <!--user_management/forgot.html-->
-{% extends "components/base_layout.html" %}
+{% extends "core/base_layout.html" %}
 {% block body %}
     <h1> Reset Password </h1>
-    <br>
+    <hr>
 
-    <div class="container form-container">
-        <form method="post" action="{{ url_for("user_management.forgot") }}">
-            <div class="form-group">
-                <label for="email_input">Email Address</label>
-                <input class="form-control"
-                       type="text"
-                       autocomplete="on"
-                       id="email_input"
-                       aria-label="email"
-                       placeholder="Email"
-                       name="email">
-            </div>
+    <form id="reset-form" method="post" action="{{ url_for("user_management.forgot") }}">
+        {% with label_name="Email Address", placeholder="Email",
+                var_name="email", icon_name="envelope" %}
+            {% include "components/forms/text_input.html" %}
+        {% endwith %}
+        {% with button_name="Reset", use_recaptcha=True, form_name="reset-form" %}
+            {% include "components/forms/submit_button.html" %}
+        {% endwith %}
+    </form>
 
-            <br>
-            <div data-sitekey="{{ config.RECAPTCHA_SITE_KEY }}"
-                 class="g-recaptcha">
-            </div>
-            <br>
-
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
-
-    <br>
 {% endblock %}

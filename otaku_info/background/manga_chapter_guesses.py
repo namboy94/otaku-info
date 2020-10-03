@@ -19,7 +19,7 @@ LICENSE"""
 
 import time
 from typing import List
-from puffotter.flask.base import db, app
+from jerrycan.base import db, app
 from otaku_info.db.MediaId import MediaId
 from otaku_info.utils.db.DbCache import DbCache
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess

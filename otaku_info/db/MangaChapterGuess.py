@@ -19,7 +19,7 @@ LICENSE"""
 
 import time
 from typing import Dict, Any, Tuple
-from puffotter.flask.base import db
+from jerrycan.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaId import MediaId
 from otaku_info.external.anilist import guess_latest_manga_chapter
@@ -99,20 +99,3 @@ class MangaChapterGuess(ModelMixin, db.Model):
         self.media_id_id = new_data.media_id_id
         self.guess = new_data.guess
         self.last_update = new_data.last_update
-
-    def __json__(self, include_children: bool = False) -> Dict[str, Any]:
-        """
-        Generates a dictionary containing the information of this model
-        :param include_children: Specifies if children data models
-                                 will be included or if they're limited to IDs
-        :return: A dictionary representing the model's values
-        """
-        data = {
-            "id": self.id,
-            "media_id_id": self.media_id_id,
-            "guess": self.guess,
-            "last_update": self.last_update
-        }
-        if include_children:
-            data["media_id"] = self.media_id.__json__(include_children)
-        return data

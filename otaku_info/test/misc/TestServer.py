@@ -45,6 +45,6 @@ class TestServer(_TestFramework):
         def nop(*_, **__):
             pass
 
-        with patch("puffotter.flask.wsgi.Server", Server):
-            with patch("puffotter.flask.wsgi.__start_background_tasks", nop):
+        with patch("jerrycan.wsgi.Server", Server):
+            with patch("jerrycan.wsgi.__start_background_tasks", nop):
                 main()
