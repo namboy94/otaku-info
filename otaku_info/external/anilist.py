@@ -42,6 +42,7 @@ MEDIA_QUERY = """
     }
     nextAiringEpisode {
       episode
+      airingAt
     }
     relations {
         edges {

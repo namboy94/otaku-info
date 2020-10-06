@@ -80,6 +80,13 @@ class AnilistItem(AnimeListItem):
         if data["id"] in new:
             data["title"]["romaji"] += " (New)"
 
+        next_episode_data = data["nextAiringEpisode"]
+        if next_episode_data is None:
+            next_episode, next_episode_airing_time = None, None
+        else:
+            next_episode = next_episode_data["episode"]
+            next_episode_airing_time = next_episode_data["airingAt"]
+
         return AnilistItem(
             data["id"],
             ListService.ANILIST,
@@ -92,6 +99,8 @@ class AnilistItem(AnimeListItem):
             data["chapters"],
             data["volumes"],
             data["episodes"],
+            next_episode,
+            next_episode_airing_time,
             releasing_state,
             relations
         )

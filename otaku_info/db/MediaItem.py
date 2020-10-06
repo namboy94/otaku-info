@@ -18,7 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from flask import url_for
-from typing import Dict, Any, Optional, List, Tuple, TYPE_CHECKING
+from datetime import datetime
+from typing import Dict, Optional, List, Tuple, TYPE_CHECKING
 from jerrycan.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
@@ -102,6 +103,17 @@ class MediaItem(ModelMixin, db.Model):
     The latest volume for this media item
     """
 
+    next_episode: Optional[int] = db.Column(db.Integer, nullable=True)
+    """
+    The next episode to air
+    """
+
+    next_episode_airing_time: Optional[int] = \
+        db.Column(db.Integer, nullable=True)
+    """
+    The time the next episode airs
+    """
+
     releasing_state: ReleasingState = db.Column(
         db.Enum(ReleasingState), nullable=False
     )
@@ -170,3 +182,13 @@ class MediaItem(ModelMixin, db.Model):
         :return: The URL to the item's page on the otaku-info site
         """
         return url_for("media.media", media_item_id=self.id)
+
+    @property
+    def next_episode_datetime(self) -> Optional[datetime]:
+        """
+        :return: The datetime for when the next episode airs
+        """
+        if self.next_episode_airing_time is None:
+            return None
+        else:
+            return datetime.fromtimestamp(self.next_episode_airing_time)

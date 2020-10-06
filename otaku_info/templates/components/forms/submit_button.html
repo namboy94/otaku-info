@@ -22,8 +22,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
         <button
                 class="button is-link
                       {% if category is not none %}is-{{ category }}{% endif %}
-                      {% if use_recaptcha %}g-recaptcha{% endif %}
-                      "
+                      {% if use_recaptcha %}g-recaptcha{% endif %}"
                 {% if use_recaptcha %}
                     data-action="submit"
                     data-sitekey="{{ config.RECAPTCHA_SITE_KEY }}"
@@ -35,7 +34,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
         </button>
         {% if use_recaptcha %}
             <script>
-                function onSubmit(_) {
+                function onRecaptchaSubmit(_) {
                     document.getElementById("{{ form_name }}").submit();
                 }
             </script>

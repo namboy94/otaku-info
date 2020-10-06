@@ -39,6 +39,8 @@ class AnimeListItem:
             chapters: Optional[int],
             volumes: Optional[int],
             episodes: Optional[int],
+            next_episode: Optional[int],
+            next_episode_airing_time: Optional[int],
             releasing_state: ReleasingState,
             relations: Dict[Tuple[MediaType, int], MediaRelationType]
     ):
@@ -55,6 +57,8 @@ class AnimeListItem:
         :param chapters: The total amount of known manga chapters
         :param volumes: The total amount of known manga/ln volumes
         :param episodes: The total amount of known anime episodes
+        :param next_episode: The next airing episode, if available
+        :param next_episode_airing_time: The airing time of the next episode
         :param releasing_state: The current releasing state of the series
         :param relations: Related media items identified by IDs
         """
@@ -69,6 +73,8 @@ class AnimeListItem:
         self.chapters = chapters
         self.volumes = volumes
         self.episodes = episodes
+        self.next_episode = next_episode
+        self.next_episode_airing_time = next_episode_airing_time
         self.releasing_state = releasing_state
         self.relations = relations
 

@@ -41,6 +41,8 @@ class AnilistUserItem(AnilistItem):
             chapters: Optional[int],
             volumes: Optional[int],
             episodes: Optional[int],
+            next_episode: Optional[int],
+            next_episode_airing_time: Optional[int],
             releasing_state: ReleasingState,
             relations: Dict[Tuple[MediaType, int], MediaRelationType],
             score: Optional[int],
@@ -62,6 +64,8 @@ class AnilistUserItem(AnilistItem):
         :param chapters: The total amount of known manga chapters
         :param volumes: The total amount of known manga/ln volumes
         :param episodes: The total amount of known anime episodes
+        :param next_episode: The next airing episode, if available
+        :param next_episode_airing_time: The airing time of the next episode
         :param releasing_state: The current releasing state of the series
         :param relations: Related media items identified by IDs
         :param score: The user's score for the series
@@ -82,6 +86,8 @@ class AnilistUserItem(AnilistItem):
             chapters,
             volumes,
             episodes,
+            next_episode,
+            next_episode_airing_time,
             releasing_state,
             relations
         )
@@ -119,6 +125,8 @@ class AnilistUserItem(AnilistItem):
             base.chapters,
             base.volumes,
             base.episodes,
+            base.next_episode,
+            base.next_episode_airing_time,
             base.releasing_state,
             base.relations,
             data["score"],

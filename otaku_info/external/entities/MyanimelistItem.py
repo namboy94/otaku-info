@@ -62,6 +62,8 @@ class MyanimelistItem(AnimeListItem):
             data.get("chapters"),
             data.get("volumes"),
             data.get("episodes"),
+            None,
+            None,
             releasing_state,
             relations
         )
