@@ -22,6 +22,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 {% block body %}
     {% if updates is defined %}
         <h1>[{{service.value.title()}} ({{media_type.value.title()}})] {{list_name}}</h1>
+{#        {% include "updates/update_grid.html" %}#}
         {% include "updates/update_list.html" %}
 
     {% else %}

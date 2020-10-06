@@ -1,4 +1,4 @@
-/**
+{#
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
 This file is part of otaku-info.
@@ -15,44 +15,22 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
-*/
+#}
 
-@import "colors";
+<div class="container is-fluid has-text-centered">
+    {% for update in updates %}
+        {% if (loop.index - 1) % 6 == 0 %}
+            {% if loop.counter != 1 %}
+                </div>
+            {% endif %}
+            <div class="columns">
+        {% endif %}
 
+        <div class="column is-2 update-grid-item">
+            <a href="{{ update.url }}">
+                {% include "updates/update_grid_item.html" %}
+            </a>
+        </div>
 
-
-/**
- Styling for an update item / row
- */
-.update-item {
-    border: solid 1px $black-color;
-    background: $white-color;
-    .cover-image {
-        max-height: 60px;
-    }
-    .service-button {
-        padding-right:3px;
-        padding-top: 3px;
-        display:inline-block;
-        img {
-            max-height: 20px;
-        }
-    }
-}
-
-.update-grid-item {
-    border: 1px solid $black-color;
-    border-radius: 1px;
-    padding: 0;
-
-    .update-grid-cover-image {
-        position: relative;
-        text-align: center;
-        color: white;
-        .top-right {
-            position: absolute;
-            top: 1px;
-            right: 1px;
-        }
-    }
-}
+    {% endfor %}
+</div>
