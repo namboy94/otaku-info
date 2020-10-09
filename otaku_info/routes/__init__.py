@@ -26,6 +26,7 @@ from otaku_info.routes.notifications import define_blueprint as \
     __notifications
 from otaku_info.routes.media import define_blueprint as __media
 from otaku_info.routes.ln import define_blueprint as __ln
+from otaku_info.routes.schedule import define_blueprint as __schedule
 from otaku_info.routes.updates import define_blueprint as __updates
 
 blueprint_generators: List[Tuple[Callable[[str], Blueprint], str]] = [
@@ -34,7 +35,8 @@ blueprint_generators: List[Tuple[Callable[[str], Blueprint], str]] = [
     (__notifications, "notifications"),
     (__media, "media"),
     (__ln, "ln"),
-    (__updates, "updates")
+    (__updates, "updates"),
+    (__schedule, "schedule")
 ]
 """
 Defines the functions used to create the various blueprints

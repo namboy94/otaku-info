@@ -67,7 +67,9 @@ class TestMediaItem(_TestFramework):
                 "cover_url": media_item.cover_url,
                 "latest_release": media_item.latest_release,
                 "latest_volume_release": None,
-                "releasing_state": media_item.releasing_state.name
+                "releasing_state": media_item.releasing_state.name,
+                "next_episode": None,
+                "next_episode_airing_time": None
             }
         )
         should = media_item.__json__(False)

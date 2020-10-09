@@ -45,7 +45,9 @@ def anime_list_item_to_media_item(anime_list_item: AnimeListItem) -> MediaItem:
         cover_url=anime_list_item.cover_url,
         latest_release=anime_list_item.latest_release,
         latest_volume_release=anime_list_item.volumes,
-        releasing_state=anime_list_item.releasing_state
+        releasing_state=anime_list_item.releasing_state,
+        next_episode=anime_list_item.next_episode,
+        next_episode_airing_time=anime_list_item.next_episode_airing_time
     )
 
 

@@ -32,7 +32,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
             {% with label_name="Minimum Score",
                 min_value=0, max_value=100, step=1,
                 value=0 if not setting.value else setting.minimum_score,
-                var_name="mincount" %}
+                var_name=notification_type.value + "_min_score" %}
             {% include "components/forms/number_input.html" %}
             {% endwith %}
         {% endfor %}

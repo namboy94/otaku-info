@@ -1,5 +1,9 @@
 V 0.4.0:
   - Now uses jerrycan instead of puffotter.flask
+  - Now uses bulma instead of bootstrap
+  - Added id mappings api endpoint
+  - Added seasonal schedule
+  - Added grid display for updates
 V 0.3.2:
   - Fixed issues with light novel updates
 V 0.3.1:

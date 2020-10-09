@@ -69,6 +69,7 @@ def update_mangadex_data(
             break
         elif str(mangadex_id) in existing_ids[ListService.MANGADEX] \
                 and not refresh:
+            endcounter = 0
             continue
 
         app.logger.debug(f"Probing mangadex id {mangadex_id}")
@@ -147,6 +148,7 @@ def __update_or_insert_mangadex_media_item(
         if media_item is None:
             media_item = mangadex_item_to_media_item(mangadex_item)
             media_item = cast(MediaItem, update_or_insert_item(media_item))
+            db.session.commit()
     else:
         # Ensure that all have the same media item
         for service in list_service_priorities:

@@ -20,6 +20,8 @@ LICENSE"""
 import time
 import json
 import requests
+from requests import ConnectionError
+from requests.exceptions import ChunkedEncodingError
 from typing import Optional
 from jerrycan.base import app
 from otaku_info.enums import MediaType
@@ -35,7 +37,11 @@ def load_myanimelist_item(myanimelist_id: int, media_type: MediaType) \
     :return: The myanimelist item
     """
     url = f"https://api.jikan.moe/v3/{media_type.value}/{myanimelist_id}"
-    response = requests.get(url)
+
+    try:
+        response = requests.get(url)
+    except (ChunkedEncodingError, ConnectionError):
+        return None
 
     if response.status_code == 503:
         # Sometimes jikan temporarily loses connection to myanimelist

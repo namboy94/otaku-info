@@ -65,6 +65,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         Sets the notification settings
         :return: Redirect to notifications page
         """
+        print(request.form)
         existing_settings = {
             x.notification_type: x
             for x in

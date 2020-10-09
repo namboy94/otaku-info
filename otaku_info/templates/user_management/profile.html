@@ -53,7 +53,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
             {% with label_name=service.value.title(),
                     var_name="username", icon_name="user",
                     value="" if username is none else username.username %}
-                {% include "components/forms/password_input.html" %}
+                {% include "components/forms/text_input.html" %}
             {% endwith %}
             <input type="hidden" value="{{ service.value }}" name="service">
             {% with button_name="Submit" %}

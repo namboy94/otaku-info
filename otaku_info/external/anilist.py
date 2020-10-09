@@ -18,6 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
+from requests import ConnectionError
+from requests.exceptions import ChunkedEncodingError
 from typing import Optional, List
 from puffotter.graphql import GraphQlClient
 from otaku_info.enums import MediaType, ListService
@@ -42,6 +44,7 @@ MEDIA_QUERY = """
     }
     nextAiringEpisode {
       episode
+      airingAt
     }
     relations {
         edges {
@@ -78,7 +81,11 @@ def guess_latest_manga_chapter(anilist_id: int) -> Optional[int]:
         }
     }
     """
-    resp = graphql.query(query, {"id": anilist_id})
+    try:
+        resp = graphql.query(query, {"id": anilist_id})
+    except (ChunkedEncodingError, ConnectionError):
+        return None
+
     if resp is None:
         return None
 
@@ -134,10 +141,14 @@ def load_anilist(
         }
     }
     """.replace("@{MEDIA_QUERY}", MEDIA_QUERY)
-    resp = graphql.query(query, {
-        "username": username,
-        "media_type": media_type.value.upper()
-    })
+
+    try:
+        resp = graphql.query(query, {
+            "username": username,
+            "media_type": media_type.value.upper()
+        })
+    except (ChunkedEncodingError, ConnectionError):
+        return []
     if resp is None:
         return []
     user_lists = resp["data"]["MediaListCollection"]["lists"]
@@ -180,10 +191,15 @@ def load_anilist_info(
         query = query.replace("@{ID}", "idMal")
     else:
         return None
-    resp = graphql.query(
-        query,
-        {"id": service_id, "media_type": media_type.value.upper()}
-    )
+
+    try:
+        resp = graphql.query(
+            query,
+            {"id": service_id, "media_type": media_type.value.upper()}
+        )
+    except (ChunkedEncodingError, ConnectionError):
+        return None
+
     if resp is None:
         return None
     else:

@@ -19,7 +19,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 
 <form method="post" action="{{ url_for("updates.show_updates") }}">
     {% with label_name="List", var_name="list_ident",
-            selected=media_lists[0][0], options=media_lists %}
+            selected=None if media_lists|length == 0 else media_lists[0][0],
+            options=media_lists %}
         {% include "components/forms/dropdown_input.html" %}
     {% endwith %}
     {% with label_name="Type", var_name="list_subtype",
@@ -34,6 +35,10 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
     {% with label_name="Include Complete", var_name=include_complete,
             checked=False %}
         {% include "components/forms/bool_input.html" %}
+    {% endwith %}
+    {% with label_name="Display Mode", var_name="display_mode",
+            selected="grid", options=[("grid", "Grid"), ("list", "List")] %}
+        {% include "components/forms/dropdown_input.html" %}
     {% endwith %}
     {% with button_name="Go" %}
         {% include "components/forms/submit_button.html" %}

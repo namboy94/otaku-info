@@ -19,6 +19,8 @@ LICENSE"""
 
 from flask import render_template, abort
 from flask.blueprints import Blueprint
+from flask_login import current_user
+from jerrycan.base import db
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
 
@@ -33,16 +35,35 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
 
     @blueprint.route("/media/<media_item_id>", methods=["GET"])
     def media(media_item_id: int):
-        media_item = MediaItem.query.get(media_item_id)
+        """
+        Displays information on a media item
+        :param media_item_id: The ID of the media item
+        :return: None
+        """
+        media_item: MediaItem = MediaItem.query\
+            .options(db.joinedload(MediaItem.media_ids)
+                     .subqueryload(MediaId.media_user_states)
+                     ).filter_by(id=media_item_id).first()
 
         if media_item is None:
             abort(404)
 
-        media_ids = MediaId.query.filter_by(media_item_id=media_item_id).all()
+        if current_user is not None:
+            media_user_states = []
+            for media_id in media_item.media_ids:
+                user_states = [
+                    x for x in media_id.media_user_states
+                    if x.user_id == current_user.id
+                ]
+                media_user_states += user_states
+            media_user_states.sort(key=lambda x: x.media_id.service.value)
+        else:
+            media_user_states = []
+
         return render_template(
             "media/media.html",
             media_item=media_item,
-            media_ids=media_ids
+            media_user_states=media_user_states
         )
 
     return blueprint

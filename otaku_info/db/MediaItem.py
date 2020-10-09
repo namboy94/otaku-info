@@ -18,7 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from flask import url_for
-from typing import Dict, Any, Optional, List, Tuple, TYPE_CHECKING
+from datetime import datetime
+from typing import Dict, Optional, List, Tuple, TYPE_CHECKING
 from jerrycan.base import db
 from otaku_info.db.ModelMixin import ModelMixin
 from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
@@ -102,6 +103,17 @@ class MediaItem(ModelMixin, db.Model):
     The latest volume for this media item
     """
 
+    next_episode: Optional[int] = db.Column(db.Integer, nullable=True)
+    """
+    The next episode to air
+    """
+
+    next_episode_airing_time: Optional[int] = \
+        db.Column(db.Integer, nullable=True)
+    """
+    The time the next episode airs
+    """
+
     releasing_state: ReleasingState = db.Column(
         db.Enum(ReleasingState), nullable=False
     )
@@ -122,6 +134,21 @@ class MediaItem(ModelMixin, db.Model):
     """
     Light novel releases associated with this Media item
     """
+
+    @property
+    def current_release(self) -> Optional[int]:
+        """
+        The most current release, specifically tailored to the type of media
+        :return: None
+        """
+        if self.next_episode is not None:
+            return self.next_episode - 1
+        elif self.latest_volume_release is not None:
+            return self.latest_volume_release
+        elif self.latest_release is not None:
+            return self.latest_release
+        else:
+            return None
 
     @property
     def media_id_mapping(self) -> Dict[ListService, "MediaId"]:
@@ -153,6 +180,8 @@ class MediaItem(ModelMixin, db.Model):
         self.latest_release = new_data.latest_release
         self.latest_volume_release = new_data.latest_volume_release
         self.releasing_state = new_data.releasing_state
+        self.next_episode = new_data.next_episode
+        self.next_episode_airing_time = new_data.next_episode_airing_time
 
     @property
     def title(self) -> str:
@@ -170,3 +199,13 @@ class MediaItem(ModelMixin, db.Model):
         :return: The URL to the item's page on the otaku-info site
         """
         return url_for("media.media", media_item_id=self.id)
+
+    @property
+    def next_episode_datetime(self) -> Optional[datetime]:
+        """
+        :return: The datetime for when the next episode airs
+        """
+        if self.next_episode_airing_time is None:
+            return None
+        else:
+            return datetime.fromtimestamp(self.next_episode_airing_time)

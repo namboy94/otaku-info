@@ -54,7 +54,8 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             list_name=list_name,
             mincount=mincount,
             include_complete=1 if include_complete else 0,
-            filter_subtype=filter_subtype
+            filter_subtype=filter_subtype,
+            display_mode=request.form.get("display_mode", "grid")
         )
         return redirect(get_url)
 
@@ -120,7 +121,8 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
                 updates=updates,
                 list_name=list_name,
                 service=service,
-                media_type=media_type
+                media_type=media_type,
+                display_mode=request.args.get("display_mode", "grid")
             )
 
     return blueprint
