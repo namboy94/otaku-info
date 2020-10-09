@@ -69,4 +69,21 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
 
         return id_mappings
 
+    @blueprint.route(f"{api_base_path}/id_mappings")
+    def all_id_mappings():
+        """
+        Dumps all the ID mappings currently stored in the database
+        :return: None
+        """
+        all_ids: List[MediaId] = MediaId.query.all()
+
+        item_map = {}
+        for media_id in all_ids:
+            if media_id.media_item_id not in item_map:
+                item_map[media_id.media_item_id] = {}
+            item_map[media_id.media_item_id][media_id.service.name] = \
+                media_id.service_id
+
+        return {"mappings": list(item_map.values())}
+
     return blueprint

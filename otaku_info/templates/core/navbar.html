@@ -48,6 +48,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
                    href="{{url_for("updates.show_updates")}}">Updates</a>
                 <a class="navbar-item {% if request.path == "/ln/releases" %} active {% endif %}"
                    href="{{url_for("ln.ln_releases")}}">LN Releases</a>
+                <a class="navbar-item {% if request.path == "/schedule/anime_week" %} active {% endif %}"
+                   href="{{url_for("schedule.anime_week")}}">Weekly Anime Schedule</a>
                 <a class="navbar-item {% if request.path == "/notifications" %} active {% endif %}"
                    href="{{url_for("notifications.notifications")}}">Notifications</a>
                 <a class="navbar-item {% if request.path == "/profile" %} active {% endif %}"

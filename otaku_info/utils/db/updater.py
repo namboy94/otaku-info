@@ -18,6 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import traceback
+from sentry_sdk import capture_exception
 from sqlalchemy.exc import IntegrityError
 from jerrycan.base import db, app
 from otaku_info.utils.db.DbCache import DbCache
@@ -50,6 +51,7 @@ def update_or_insert_item(
                 db.session.commit()
 
     except IntegrityError as e:
+        capture_exception(e)
         db.session.rollback()
         if not reload_cache:
             app.logger.warning("Retrying Insert/Update")

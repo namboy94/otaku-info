@@ -28,22 +28,26 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
     border: solid 1px $black-color;
     background: $white-color;
     .cover-image {
-        max-height: 60px;
+        max-height: 100px;
     }
     .service-button {
         padding-right:3px;
         padding-top: 3px;
         display:inline-block;
         img {
-            max-height: 20px;
+            max-height: 30px;
         }
     }
 }
 
+/**
+ Styling for an update item in a grid layout
+ */
 .update-grid-item {
     border: 1px solid $black-color;
-    border-radius: 1px;
+    border-radius: 5px;
     padding: 0;
+    text-align: center;
 
     .update-grid-cover-image {
         position: relative;
@@ -53,6 +57,9 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
             position: absolute;
             top: 1px;
             right: 1px;
+        }
+        img {
+            border-radius: 5px;
         }
     }
 }

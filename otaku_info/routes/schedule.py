@@ -17,7 +17,9 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import time
 from typing import List
+from datetime import datetime
 from flask import render_template
 from flask.blueprints import Blueprint
 from flask_login import current_user, login_required
@@ -34,9 +36,9 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
     """
     blueprint = Blueprint(blueprint_name, __name__)
 
-    @blueprint.route("/seasonal_schedule")
+    @blueprint.route("/schedule/anime_week")
     @login_required
-    def seasonal_schedule():
+    def anime_week():
         """
         Shows the seasonal anime schedule for a user's media entries
         :return: None
@@ -48,9 +50,12 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             )\
             .filter_by(user_id=current_user.id)\
             .all()
+
+        time_limit = datetime.fromtimestamp(time.time() + 7 * 24 * 60 * 60)
         media_user_states = [
             x for x in media_user_states
             if x.media_id.media_item.next_episode_airing_time is not None
+            and time_limit > x.media_id.media_item.next_episode_datetime
         ]
 
         weekdays = {
@@ -77,7 +82,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             entries_by_weekday.append((weekday_name, entries))
 
         return render_template(
-            "schedule/seasonal_schedule.html",
+            "schedule/anime_week.html",
             schedule=entries_by_weekday
         )
 

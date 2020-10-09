@@ -45,6 +45,7 @@ class MediaId(ModelMixin, db.Model):
         db.UniqueConstraint(
             "media_item_id",
             "service",
+            "media_type",
             name="unique_media_item_service_id"
         ),
         db.UniqueConstraint(

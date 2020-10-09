@@ -20,16 +20,20 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 <!--updates/updates.html-->
 {% extends "core/base_layout.html" %}
 {% block body %}
-    {% if updates is defined %}
-        <h1>[{{service.value.title()}} ({{media_type.value.title()}})] {{list_name}}</h1>
-        <hr>
-        {% if display_mode == "grid" %}
-            {% include "updates/update_grid.html" %}
-        {% elif display_mode == "list" %}
-            {% include "updates/update_list.html" %}
-        {% endif %}
-    {% else %}
-        <h1>Updates</h1>
-        {% include "updates/update_config.html" %}
-    {% endif %}
+    <h1>Weekly Anime Schedule</h1>
+    <hr>
+    <div class="columns has-text-centered">
+        {% for weekday, entries in schedule %}
+            <div class="column schedule-day">
+                <h3>{{ weekday }}</h3>
+                {% for entry in entries %}
+                    <div class="schedule-item"><a href="{{ entry.media_id.media_item.own_url }}">
+                        <img src="{{ entry.media_id.media_item.cover_url }}"
+                             alt="{{ entry.media_id.media_item.title }}"
+                             class="cover-image">
+                    </a></div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

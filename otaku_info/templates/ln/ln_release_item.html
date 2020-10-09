@@ -43,24 +43,24 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
             {{ release.series_name }}
         {% endif %}
     </div>
-    <div class="column">
+    <div class="column is-1">
         {{  release.volume }}
     </div>
-    <div class="column">
+    <div class="column is-1">
         {% if release.purchase_link is not none %}
             <a href="{{ release.purchase_link }}">{{ release.publisher }}</a>
         {% else %}
             {{ release.publisher }}
         {% endif %}
     </div>
-    <div class="column">
+    <div class="column is-1">
         {% if release.digital %}
             <i class="fas fa-check"></i>
         {% else %}
             <i class="fas fa-times"></i>
         {% endif %}
     </div>
-    <div class="column">
+    <div class="column is-1">
         {% if release.physical %}
             <i class="fas fa-check"></i>
         {% else %}

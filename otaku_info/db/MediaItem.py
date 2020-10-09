@@ -136,6 +136,21 @@ class MediaItem(ModelMixin, db.Model):
     """
 
     @property
+    def current_release(self) -> Optional[int]:
+        """
+        The most current release, specifically tailored to the type of media
+        :return: None
+        """
+        if self.next_episode is not None:
+            return self.next_episode - 1
+        elif self.latest_volume_release is not None:
+            return self.latest_volume_release
+        elif self.latest_release is not None:
+            return self.latest_release
+        else:
+            return None
+
+    @property
     def media_id_mapping(self) -> Dict[ListService, "MediaId"]:
         """
         :return: A dictionary mapping list services to IDs for this media item
@@ -165,6 +180,8 @@ class MediaItem(ModelMixin, db.Model):
         self.latest_release = new_data.latest_release
         self.latest_volume_release = new_data.latest_volume_release
         self.releasing_state = new_data.releasing_state
+        self.next_episode = new_data.next_episode
+        self.next_episode_airing_time = new_data.next_episode_airing_time
 
     @property
     def title(self) -> str:
