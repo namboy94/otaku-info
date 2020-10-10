@@ -142,7 +142,8 @@ class UpdateWrapper:
 
                 updates.append(update)
 
-        updates.sort(key=lambda x: x.score, reverse=True)
+        updates.sort(key=lambda x: 0 if x.score is None else x.score,
+                     reverse=True)
         return updates
 
     @classmethod
