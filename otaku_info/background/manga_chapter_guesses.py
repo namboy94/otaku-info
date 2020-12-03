@@ -21,7 +21,6 @@ import time
 from typing import List
 from jerrycan.base import db, app
 from otaku_info.db.MediaId import MediaId
-from otaku_info.utils.db.DbCache import DbCache
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info.enums import MediaType, ListService, MediaSubType
 
@@ -33,7 +32,6 @@ def update_manga_chapter_guesses():
     """
     start = time.time()
     app.logger.info("Starting update of manga chapter guesses")
-    DbCache.cleanup()
 
     anilist_ids: List[MediaId] = MediaId.query\
         .filter_by(
@@ -65,6 +63,5 @@ def update_manga_chapter_guesses():
         db.session.commit()
 
     db.session.commit()
-    DbCache.cleanup()
     app.logger.info(f"Finished updating manga chapter guesses "
                     f"in {time.time() - start}")

@@ -18,31 +18,15 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import List, Optional, cast, Dict
-from jerrycan.base import db, app
-from otaku_info.db.MediaId import MediaId
-from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaList import MediaList
-from otaku_info.db.MediaListItem import MediaListItem
-from otaku_info.db.MediaUserState import MediaUserState
+from typing import List, Optional, Dict
+from jerrycan.base import app
+from otaku_info.background.db_inserter import queue_media_item_insert
 from otaku_info.db.ServiceUsername import ServiceUsername
 from otaku_info.external.anilist import load_anilist
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
 from otaku_info.enums import ListService, MediaType
-from otaku_info.utils.db.DbCache import DbCache
-from otaku_info.utils.db.updater import update_or_insert_item
-from otaku_info.utils.db.convert import anime_list_item_to_media_id, \
-    anime_list_item_to_media_item, anilist_user_item_to_media_user_state, \
-    anilist_user_item_to_media_list
 
 
-# TODO Delete removed items from the database
-# For example, user deletes a MediaList
-# Or: user remove a media user state from his account
-# Or: Anilist removes an entry
-# Remark: Not really a priority tbh.
-# Maybe do this in another, separate bg thread?
-# -> Nope, then we don't have the anilist info
 def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
     """
     Retrieves all entries on the anilists of all users that provided
@@ -52,7 +36,6 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
     """
     start = time.time()
     app.logger.info("Starting Anilist Update")
-    DbCache.cleanup()
 
     if usernames is None:
         usernames = ServiceUsername.query\
@@ -77,8 +60,6 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
                     username
                 )
 
-    db.session.commit()  # Commit pending Updates
-    DbCache.cleanup()
     app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
 
 
@@ -92,28 +73,40 @@ def __perform_update(
     :param username: The service username
     :return: None
     """
-    media_item = anime_list_item_to_media_item(anilist_item)
-    media_item = cast(MediaItem, update_or_insert_item(media_item))
-
-    media_id = anime_list_item_to_media_id(anilist_item, media_item)
-    media_id = cast(MediaId, update_or_insert_item(media_id))
-
+    media_item_params = {
+        "media_type": anilist_item.media_type,
+        "media_subtype": anilist_item.media_subtype,
+        "english_title": anilist_item.english_title,
+        "romaji_title": anilist_item.romaji_title,
+        "cover_url": anilist_item.cover_url,
+        "latest_release": anilist_item.latest_release,
+        "latest_volume_release": anilist_item.volumes,
+        "releasing_state": anilist_item.releasing_state,
+        "next_episode": anilist_item.next_episode,
+        "next_episode_airing_time": anilist_item.next_episode_airing_time
+    }
+    service_ids = {
+        ListService.ANILIST: str(anilist_item.id)
+    }
     if anilist_item.myanimelist_id is not None:
-        mal_id = anime_list_item_to_media_id(
-            anilist_item, media_item, ListService.MYANIMELIST
-        )
-        update_or_insert_item(mal_id)
-
-    user_state = anilist_user_item_to_media_user_state(
-        anilist_item, media_id, username.user
+        service_ids[ListService.MYANIMELIST] = str(anilist_item.myanimelist_id)
+    user_state_params = {
+        "user_id": username.user_id,
+        "progress": anilist_item.progress,
+        "volume_progress": anilist_item.volume_progress,
+        "score": anilist_item.score,
+        "consuming_state": anilist_item.consuming_state
+    }
+    media_list_params = {
+        "user_id": username.user_id,
+        "name": anilist_item.list_name,
+        "service": ListService.ANILIST,
+        "media_type": anilist_item.media_type
+    }
+    queue_media_item_insert(
+        media_item_params,
+        ListService.ANILIST,
+        service_ids,
+        user_state_params,
+        media_list_params
     )
-    user_state = cast(MediaUserState, update_or_insert_item(user_state))
-
-    media_list = anilist_user_item_to_media_list(anilist_item, username.user)
-    media_list = cast(MediaList, update_or_insert_item(media_list))
-
-    media_list_item = MediaListItem(
-        media_list_id=media_list.id,
-        media_user_state_id=user_state.id
-    )
-    update_or_insert_item(media_list_item)

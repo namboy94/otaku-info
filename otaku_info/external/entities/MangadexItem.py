@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
+import os
 from typing import Dict, Any, Optional
 from otaku_info.enums import ListService, ReleasingState
 from otaku_info.mappings import mangadex_external_id_names, \
@@ -100,7 +101,7 @@ class MangadexItem:
             mangadex_id,
             ids,
             data["manga"]["title"],
-            data["manga"]["cover_url"],
+            os.path.join("https://mangadex.org", data["manga"]["cover_url"]),
             total_chapters,
             newest_chapter,
             releasing_state
