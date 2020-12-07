@@ -81,6 +81,7 @@ def update_mangadex_data(
             "latest_release": mangadex_item.total_chapters,
             "releasing_state": mangadex_item.releasing_state
         }
+        service = ListService.MANGADEX
         service_ids = mangadex_item.external_ids
         service_ids[ListService.MANGADEX] = str(mangadex_id)
 
@@ -90,11 +91,13 @@ def update_mangadex_data(
                 int(service_ids[ListService.ANILIST]),
                 MediaType.MANGA
             )
+            service = ListService.ANILIST
         elif ListService.MYANIMELIST in service_ids:
             better_item = load_myanimelist_item(
                 int(service_ids[ListService.MYANIMELIST]),
                 MediaType.MANGA
             )
+            service = ListService.MYANIMELIST
 
         if better_item is not None:
             media_item_params["media_subtype"] = better_item.media_subtype
@@ -105,7 +108,7 @@ def update_mangadex_data(
             media_item_params["latest_release"] = better_item.latest_release
 
         queue_media_item_insert(
-            media_item_params, ListService.MANGADEX, service_ids
+            media_item_params, service, service_ids
         )
 
     app.logger.info(f"Finished Mangadex Update in "

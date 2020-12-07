@@ -113,14 +113,21 @@ def do_media_item_inserts():
         service_id = service_ids.get(service)
         if service_id is None:
             app.logger.error(f"Missing service ID for service {service}")
+            continue
 
         media_type = params["media_type"]
-
         app.logger.debug(f"Inserting {params['romaji_title']} into database")
 
-        if service_id in media_service_items[service]:
-            media_id = media_service_items[service][media_type][service_id]
-            media_item = media_id.media_item
+        # Check if media item already exists
+        anchor: Optional[MediaId] = media_service_items[service][media_type]\
+            .get(service_id)
+        if anchor is None:
+            for site, _id in service_ids.items():
+                if _id in media_service_items[site][media_type]:
+                    anchor = media_service_items[site][media_type][_id]
+
+        if anchor is not None:
+            media_item = anchor.media_item
             media_item.update(MediaItem(**params))
         else:
             generated = MediaItem(**params)
