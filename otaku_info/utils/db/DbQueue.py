@@ -91,6 +91,7 @@ class DbQueue:
             media_items: Dict[Tuple, MediaItem] = {
                 x.identifier_tuple: x for x in
                 MediaItem.query
+                .options(db.joinedload(MediaItem.media_ids))
                 .all()
             }
             media_ids: Dict[Tuple, MediaId] = {
@@ -107,18 +108,24 @@ class DbQueue:
                 .all()
             }
 
-            DbQueue.__process_media_items(media_items, media_ids, media_lists)
+            media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]] = {
+                x.id: {
+                    y.service: y for y in x.media_ids
+                } for x in media_items.values()
+            }
+
+            DbQueue.__process_media_items(
+                media_items, media_ids, media_lists, media_item_mapped_ids
+            )
 
     @staticmethod
     def __process_media_items(
             media_items: Dict[Tuple, MediaItem],
             media_ids: Dict[Tuple, MediaId],
-            media_lists: Dict[Tuple, MediaList]
+            media_lists: Dict[Tuple, MediaList],
+            media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]]
     ):
-        """
-        Processes all media items in the queue
-        :return: None
-        """
+
         while len(DbQueue.__media_item_queue) > 0:
             params, service, service_ids, user_state_params, list_params = \
                 DbQueue.__media_item_queue.pop(0)
@@ -138,13 +145,15 @@ class DbQueue:
                 service,
                 service_ids,
                 media_items,
-                media_ids
+                media_ids,
+                media_item_mapped_ids
             )
             media_id = DbQueue.__insert_media_ids(
                 media_item,
                 service,
                 service_ids,
-                media_ids
+                media_ids,
+                media_item_mapped_ids
             )
 
             # Insert User States
@@ -168,7 +177,8 @@ class DbQueue:
             base_service: ListService,
             service_ids: Dict[ListService, str],
             media_items: Dict[Tuple, MediaItem],
-            media_ids: Dict[Tuple, MediaId]
+            media_ids: Dict[Tuple, MediaId],
+            media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]]
     ) -> MediaItem:
         """
         Inserts or updates media items
@@ -178,6 +188,7 @@ class DbQueue:
         :param service_ids: The service IDs
         :param media_items: Cached media items
         :param media_ids: Cached media IDs
+        :param media_item_mapped_ids: Service IDs mapped to media item IDs
         :return: The MediaItem object
         """
         id_tuple = (media_type, base_service, service_ids[base_service])
@@ -198,7 +209,11 @@ class DbQueue:
             if existing is None:
                 media_item = generated
                 db.session.add(media_item)
+                db.session.commit()
                 media_items[media_item.identifier_tuple] = media_item
+                media_item_mapped_ids[media_item.id] = {
+                    x.service: x for x in media_item.media_ids
+                }
             else:
                 media_item = existing
                 media_item.update(generated)
@@ -210,7 +225,8 @@ class DbQueue:
             media_item: MediaItem,
             base_service: ListService,
             service_ids: Dict[ListService, str],
-            media_ids: Dict[Tuple, MediaId]
+            media_ids: Dict[Tuple, MediaId],
+            media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]]
     ) -> MediaId:
         """
         Inserts/Updates media IDs
@@ -218,12 +234,17 @@ class DbQueue:
         :param base_service: The base service
         :param service_ids: The service IDs
         :param media_ids: Cached media IDs
+        :param media_item_mapped_ids: Service IDs mapped to media item IDs
         :return: The MediaID object associated with the base service
         """
+        existing_ids = media_item_mapped_ids[media_item.id]
         for service, service_id in service_ids.items():
 
             id_tuple = (media_item.media_type, service, service_id)
             associated = media_ids.get(id_tuple)
+
+            if associated is None:
+                associated = existing_ids.get(service)
 
             if associated is None:
                 media_id = MediaId(
@@ -234,15 +255,13 @@ class DbQueue:
                 db.session.add(media_id)
                 db.session.commit()
                 media_ids[media_id.identifier_tuple] = media_id
+                media_item_mapped_ids[media_item.id][service] = media_id
 
-            elif associated.media_item.id != media_item.id:
+            elif associated.media_item_id != media_item.id:
                 associated.media_item_id = media_item.id
+                db.session.commit()
 
-        return media_ids[(
-            media_item.media_type,
-            base_service,
-            service_ids[base_service]
-        )]
+        return media_item_mapped_ids[media_item.id][base_service]
 
     @staticmethod
     def __insert_user_state(
