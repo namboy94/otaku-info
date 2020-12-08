@@ -30,8 +30,7 @@ from otaku_info.utils.db.DbQueue import DbQueue
 
 
 def update_mangadex_data(
-        start: int = 1,
-        end: Optional[int] = None,
+        start: Optional[int] = None,
         refresh: bool = False
 ):
     """
@@ -39,25 +38,30 @@ def update_mangadex_data(
     these entries if found.
     Stops once 100 consecutive entries didn't return any results
     :param start: Optionally specifies a starting index
-    :param end: Optionally specifies an ending index
     :param refresh: If true, will update existing mangadex info
     :return: None
     """
     start_time = time.time()
     app.logger.info("Starting Mangadex Update")
 
-    endcounter = 0
-    mangadex_id = start - 1
-
     existing_ids = [
         int(x.service_id)
         for x in MediaId.query.filter_by(service=ListService.MANGADEX).all()
     ]
 
+    if start is None:
+        if len(existing_ids) == 0 or refresh:
+            start = 1
+        else:
+            start = max(existing_ids) + 1
+
+    mangadex_id = start - 1
+    endcounter = 0
+
     while True:
         mangadex_id += 1
 
-        if mangadex_id == end or endcounter > 100:
+        if endcounter > 100:
             break
         elif str(mangadex_id) in existing_ids and not refresh:
             endcounter = 0
