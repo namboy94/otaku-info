@@ -29,6 +29,13 @@ from otaku_info.external.myanimelist import load_myanimelist_item
 from otaku_info.utils.db.DbQueue import DbQueue
 
 
+class State:
+    """
+    Class that keeps track of state for the mangadex updater
+    """
+    FIRST_RUN = True
+
+
 def update_mangadex_data(
         start: Optional[int] = None,
         refresh: bool = False
@@ -50,10 +57,10 @@ def update_mangadex_data(
     ]
 
     if start is None:
-        if len(existing_ids) == 0 or refresh:
-            start = 1
-        else:
+        start = 1
+        if State.FIRST_RUN and len(existing_ids) > 0:
             start = max(existing_ids) + 1
+            State.FIRST_RUN = False
 
     mangadex_id = start - 1
     endcounter = 0

@@ -26,8 +26,11 @@ from otaku_info.enums import MediaType, MediaSubType, ReleasingState, \
 
 
 class TestDbQueue(_TestFramework):
+    """
+    Class that tests the database queue
+    """
 
-    def test_inserting_full_media_items(self):
+    def generate_params(self):
         user = self.generate_sample_user(True)[0]
         media_item_params = {
             "media_type": MediaType.MANGA,
@@ -55,13 +58,24 @@ class TestDbQueue(_TestFramework):
             "media_type": MediaType.MANGA
         }
 
-        DbQueue.queue_media_item(
+        params = [
             media_item_params,
             ListService.ANILIST,
             {ListService.ANILIST: "1", ListService.MYANIMELIST: "2"},
             user_state_params,
             media_list_params
-        )
+        ]
+        return params
+
+    def test_inserting_full_media_items(self):
+        """
+        Tests inserting a correct and full media item, then updating it and
+        adding some more service IDs
+        :return: None
+        """
+        params = self.generate_params()
+
+        DbQueue.queue_media_item(*params)
 
         self.assertEqual(len(MediaItem.query.all()), 0)
         self.assertEqual(len(MediaId.query.all()), 0)
@@ -69,21 +83,40 @@ class TestDbQueue(_TestFramework):
         self.assertEqual(len(MediaItem.query.all()), 1)
         self.assertEqual(len(MediaId.query.all()), 2)
 
+        # Check repeated inserts
+        DbQueue.queue_media_item(*params)
+        DbQueue.queue_media_item(*params)
+        DbQueue.queue_media_item(*params)
+        DbQueue.process_queue()
+
+        self.assertEqual(len(MediaItem.query.all()), 1)
+        self.assertEqual(len(MediaId.query.all()), 2)
         media_item: MediaItem = MediaItem.query.all()[0]
         self.assertEqual(media_item.english_title, "English")
         self.assertEqual(len(media_item.media_ids), 2)
 
-        media_item_params["english_title"] = "LALA"
+        # Check updating
+        params[0]["english_title"] = "HAHA"
+        DbQueue.queue_media_item(*params)
+        DbQueue.process_queue()
+        self.assertEqual(len(MediaItem.query.all()), 1)
+        self.assertEqual(len(MediaId.query.all()), 2)
+        media_item: MediaItem = MediaItem.query.all()[0]
+        self.assertEqual(media_item.english_title, "HAHA")
+        self.assertEqual(len(media_item.media_ids), 2)
 
-        DbQueue.queue_media_item(
-            media_item_params,
+        params[0]["english_title"] = "LALA"
+        params = [
+            params[0],
             ListService.MANGADEX,
             {
                 ListService.ANILIST: "1",
                 ListService.MANGADEX: "3",
                 ListService.KITSU: "4"
-            },
-        )
+            }
+        ]
+
+        DbQueue.queue_media_item(*params)
         DbQueue.process_queue()
         self.assertEqual(len(MediaItem.query.all()), 1)
         self.assertEqual(len(MediaId.query.all()), 4)
@@ -91,3 +124,39 @@ class TestDbQueue(_TestFramework):
         media_item: MediaItem = MediaItem.query.all()[0]
         self.assertEqual(media_item.english_title, "LALA")
         self.assertEqual(len(media_item.media_ids), 4)
+
+    def test_detecting_missing_service_id(self):
+        """
+        Tests if missing service IDs are handled correctly
+        :return: None
+        """
+        DbQueue.queue_media_item({}, ListService.ANILIST, {})
+        self.assertEqual(len(MediaItem.query.all()), 0)
+        DbQueue.process_queue()
+        self.assertEqual(len(MediaItem.query.all()), 0)
+
+    def test_identical_media_items_with_different_ids(self):
+        """
+        Tests if adding two items that have the same information but different
+        IDs are handled correctly.
+        This can happen with some manga on anilist, for example.
+        :return: None
+        """
+        params = self.generate_params()
+        DbQueue.queue_media_item(*params)
+        DbQueue.process_queue()
+
+        self.assertEqual(len(MediaItem.query.all()), 1)
+        self.assertEqual(len(MediaId.query.all()), 2)
+
+        params[2] = {ListService.ANILIST: "10"}
+        DbQueue.queue_media_item(*params)
+        DbQueue.process_queue()
+
+        # TODO handles this more nicely
+        # For example: Creating two media items
+        self.assertEqual(len(MediaItem.query.all()), 1)
+        self.assertEqual(len(MediaId.query.all()), 2)
+        anilist_id = \
+            MediaId.query.filter_by(service=ListService.ANILIST).first()
+        self.assertEqual(anilist_id.service_id, "1")
