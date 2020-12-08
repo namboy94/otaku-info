@@ -146,8 +146,8 @@ class DbQueue:
                 media_item.update(MediaItem(**params))
             else:
                 generated = MediaItem(**params)
-                identifier = generated.identifier_tuple
-                existing = media_items.get(identifier)
+                item_identifier = generated.identifier_tuple
+                existing = media_items.get(item_identifier)
                 if existing is None:
                     media_item = generated
                     db.session.add(media_item)
@@ -196,14 +196,14 @@ class DbQueue:
 
                 if list_params is not None:
                     generated = MediaList(**list_params)
-                    identifier = generated.identifier_tuple
-                    existing_list = media_lists.get(identifier)
+                    list_identifier = generated.identifier_tuple
+                    existing_list = media_lists.get(list_identifier)
 
                     if existing_list is None:
                         db.session.add(generated)
                         db.session.commit()
                         media_list = generated
-                        media_lists[identifier] = media_list
+                        media_lists[list_identifier] = media_list
                     else:
                         existing_list.update(generated)
                         media_list = existing_list
