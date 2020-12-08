@@ -26,7 +26,7 @@ from otaku_info.external.entities.AnimeListItem import AnimeListItem
 from otaku_info.external.mangadex import fetch_mangadex_item
 from otaku_info.external.anilist import load_anilist_info
 from otaku_info.external.myanimelist import load_myanimelist_item
-from otaku_info.background.db_inserter import queue_media_item_insert
+from otaku_info.utils.db.DbQueue import DbQueue
 
 
 def update_mangadex_data(
@@ -100,16 +100,17 @@ def update_mangadex_data(
             service = ListService.MYANIMELIST
 
         if better_item is not None:
-            media_item_params["media_subtype"] = better_item.media_subtype
-            media_item_params["english_title"] = better_item.english_title
-            media_item_params["romaji_title"] = better_item.romaji_title
-            media_item_params["releasing_state"] = better_item.releasing_state
-            media_item_params["cover_url"] = better_item.cover_url
-            media_item_params["latest_release"] = better_item.latest_release
+            media_item_params = {
+                "media_type": MediaType.MANGA,
+                "media_subtype": better_item.media_subtype,
+                "english_title": better_item.english_title,
+                "romaji_title": better_item.romaji_title,
+                "cover_url": better_item.cover_url,
+                "latest_release": better_item.latest_release,
+                "releasing_state": better_item.releasing_state
+            }
 
-        queue_media_item_insert(
-            media_item_params, service, service_ids
-        )
+        DbQueue.queue_media_item(media_item_params, service, service_ids)
 
     app.logger.info(f"Finished Mangadex Update in "
                     f"{time.time() - start_time}s.")

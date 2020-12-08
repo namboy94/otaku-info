@@ -20,7 +20,7 @@ LICENSE"""
 import time
 from typing import List, Optional, Dict
 from jerrycan.base import app
-from otaku_info.background.db_inserter import queue_media_item_insert
+from otaku_info.utils.db.DbQueue import DbQueue
 from otaku_info.db.ServiceUsername import ServiceUsername
 from otaku_info.external.anilist import load_anilist
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
@@ -103,7 +103,7 @@ def __perform_update(
         "service": ListService.ANILIST,
         "media_type": anilist_item.media_type
     }
-    queue_media_item_insert(
+    DbQueue.queue_media_item(
         media_item_params,
         ListService.ANILIST,
         service_ids,
