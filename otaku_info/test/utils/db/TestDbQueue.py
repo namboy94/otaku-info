@@ -160,3 +160,31 @@ class TestDbQueue(_TestFramework):
         anilist_id = \
             MediaId.query.filter_by(service=ListService.ANILIST).first()
         self.assertEqual(anilist_id.service_id, "1")
+
+    def test_changing_media_subtype(self):
+        params = self.generate_params()
+        params[0]["media_type"] = MediaType.ANIME
+        params[0]["media_subtype"] = MediaSubType.SPECIAL
+        DbQueue.queue_media_item(*params)
+        DbQueue.process_queue()
+
+        media_item: MediaItem = MediaItem.query.all()[0]
+        self.assertEqual(media_item.media_subtype, MediaSubType.SPECIAL)
+        for media_id in MediaId.query.all():  # type: MediaId
+            self.assertEqual(media_id.media_subtype, MediaSubType.SPECIAL)
+
+        params[0]["media_subtype"] = MediaSubType.OVA
+        DbQueue.queue_media_item(*params)
+        DbQueue.process_queue()
+
+        media_item = MediaItem.query.all()[0]
+        self.assertEqual(media_item.media_subtype, MediaSubType.OVA)
+        for media_id in MediaId.query.all():  # type: MediaId
+            self.assertEqual(media_id.media_subtype, MediaSubType.OVA)
+
+        # Note: This has different bahviour on postgres than it does on sqlite
+        # Sqlite automatically updates the media ids, but postgres will
+        # break.
+        # This is fixed by adding cascades to the foreign key constraint
+        # in the database definitions
+        # This test won't find an issue here when using sqlite though.

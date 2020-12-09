@@ -216,7 +216,13 @@ class DbQueue:
                 }
             else:
                 media_item = existing
+                identifier = media_item.identifier_tuple
                 media_item.update(generated)
+                new_identifier = media_item.identifier_tuple
+                if identifier != new_identifier:
+                    db.session.commit()
+                    media_items.pop(identifier)
+                    media_items[new_identifier] = media_item
 
         return media_item
 

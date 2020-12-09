@@ -64,7 +64,9 @@ class MediaId(ModelMixin, db.Model):
                 "media_items.id",
                 "media_items.media_type",
                 "media_items.media_subtype"
-            ]
+            ],
+            onupdate="cascade",
+            ondelete="cascade"
         ),
     )
     """
