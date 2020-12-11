@@ -29,11 +29,11 @@ from otaku_info.background.ln_releases import update_ln_releases
 
 bg_tasks: Dict[str, Tuple[int, Callable]] = {
     "db_inserts": (5, DbQueue.process_queue),
-    "anilist_update": (60 * 5, update_anilist_data),
-    "update_manga_chapter_guesses": (60 * 30, update_manga_chapter_guesses),
-    "mangadex_update": (60 * 60 * 24, update_mangadex_data),
-    "update_notifications": (60, send_new_update_notifications),
-    # "ln_release_updates": (60 * 60 * 24, update_ln_releases)
+    # "anilist_update": (60 * 5, update_anilist_data),
+    # "update_manga_chapter_guesses": (60 * 30, update_manga_chapter_guesses),
+    # "mangadex_update": (60 * 60 * 24, update_mangadex_data),
+    # "update_notifications": (60, send_new_update_notifications),
+    "ln_release_updates": (60 * 60 * 24, update_ln_releases)
 }
 """
 A dictionary containing background tasks for the flask application

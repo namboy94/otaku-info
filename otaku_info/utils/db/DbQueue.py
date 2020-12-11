@@ -25,6 +25,7 @@ from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaListItem import MediaListItem
+from otaku_info.db.LnRelease import LnRelease
 from otaku_info.enums import ListService, MediaType
 
 
@@ -50,6 +51,15 @@ class DbQueue:
     """
     Queue for new media items. Can contain additional information like
     list entries etc. See the queue_media_item method for more information
+    """
+
+    __ln_release_queue: List[Tuple[
+        Dict[str, Any],
+        Dict[ListService, str],
+    ]] = []
+    """
+    Queue for light novel releases
+    See queue_ln_release for information of the parts
     """
 
     @staticmethod
@@ -80,6 +90,20 @@ class DbQueue:
             ))
 
     @staticmethod
+    def queue_ln_release(
+            ln_params: Dict[str, Any],
+            service_ids: Dict[ListService, str],
+    ):
+        """
+        Queues an LN release
+        :param ln_params: The parameters for the LN release
+        :param service_ids: Any associated IDs
+        :return: None
+        """
+        with DbQueue.queue_lock:
+            DbQueue.__ln_release_queue.append((ln_params, service_ids))
+
+    @staticmethod
     def process_queue():
         """
         Processes all queues
@@ -107,6 +131,10 @@ class DbQueue:
                 .options(db.joinedload(MediaList.media_list_items))
                 .all()
             }
+            ln_releases: Dict[Tuple, LnRelease] = {
+                x.identifier_tuple: x for x in
+                LnRelease.query.all()
+            }
 
             media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]] = {
                 x.id: {
@@ -117,6 +145,10 @@ class DbQueue:
             DbQueue.__process_media_items(
                 media_items, media_ids, media_lists, media_item_mapped_ids
             )
+            DbQueue.__process_ln_releases(
+                ln_releases, media_ids
+            )
+            db.session.commit()
 
     @staticmethod
     def __process_media_items(
@@ -137,7 +169,9 @@ class DbQueue:
 
             media_type = params["media_type"]
             app.logger.debug(
-                f"Inserting {params['romaji_title']} into database")
+                f"Inserting media item '{params['romaji_title']}' "
+                f"into database"
+            )
 
             media_item = DbQueue.__insert_media_item(
                 params,
@@ -169,6 +203,52 @@ class DbQueue:
                         list_params,
                         media_lists
                     )
+
+    @staticmethod
+    def __process_ln_releases(
+            ln_releases: Dict[Tuple, LnRelease],
+            media_ids: Dict[Tuple, MediaId]
+    ):
+        """
+        Adds and/or updates light novel releases
+        :param ln_releases: Existing light novel releases
+        :param media_ids: Existing media IDs
+        :return: None
+        """
+        while len(DbQueue.__ln_release_queue) > 0:
+            params, ids = DbQueue.__ln_release_queue.pop(0)
+
+            app.logger.debug(
+                f"Inserting ln release "
+                f"'{params['series_name']} volume {params['volume']}' "
+                f"into database"
+            )
+
+            if len(ids) > 0:
+                ref_service, ref_id = list(ids.items())[0]
+                id_identifier = (MediaType.MANGA, ref_service, ref_id)
+                media_id = media_ids.get(id_identifier)
+                if media_id is not None:
+                    params["media_item_id"] = media_id.media_item_id
+
+            identifier = (
+                params["series_name"],
+                params["volume"],
+                params["digital"],
+                params["physical"]
+            )
+            release = ln_releases.get(identifier)
+            if release is None:
+                release = LnRelease(**params)
+                db.session.add(release)
+                db.session.commit()
+                ln_releases[release.identifier_tuple] = release
+            else:
+                if release.media_item_id is None:
+                    print(params)
+                print(release.media_item_id)
+                release.update(LnRelease(**params))
+                print(release.media_item_id)
 
     @staticmethod
     def __insert_media_item(

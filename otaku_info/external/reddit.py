@@ -67,10 +67,11 @@ def load_tables(year: int) -> List[BeautifulSoup]:
     if year < 2018 or year > current_year + 1:
         return []
 
+    url = f"https://old.reddit.com/r/LightNovels/wiki/{year}releases"
+
     if year >= current_year:
-        url = "https://old.reddit.com/r/LightNovels/wiki/upcomingreleases"
-    else:
-        url = f"https://old.reddit.com/r/LightNovels/wiki/{year}releases"
+        if requests.head(url).status_code >= 300:
+            url = "https://old.reddit.com/r/LightNovels/wiki/upcomingreleases"
 
     headers = {"User-Agent": "Mozilla/5.0"}
     resp = requests.get(url, headers=headers).text
@@ -83,10 +84,28 @@ def load_tables(year: int) -> List[BeautifulSoup]:
     # Table -1: To be announced
     tables = tables[2:-1]
 
-    if year >= current_year:
-        if year == current_year:
-            tables = tables[0:12]
-        else:
-            tables = tables[12:]
+    if url.endswith("upcomingreleases"):
+
+        month_names = soup.find_all("h3")
+        month_names.pop(0)
+        month_names = [
+            x.text.lower().split(" ")[0].strip() for x in month_names
+        ]
+
+        is_current_year = True
+        filtered = []
+        for i, month_name in enumerate(month_names):
+            table = tables[i]
+
+            if (year == current_year and is_current_year) or \
+                (year > current_year and not is_current_year):
+                filtered.append(table)
+
+            if month_name == "december":
+                is_current_year = False
+        tables = filtered
+
+        while year == current_year and len(tables) < 12:
+            tables = [BeautifulSoup("")] + tables
 
     return tables
