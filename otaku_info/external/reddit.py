@@ -98,7 +98,7 @@ def load_tables(year: int) -> List[BeautifulSoup]:
             table = tables[i]
 
             if (year == current_year and is_current_year) or \
-                (year > current_year and not is_current_year):
+               (year > current_year and not is_current_year):
                 filtered.append(table)
 
             if month_name == "december":

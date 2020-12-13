@@ -109,7 +109,8 @@ class DbQueue:
         Processes all queues
         :return: None
         """
-        with DbQueue.queue_lock:
+        try:
+            DbQueue.queue_lock.acquire()
 
             # Prepare existing DB content
             media_items: Dict[Tuple, MediaItem] = {
@@ -149,6 +150,8 @@ class DbQueue:
                 ln_releases, media_ids
             )
             db.session.commit()
+        finally:
+            DbQueue.queue_lock.release()
 
     @staticmethod
     def __process_media_items(
