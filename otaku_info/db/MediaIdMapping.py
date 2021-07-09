@@ -17,26 +17,17 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import List, TYPE_CHECKING, Optional
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import ModelMixin
-from otaku_info.enums import ListService
+from jerrycan.db.ModelMixin import NoIDModelMixin
+from otaku_info.enums import ListService, MediaType
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.utils.urls import generate_service_icon_url,\
     generate_service_url
-if TYPE_CHECKING:
-    from otaku_info.db.MediaUserState import MediaUserState
-    from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 
 
-class MediaIdMapping(ModelMixin, db.Model):
+class MediaIdMapping(NoIDModelMixin, db.Model):
     """
     Database model to map media IDs to each other across services
-    """
-
-    __tablename__ = "media_id_mappings"
-    """
-    The name of the database table
     """
 
     def __init__(self, *args, **kwargs):
@@ -47,45 +38,23 @@ class MediaIdMapping(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_item_id: int = db.Column(db.Integer, nullable=False)
-    """
-    The ID of the media item
-    """
+    __tablename__ = "media_id_mappings"
+    __table_args__ = (db.ForeignKeyConstraint(
+        ("service", "service_id", "media_type"),
+        (MediaItem.service, MediaItem.service_id, MediaItem.media_type)
+    ),)
 
-    primary_media_item: MediaItem = db.relationship(
-        "MediaItem",
-        back_populates="media_id_mappings"
-    )
-    """
-    The media item
-    """
-
-    service: ListService = db.Column(db.Enum(ListService), nullable=False)
-    """
-    The service for which the ID mapping is done
-    """
+    parent_service: ListService = \
+        db.Column(db.Enum(ListService), primary_key=True)
+    parent_service_id: str = db.Column(db.String(255), primary_key=True)
+    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
 
     service_id: str = db.Column(db.String(255), nullable=False)
-    """
-    The ID of the media item on the other service
-    """
 
-    media_user_states: List["MediaUserState"] = db.relationship(
-        "MediaUserState", back_populates="media_id", cascade="all, delete"
+    media_item: MediaItem = db.relationship(
+        "MediaItem", back_populates="media_user_states"
     )
-    """
-    Media user states associated with this media ID
-    """
-
-    chapter_guess: Optional["MangaChapterGuess"] = db.relationship(
-        "MangaChapterGuess",
-        uselist=False,
-        back_populates="media_id",
-        cascade="all, delete"
-    )
-    """
-    Chapter Guess for this media ID (Only applicable if this is a manga title)
-    """
 
     def service_url(self) -> str:
         """

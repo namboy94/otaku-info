@@ -19,20 +19,16 @@ LICENSE"""
 
 import re
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import NoIDModelMixin
 from otaku_info.db.MediaItem import MediaItem
+from otaku_info.enums import MediaType, ListService
 
 
-class LnRelease(ModelMixin, db.Model):
+class LnRelease(NoIDModelMixin, db.Model):
     """
     Database model that keeps track of light novel releases
-    """
-
-    __tablename__ = "ln_releases"
-    """
-    The name of the database table
     """
 
     def __init__(self, *args, **kwargs):
@@ -43,55 +39,27 @@ class LnRelease(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_item_id: int = db.Column(
-        db.Integer, db.ForeignKey("media_items.id"), nullable=True
-    )
-    """
-    The ID of the media item referenced by this release
-    """
+    __tablename__ = "ln_releases"
+    __table_args__ = (db.ForeignKeyConstraint(
+        ("service", "service_id", "media_type"),
+        (MediaItem.service, MediaItem.service_id, MediaItem.media_type)
+    ),)
 
-    media_item: MediaItem = db.relationship(
-        "MediaItem",
-        back_populates="ln_releases"
-    )
-    """
-    The media item referenced by this release
-    """
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
+    service_id: str = db.Column(db.String(255), primary_key=True)
+    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
+    volume: str = db.Column(db.String(255), primary_key=True)
 
     release_date_string: str = db.Column(db.String(10), nullable=False)
-    """
-    The release date as a ISO-8601 string
-    """
-
     series_name: str = db.Column(db.String(255), nullable=False)
-    """
-    The series name
-    """
-
-    volume: str = db.Column(db.String(255), nullable=False)
-    """
-    The volume identifier
-    """
-
     publisher: Optional[str] = db.Column(db.String(255), nullable=True)
-    """
-    The publisher
-    """
-
     purchase_link: Optional[str] = db.Column(db.String(255), nullable=True)
-    """
-    Link to a store page
-    """
+    digital: bool = db.Column(db.Boolean, nullable=False)
+    physical: bool = db.Column(db.Boolean, nullable=False)
 
-    digital: bool = db.Column(db.Boolean)
-    """
-    Whether this is a digital release
-    """
-
-    physical: bool = db.Column(db.Boolean)
-    """
-    Whether this is a physical release
-    """
+    media_item: MediaItem = db.relationship(
+        "MediaItem", back_populates="media_user_states"
+    )
 
     @property
     def release_date(self) -> datetime:

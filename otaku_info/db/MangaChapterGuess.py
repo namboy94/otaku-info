@@ -18,21 +18,16 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import Dict, Any, Tuple
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import NoIDModelMixin
 from otaku_info.db.MediaItem import MediaItem
+from otaku_info.enums import MediaType, ListService
 from otaku_info.external.anilist import guess_latest_manga_chapter
 
 
-class MangaChapterGuess(ModelMixin, db.Model):
+class MangaChapterGuess(NoIDModelMixin, db.Model):
     """
     Database model that keeps track of manga chapter guesses.
-    """
-
-    __tablename__ = "manga_chapter_guesses"
-    """
-    The name of the database table
     """
 
     def __init__(self, *args, **kwargs):
@@ -43,32 +38,22 @@ class MangaChapterGuess(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_item_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey("media_items.id"),
-        nullable=False,
-        unique=True
-    )
-    """
-    The ID of the media ID referenced by this manga chapter guess
-    """
+    __tablename__ = "manga_chapter_guesses"
+    __table_args__ = (db.ForeignKeyConstraint(
+        ("service", "service_id", "media_type"),
+        (MediaItem.service, MediaItem.service_id, MediaItem.media_type)
+    ),)
 
-    media_item: MediaItem = db.relationship(
-        "MediaItem", back_populates="chapter_guess"
-    )
-    """
-    The media ID referenced by this manga chapter guess
-    """
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
+    service_id: str = db.Column(db.String(255), primary_key=True)
+    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
 
     guess: int = db.Column(db.Integer, nullable=True)
-    """
-    The actual guess for the most current chapter of the manga series
-    """
-
     last_update: int = db.Column(db.Integer, nullable=False, default=0)
-    """
-    Timestamp from when the guess was last updated
-    """
+
+    media_item: MediaItem = db.relationship(
+        "MediaItem", back_populates="media_user_states"
+    )
 
     def update_guess(self):
         """

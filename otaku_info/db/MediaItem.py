@@ -21,7 +21,7 @@ from flask import url_for
 from datetime import datetime
 from typing import Dict, Optional, List, TYPE_CHECKING
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import NoIDModelMixin
 from otaku_info.db import MediaUserState, MangaChapterGuess
 from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
     ListService
@@ -32,28 +32,11 @@ if TYPE_CHECKING:
     from otaku_info.db.LnRelease import LnRelease
 
 
-class MediaItem(ModelMixin, db.Model):
+class MediaItem(NoIDModelMixin, db.Model):
     """
     Database model for media items.
     These model a representation of a series specific to one list service
     like anilist or mangadex.
-    """
-
-    __tablename__ = "media_items"
-    """
-    The name of the database table
-    """
-
-    __table_args__ = (
-        db.UniqueConstraint(
-            "service",
-            "service_id",
-            "media_type",
-            name="unique_media_item"
-        )
-    )
-    """
-    Makes sure that objects that should be unique are unique
     """
 
     def __init__(self, *args, **kwargs):
@@ -64,103 +47,39 @@ class MediaItem(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    service: ListService = db.Column(db.Enum(ListService), nullable=False)
-    """
-    The List service this media item is for
-    """
+    __tablename__ = "media_items"
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
+    service_id: str = db.Column(db.String(255), primary_key=True)
+    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
 
-    service_id: str = db.Column(db.String(255), nullable=False)
-    """
-    The Service ID on the list service
-    """
-
-    media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
-    """
-    The media type of the list item
-    """
-
-    media_subtype: MediaSubType = db.Column(
-        db.Enum(MediaSubType), nullable=False
-    )
-    """
-    The media subtype (for example, TV short, movie oneshot etc)
-    """
-
+    media_subtype: MediaSubType = \
+        db.Column(db.Enum(MediaSubType), nullable=False)
     english_title: Optional[str] = db.Column(db.Unicode(255), nullable=True)
-    """
-    The English title of the media item
-    """
-
     romaji_title: str = db.Column(db.Unicode(255), nullable=False)
-    """
-    The Japanese title of the media item written in Romaji
-    """
-
     cover_url: str = db.Column(db.String(255), nullable=False)
-    """
-    An URL to a cover image of the media item
-    """
-
     latest_release: Optional[int] = db.Column(db.Integer, nullable=True)
-    """
-    The latest release chapter/episode for this media item
-    """
-
     latest_volume_release: Optional[int] = db.Column(db.Integer, nullable=True)
-    """
-    The latest volume for this media item
-    """
-
     next_episode: Optional[int] = db.Column(db.Integer, nullable=True)
-    """
-    The next episode to air
-    """
-
     next_episode_airing_time: Optional[int] = \
         db.Column(db.Integer, nullable=True)
-    """
-    The time the next episode airs
-    """
-
-    releasing_state: ReleasingState = db.Column(
-        db.Enum(ReleasingState), nullable=False
-    )
-    """
-    The current releasing state of the media item
-    """
+    releasing_state: ReleasingState = \
+        db.Column(db.Enum(ReleasingState), nullable=False)
 
     media_id_mappings: List["MediaIdMapping"] = db.relationship(
-        "MediaIdMapping",
-        back_populates="primary_media_item",
-        cascade="all, delete"
+        "MediaIdMapping", back_populates="media_item", cascade="all, delete"
     )
-    """
-    Media ID mappings associated with this Media item
-    """
-
-    ln_releases: List["LnRelease"] = db.relationship(
-        "LnRelease", back_populates="media_item", cascade="all, delete"
-    )
-    """
-    Light novel releases associated with this Media item
-    """
-
     media_user_states: List["MediaUserState"] = db.relationship(
         "MediaUserState", back_populates="media_item", cascade="all, delete"
     )
-    """
-    Media user states associated with this media ID
-    """
-
+    ln_releases: List["LnRelease"] = db.relationship(
+        "LnRelease", back_populates="media_item", cascade="all, delete"
+    )
     chapter_guess: Optional["MangaChapterGuess"] = db.relationship(
         "MangaChapterGuess",
         uselist=False,
         back_populates="media_id",
         cascade="all, delete"
     )
-    """
-    Chapter Guess for this media ID (Only applicable if this is a manga title)
-    """
 
     @property
     def service_url(self) -> str:

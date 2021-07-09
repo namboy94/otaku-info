@@ -17,33 +17,19 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Tuple
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import NoIDModelMixin
+
+from otaku_info.db import MediaItem
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaUserState import MediaUserState
+from otaku_info.enums import ListService, MediaType
 
 
-class MediaListItem(ModelMixin, db.Model):
+class MediaListItem(NoIDModelMixin, db.Model):
     """
     Database model for media list items.
     This model maps MediaLists and MediaUserStates
-    """
-
-    __tablename__ = "media_list_items"
-    """
-    The name of the database table
-    """
-
-    __table_args__ = (
-        db.UniqueConstraint(
-            "media_list_id",
-            "media_user_state_id",
-            name="unique_media_list_item"
-        ),
-    )
-    """
-    Makes sure that objects that should be unique are unique
     """
 
     def __init__(self, *args, **kwargs):
@@ -54,38 +40,29 @@ class MediaListItem(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_list_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey("media_lists.id"),
-        nullable=False
-    )
-    """
-    The ID of the media list this list item is a part of
-    """
-
-    media_list: MediaList = db.relationship(
-        "MediaList",
-        back_populates="media_list_items"
-    )
-    """
-    The media list this list item is a part of
-    """
-
-    media_user_state_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey(
-            "media_user_states.id", ondelete="CASCADE", onupdate="CASCADE"
+    __tablename__ = "media_list_items"
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ("service", "service_id", "media_type", "user_id"),
+            (MediaUserState.service, MediaUserState.service_id,
+             MediaUserState.media_type, MediaUserState.user_id)
         ),
-        nullable=False
+        db.ForeignKeyConstraint(
+            ("service", "media_type", "user_id", "list_name"),
+            (MediaList.user_id, MediaList.service,
+             MediaList.user_id, MediaList.name)
+        )
     )
-    """
-    The ID of the media user state this list item references
-    """
 
-    media_user_state: MediaUserState = db.relationship(
-        "MediaUserState",
-        backref=db.backref("media_list_items", lazy=True, cascade="all,delete")
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
+    service_id: str = db.Column(db.String(255), primary_key=True)
+    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
+    user_id: int = db.Column(db.Integer, primary_key=True)
+    list_name: int = db.Column(db.String(255), primary_key=True)
+
+    user_state: MediaUserState = db.relationship(
+        "MediaUserState", back_populates="media_list_items"
     )
-    """
-    The media user state this list item references
-    """
+    media_list: MediaList = db.relationship(
+        "MediaList", back_populates="list_items"
+    )

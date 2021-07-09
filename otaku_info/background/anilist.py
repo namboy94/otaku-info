@@ -18,13 +18,15 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import List, Optional, Dict
-from jerrycan.base import app
+from typing import List, Optional, Dict, Tuple
+from jerrycan.base import app, db
+from otaku_info.enums import ListService, MediaType
 from otaku_info.utils.db.DbQueue import DbQueue
 from otaku_info.db.ServiceUsername import ServiceUsername
+from otaku_info.db.MediaItem import MediaItem
+from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.external.anilist import load_anilist
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
-from otaku_info.enums import ListService, MediaType
 
 
 def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
@@ -55,13 +57,15 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
     for username, anilist_info in anilist_data.items():
         for media_type, anilist_items in anilist_info.items():
             for anilist_item in anilist_items:
-                __perform_update(
-                    anilist_item,
-                    username
+                media_item = anilist_item.generate_media_item()
+                media_item = db.session.merge(media_item)
+                user_state = anilist_item.generate_user_state(
+                    media_item, username.user_id
                 )
+                db.session.merge()
+    db.session.commit()
 
     app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
-
 
 def __perform_update(
         anilist_item: AnilistUserItem,

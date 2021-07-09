@@ -20,33 +20,15 @@ LICENSE"""
 from typing import List, TYPE_CHECKING
 from jerrycan.base import db
 from jerrycan.db.User import User
-from jerrycan.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import NoIDModelMixin
 from otaku_info.enums import ListService, MediaType
 if TYPE_CHECKING:
     from otaku_info.db.MediaListItem import MediaListItem
 
 
-class MediaList(ModelMixin, db.Model):
+class MediaList(NoIDModelMixin, db.Model):
     """
     Database model for user-specific media lists.
-    """
-
-    __tablename__ = "media_lists"
-    """
-    The name of the database table
-    """
-
-    __table_args__ = (
-        db.UniqueConstraint(
-            "name",
-            "user_id",
-            "service",
-            "media_type",
-            name="unique_media_list"
-        ),
-    )
-    """
-    Makes sure that objects that should be unique are unique
     """
 
     def __init__(self, *args, **kwargs):
@@ -57,43 +39,23 @@ class MediaList(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
+    __tablename__ = "media_lists"
+
     user_id: int = db.Column(
         db.Integer,
         db.ForeignKey(
             "users.id", ondelete="CASCADE", onupdate="CASCADE"
         ),
-        nullable=False
+        primary_key=True
     )
-    """
-    The ID of the user associated with this list
-    """
+    name: str = db.Column(db.Unicode(255), primary_key=True)
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
+    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
 
     user: User = db.relationship(
         "User",
-        backref=db.backref("media_lists", lazy=True, cascade="all,delete")
+        backref=db.backref("media_lists", lazy=True, cascade="all, delete")
     )
-    """
-    The user associated with this list
-    """
-
-    name: str = db.Column(db.Unicode(255), nullable=False)
-    """
-    The name of this list
-    """
-
-    service: ListService = db.Column(db.Enum(ListService), nullable=False)
-    """
-    The service for which this list applies to
-    """
-
-    media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
-    """
-    The media type for this list
-    """
-
-    media_list_items: List["MediaListItem"] = db.relationship(
+    list_items: List["MediaListItem"] = db.relationship(
         "MediaListItem", back_populates="media_list", cascade="all, delete"
     )
-    """
-    Media List Items that are a part of this media list
-    """
