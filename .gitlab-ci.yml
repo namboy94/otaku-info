@@ -59,7 +59,7 @@ docgen:
 deploy_production:
   stage: deploy
   tags: [privileged, otaku-info]
-  only: [master, develop]
+  only: [master]
   before_script: []
   script:
     - echo "$ENV_FILE" > .env

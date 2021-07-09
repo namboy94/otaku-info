@@ -18,70 +18,36 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import Optional
-from jerrycan.base import app
+from typing import Optional, Dict
+from jerrycan.base import app, db
+from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaId import MediaId
 from otaku_info.enums import ListService, MediaType, MediaSubType
 from otaku_info.external.entities.AnimeListItem import AnimeListItem
-from otaku_info.external.mangadex import fetch_mangadex_item
+from otaku_info.external.mangadex import fetch_all_mangadex_items
 from otaku_info.external.anilist import load_anilist_info
 from otaku_info.external.myanimelist import load_myanimelist_item
 from otaku_info.utils.db.DbQueue import DbQueue
 
 
-class State:
+def update_mangadex_data():
     """
-    Class that keeps track of state for the mangadex updater
-    """
-    FIRST_RUN = True
-
-
-def update_mangadex_data(
-        start: Optional[int] = None,
-        refresh: bool = False
-):
-    """
-    Goes through mangadex IDs sequentially and stores ID mappings for
-    these entries if found.
-    Stops once 100 consecutive entries didn't return any results
-    :param start: Optionally specifies a starting index
-    :param refresh: If true, will update existing mangadex info
+    Loads the newest mangadex information and updates the mangadex entries in
+    the database.
     :return: None
     """
     start_time = time.time()
     app.logger.info("Starting Mangadex Update")
 
-    existing_ids = [
-        int(x.service_id)
-        for x in MediaId.query.filter_by(service=ListService.MANGADEX).all()
-    ]
+    existing_media_items: Dict[str, MediaItem] = {
+        x.service_id: x.media_item
+        for x in MediaId.query
+        .filter_by(service=ListService.MANGADEX)
+        .options(db.joinedload(MediaId.media_item))
+        .all()
+    }
 
-    if start is None:
-        start = 1
-        if State.FIRST_RUN and len(existing_ids) > 0:
-            start = max(existing_ids) + 1
-            State.FIRST_RUN = False
-
-    mangadex_id = start - 1
-    endcounter = 0
-
-    while True:
-        mangadex_id += 1
-
-        if endcounter > 100:
-            break
-        elif str(mangadex_id) in existing_ids and not refresh:
-            endcounter = 0
-            continue
-
-        app.logger.debug(f"Probing mangadex id {mangadex_id}")
-        mangadex_item = fetch_mangadex_item(mangadex_id)
-        if mangadex_item is None:
-            endcounter += 1
-            app.logger.debug(f"Couldn't load mangadex info ({mangadex_id})")
-            continue
-        else:
-            endcounter = 0
+    for mangadex_item in fetch_all_mangadex_items():
 
         media_item_params = {
             "media_type": MediaType.MANGA,
@@ -94,7 +60,17 @@ def update_mangadex_data(
         }
         service = ListService.MANGADEX
         service_ids = mangadex_item.external_ids
-        service_ids[ListService.MANGADEX] = str(mangadex_id)
+        service_ids[ListService.MANGADEX] = mangadex_item.mangadex_id
+
+        # Skip existing items
+        existing_item = existing_media_items.get(mangadex_item.mangadex_id)
+        if existing_item is not None:
+            all_ids_in_db = True
+            for service in service_ids.keys():
+                if service not in existing_item.media_id_mapping.keys():
+                    all_ids_in_db = False
+            if all_ids_in_db:
+                continue
 
         better_item: Optional[AnimeListItem] = None
         if ListService.ANILIST in service_ids:

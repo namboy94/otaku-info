@@ -19,22 +19,66 @@ LICENSE"""
 
 import json
 import requests
-from typing import Optional
-from requests.exceptions import ConnectionError
+from jerrycan.base import app
+from typing import Optional, List
 from otaku_info.external.entities.MangadexItem import MangadexItem
 
 
-def fetch_mangadex_item(mangadex_id: int) -> Optional[MangadexItem]:
+def fetch_all_mangadex_items() -> List[MangadexItem]:
+    """
+    Fetches all available mangadex items
+    :return: The mangadex items
+    """
+    url = "https://api.mangadex.org/manga"
+    items = []
+    mangadex_items = []
+    page = 0
+    last_date = "1970-01-01T00:00:00"
+
+    while True:
+        params = {
+            "createdAtSince": last_date,
+            "order[createdAt]": "asc",
+            "limit": 100,
+            "offset": 100 * page
+        }
+        app.logger.debug(f"Mangadex: {params}")
+        response = requests.get(url, params=params)
+        data = json.loads(response.text)
+
+        if "results" not in data:
+            new_date = items[-1]["data"]["attributes"]["createdAt"]
+            new_date = new_date.split("T")[0] + "T00:00:00"
+
+            if new_date == last_date:
+                break
+            else:
+                last_date = new_date
+                page = 0
+                continue
+        elif len(data["results"]) == 0:
+            break
+
+        items += data["results"]
+        mangadex_items += [
+            MangadexItem.from_json(x["data"])
+            for x in data["results"]
+        ]
+        page += 1
+
+    mangadex_items.sort(key=lambda x: x.title)
+    return mangadex_items
+
+
+def fetch_mangadex_item(mangadex_id: str) -> Optional[MangadexItem]:
     """
     Fetches information for a mangadex
     """
-    endpoint = "https://mangadex.org/api/manga/{}".format(mangadex_id)
-    try:
-        with requests.get(endpoint) as response:
-            data = json.loads(response.text)
-            if data["status"] == "OK":
-                return MangadexItem.from_json(mangadex_id, data)
-            else:
-                return None
-    except (json.JSONDecodeError, ConnectionError):
+    url = "https://api.mangadex.org/manga"
+    response = requests.get(url, params={"ids[]": mangadex_id})
+
+    if response.status_code >= 300:
         return None
+
+    data = json.loads(response.text)["data"]
+    return MangadexItem.from_json(data)

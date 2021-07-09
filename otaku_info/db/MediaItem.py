@@ -32,7 +32,8 @@ if TYPE_CHECKING:
 class MediaItem(ModelMixin, db.Model):
     """
     Database model for media items.
-    These model a generic, site-agnostic representation of a series.
+    These model a representation of a series specific to one list service
+    like anilist or mangadex.
     """
 
     __tablename__ = "media_items"
@@ -42,17 +43,11 @@ class MediaItem(ModelMixin, db.Model):
 
     __table_args__ = (
         db.UniqueConstraint(
+            "service"
             "media_type",
-            "media_subtype",
-            "romaji_title",
-            name="unique_media_item_data"
-        ),
-        db.UniqueConstraint(
-            "id",
-            "media_type",
-            "media_subtype",
+            "service_id",
             name="unique_media_item"
-        ),
+        )
     )
     """
     Makes sure that objects that should be unique are unique
@@ -66,16 +61,26 @@ class MediaItem(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
+    service: ListService = db.Column(db.Enum(ListService), nullable=False)
+    """
+    The List service this media item is for
+    """
+
     media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
     """
     The media type of the list item
+    """
+
+    service_id: str = db.Column(db.String(255), nullable=False)
+    """
+    The Service ID on the list service
     """
 
     media_subtype: MediaSubType = db.Column(
         db.Enum(MediaSubType), nullable=False
     )
     """
-    The subtype (for example, TV short, movie oneshot etc)
+    The media subtype (for example, TV short, movie oneshot etc)
     """
 
     english_title: Optional[str] = db.Column(db.Unicode(255), nullable=True)
@@ -160,11 +165,11 @@ class MediaItem(ModelMixin, db.Model):
         }
 
     @property
-    def identifier_tuple(self) -> Tuple[str, MediaType, MediaSubType]:
+    def identifier_tuple(self) -> Tuple[ListService, MediaType, str]:
         """
         :return: A tuple that uniquely identifies this database entry
         """
-        return self.romaji_title, self.media_type, self.media_subtype
+        return self.service, self.media_type, self.service_id
 
     def update(self, new_data: "MediaItem"):
         """
