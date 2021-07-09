@@ -22,7 +22,7 @@ from unittest.mock import patch
 from jerrycan.base import db
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState

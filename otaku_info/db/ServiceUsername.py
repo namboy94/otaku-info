@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Tuple
 from jerrycan.base import db
 from jerrycan.db.User import User
 from jerrycan.db.ModelMixin import ModelMixin
@@ -84,20 +83,3 @@ class ServiceUsername(ModelMixin, db.Model):
     """
     The external service this item is a username for
     """
-
-    @property
-    def identifier_tuple(self) -> Tuple[int, str, ListService]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.user_id, self.username, self.service
-
-    def update(self, new_data: "ServiceUsername"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.user_id = new_data.user_id
-        self.username = new_data.username
-        self.service = new_data.service

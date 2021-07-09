@@ -19,7 +19,7 @@ LICENSE"""
 
 from otaku_info.test.TestFramework import _TestFramework
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.utils.db.DbQueue import DbQueue
 from otaku_info.enums import MediaType, MediaSubType, ReleasingState, \
     ConsumingState, ListService

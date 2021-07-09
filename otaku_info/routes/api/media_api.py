@@ -22,7 +22,7 @@ from flask.blueprints import Blueprint
 from jerrycan.routes.decorators import api
 from jerrycan.exceptions import ApiException
 from otaku_info.Config import Config
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, ListService
 

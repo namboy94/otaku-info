@@ -21,7 +21,7 @@ from typing import Tuple
 from jerrycan.base import db
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState
 from otaku_info.test.TestFramework import _TestFramework

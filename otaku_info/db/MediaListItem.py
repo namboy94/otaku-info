@@ -17,9 +17,9 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Tuple
+from typing import Tuple
 from jerrycan.base import db
-from otaku_info.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaUserState import MediaUserState
 
@@ -89,19 +89,3 @@ class MediaListItem(ModelMixin, db.Model):
     """
     The media user state this list item references
     """
-
-    @property
-    def identifier_tuple(self) -> Tuple[int, int]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.media_list_id, self.media_user_state_id
-
-    def update(self, new_data: "MediaListItem"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.media_list_id = new_data.media_list_id
-        self.media_user_state_id = new_data.media_user_state_id

@@ -25,7 +25,7 @@ from otaku_info.enums import MediaType, MediaSubType, ListService, \
     ReleasingState
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.db.MediaListItem import MediaListItem
 from otaku_info.db.MediaUserState import MediaUserState
 

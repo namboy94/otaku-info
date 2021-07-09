@@ -21,7 +21,7 @@ from threading import Lock
 from jerrycan.base import db, app
 from typing import List, Dict, Any, Tuple, Optional
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaListItem import MediaListItem

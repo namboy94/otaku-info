@@ -17,9 +17,8 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Tuple
 from jerrycan.base import db
-from otaku_info.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaUserState import MediaUserState
 
 
@@ -62,19 +61,3 @@ class MediaNotification(ModelMixin, db.Model):
     """
     The last update value sent to the user
     """
-
-    @property
-    def identifier_tuple(self) -> Tuple[int]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.media_user_state_id,
-
-    def update(self, new_data: "MediaNotification"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.media_user_state_id = new_data.media_user_state_id
-        self.last_update = new_data.last_update

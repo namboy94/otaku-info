@@ -24,7 +24,7 @@ from jerrycan.db.User import User
 from otaku_info.enums import MediaType, MediaSubType
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaNotification import MediaNotification
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.NotificationSetting import NotificationSetting
 from otaku_info.wrappers.UpdateWrapper import UpdateWrapper

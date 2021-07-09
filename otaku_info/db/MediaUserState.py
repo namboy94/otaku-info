@@ -17,11 +17,11 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Optional, Tuple, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from jerrycan.base import db
 from jerrycan.db.User import User
-from otaku_info.db.ModelMixin import ModelMixin
-from otaku_info.db.MediaId import MediaId
+from jerrycan.db.ModelMixin import ModelMixin
+from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import ConsumingState
 if TYPE_CHECKING:
     from otaku_info.db.MediaNotification import MediaNotification
@@ -40,7 +40,7 @@ class MediaUserState(ModelMixin, db.Model):
 
     __table_args__ = (
         db.UniqueConstraint(
-            "media_id_id",
+            "media_item_id",
             "user_id",
             name="unique_media_user_state"
         ),
@@ -57,21 +57,21 @@ class MediaUserState(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_id_id: int = db.Column(
+    media_item_id: int = db.Column(
         db.Integer,
-        db.ForeignKey("media_ids.id"),
+        db.ForeignKey("media_items.id"),
         nullable=False
     )
     """
-    The ID of the media ID referenced by this user state
+    The ID of the media item referenced by this user state
     """
 
-    media_id: MediaId = db.relationship(
-        "MediaId",
+    media_item: MediaItem = db.relationship(
+        "MediaItem",
         back_populates="media_user_states"
     )
     """
-    The media ID referenced by this user state
+    The media item referenced by this user state
     """
 
     user_id: int = db.Column(
@@ -125,23 +125,3 @@ class MediaUserState(ModelMixin, db.Model):
     """
     Notification object for this user state
     """
-
-    @property
-    def identifier_tuple(self) -> Tuple[int, int]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.media_id_id, self.user_id
-
-    def update(self, new_data: "MediaUserState"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.media_id_id = new_data.media_id_id
-        self.user_id = new_data.user_id
-        self.progress = new_data.progress
-        self.volume_progress = new_data.volume_progress
-        self.score = new_data.score
-        self.consuming_state = new_data.consuming_state

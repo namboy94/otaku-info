@@ -19,13 +19,16 @@ LICENSE"""
 
 from flask import url_for
 from datetime import datetime
-from typing import Dict, Optional, List, Tuple, TYPE_CHECKING
+from typing import Dict, Optional, List, TYPE_CHECKING
 from jerrycan.base import db
-from otaku_info.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
+from otaku_info.db import MediaUserState, MangaChapterGuess
 from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
     ListService
+from otaku_info.utils.urls import generate_service_url, \
+    generate_service_icon_url
 if TYPE_CHECKING:
-    from otaku_info.db.MediaId import MediaId
+    from otaku_info.db.MediaIdMapping import MediaIdMapping
     from otaku_info.db.LnRelease import LnRelease
 
 
@@ -43,9 +46,9 @@ class MediaItem(ModelMixin, db.Model):
 
     __table_args__ = (
         db.UniqueConstraint(
-            "service"
-            "media_type",
+            "service",
             "service_id",
+            "media_type",
             name="unique_media_item"
         )
     )
@@ -66,14 +69,14 @@ class MediaItem(ModelMixin, db.Model):
     The List service this media item is for
     """
 
-    media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
-    """
-    The media type of the list item
-    """
-
     service_id: str = db.Column(db.String(255), nullable=False)
     """
     The Service ID on the list service
+    """
+
+    media_type: MediaType = db.Column(db.Enum(MediaType), nullable=False)
+    """
+    The media type of the list item
     """
 
     media_subtype: MediaSubType = db.Column(
@@ -126,11 +129,13 @@ class MediaItem(ModelMixin, db.Model):
     The current releasing state of the media item
     """
 
-    media_ids: List["MediaId"] = db.relationship(
-        "MediaId", back_populates="media_item", cascade="all, delete"
+    media_id_mappings: List["MediaIdMapping"] = db.relationship(
+        "MediaIdMapping",
+        back_populates="primary_media_item",
+        cascade="all, delete"
     )
     """
-    Media IDs associated with this Media item
+    Media ID mappings associated with this Media item
     """
 
     ln_releases: List["LnRelease"] = db.relationship(
@@ -139,6 +144,41 @@ class MediaItem(ModelMixin, db.Model):
     """
     Light novel releases associated with this Media item
     """
+
+    media_user_states: List["MediaUserState"] = db.relationship(
+        "MediaUserState", back_populates="media_item", cascade="all, delete"
+    )
+    """
+    Media user states associated with this media ID
+    """
+
+    chapter_guess: Optional["MangaChapterGuess"] = db.relationship(
+        "MangaChapterGuess",
+        uselist=False,
+        back_populates="media_id",
+        cascade="all, delete"
+    )
+    """
+    Chapter Guess for this media ID (Only applicable if this is a manga title)
+    """
+
+    @property
+    def service_url(self) -> str:
+        """
+        :return: The URL to the series for the given service
+        """
+        return generate_service_url(
+            self.service,
+            self.media_type,
+            self.service_id
+        )
+
+    @property
+    def service_icon(self) -> str:
+        """
+        :return: The path to the service's icon file
+        """
+        return generate_service_icon_url(self.service)
 
     @property
     def current_release(self) -> Optional[int]:
@@ -156,37 +196,14 @@ class MediaItem(ModelMixin, db.Model):
             return None
 
     @property
-    def media_id_mapping(self) -> Dict[ListService, "MediaId"]:
+    def related_ids(self) -> Dict[ListService, str]:
         """
         :return: A dictionary mapping list services to IDs for this media item
         """
         return {
-            x.service: x for x in self.media_ids
+            x.secondary_media_item.service: x.secondary_media_item.service_id
+            for x in self.media_id_mappings
         }
-
-    @property
-    def identifier_tuple(self) -> Tuple[ListService, MediaType, str]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.service, self.media_type, self.service_id
-
-    def update(self, new_data: "MediaItem"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.media_type = new_data.media_type
-        self.media_subtype = new_data.media_subtype
-        self.english_title = new_data.english_title
-        self.romaji_title = new_data.romaji_title
-        self.cover_url = new_data.cover_url
-        self.latest_release = new_data.latest_release
-        self.latest_volume_release = new_data.latest_volume_release
-        self.releasing_state = new_data.releasing_state
-        self.next_episode = new_data.next_episode
-        self.next_episode_airing_time = new_data.next_episode_airing_time
 
     @property
     def title(self) -> str:

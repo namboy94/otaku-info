@@ -20,7 +20,7 @@ LICENSE"""
 import time
 from typing import List
 from jerrycan.base import db, app
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info.enums import MediaType, ListService, MediaSubType
 

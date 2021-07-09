@@ -25,7 +25,7 @@ from flask.blueprints import Blueprint
 from flask_login import current_user, login_required
 from jerrycan.base import db
 from otaku_info.db.MediaUserState import MediaUserState
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:

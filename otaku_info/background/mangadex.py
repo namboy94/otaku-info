@@ -21,7 +21,7 @@ import time
 from typing import Optional, Dict
 from jerrycan.base import app, db
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaId
 from otaku_info.enums import ListService, MediaType, MediaSubType
 from otaku_info.external.entities.AnimeListItem import AnimeListItem
 from otaku_info.external.mangadex import fetch_all_mangadex_items

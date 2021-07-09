@@ -20,8 +20,8 @@ LICENSE"""
 import time
 from typing import Dict, Any, Tuple
 from jerrycan.base import db
-from otaku_info.db.ModelMixin import ModelMixin
-from otaku_info.db.MediaId import MediaId
+from jerrycan.db.ModelMixin import ModelMixin
+from otaku_info.db.MediaItem import MediaItem
 from otaku_info.external.anilist import guess_latest_manga_chapter
 
 
@@ -43,9 +43,9 @@ class MangaChapterGuess(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_id_id: int = db.Column(
+    media_item_id: int = db.Column(
         db.Integer,
-        db.ForeignKey("media_ids.id"),
+        db.ForeignKey("media_items.id"),
         nullable=False,
         unique=True
     )
@@ -53,8 +53,8 @@ class MangaChapterGuess(ModelMixin, db.Model):
     The ID of the media ID referenced by this manga chapter guess
     """
 
-    media_id: MediaId = db.relationship(
-        "MediaId", back_populates="chapter_guess"
+    media_item: MediaItem = db.relationship(
+        "MediaItem", back_populates="chapter_guess"
     )
     """
     The media ID referenced by this manga chapter guess
@@ -82,20 +82,3 @@ class MangaChapterGuess(ModelMixin, db.Model):
             self.guess = guess_latest_manga_chapter(
                 int(self.media_id.service_id)
             )
-
-    @property
-    def identifier_tuple(self) -> Tuple[int]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.media_id_id,
-
-    def update(self, new_data: "MangaChapterGuess"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.media_id_id = new_data.media_id_id
-        self.guess = new_data.guess
-        self.last_update = new_data.last_update
