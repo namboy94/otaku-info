@@ -17,10 +17,8 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-import os
 from typing import Type
 from jerrycan.Config import Config as BaseConfig
-from bokkichat.settings.impl.TelegramBotSettings import TelegramBotSettings
 from bokkichat.connection.impl.TelegramBotConnection import \
     TelegramBotConnection
 

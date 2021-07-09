@@ -18,19 +18,18 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from typing import Dict, Tuple, Callable
-from otaku_info.utils.db.DbQueue import DbQueue
 from otaku_info.background.anilist import update_anilist_data
 from otaku_info.background.mangadex import update_mangadex_data
-from otaku_info.background.manga_chapter_guesses import \
-    update_manga_chapter_guesses
-from otaku_info.background.notifications import send_new_update_notifications
-from otaku_info.background.ln_releases import update_ln_releases
+# from otaku_info.background.manga_chapter_guesses import \
+#     update_manga_chapter_guesses
+# from otaku_info.background.notifications import send_new_update_notifications
+# from otaku_info.background.ln_releases import update_ln_releases
 
 
 bg_tasks: Dict[str, Tuple[int, Callable]] = {
-    "db_inserts": (5, DbQueue.process_queue),
-    "anilist_update": (60 * 5, update_anilist_data),
-    "update_manga_chapter_guesses": (60 * 30, update_manga_chapter_guesses),
+    # "db_inserts": (5, DbQueue.process_queue),
+    # "anilist_update": (60 * 5, update_anilist_data),
+    # "update_manga_chapter_guesses": (60 * 30, update_manga_chapter_guesses),
     "mangadex_update": (60 * 60 * 24, update_mangadex_data),
     # "update_notifications": (60, send_new_update_notifications),
     # "ln_release_updates": (60 * 60 * 24, update_ln_releases)

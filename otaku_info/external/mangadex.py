@@ -65,6 +65,7 @@ def fetch_all_mangadex_items() -> List[MangadexItem]:
             for x in data["results"]
         ]
         page += 1
+        break  # TODO REMOVE
 
     mangadex_items.sort(key=lambda x: x.title)
     return mangadex_items

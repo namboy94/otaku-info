@@ -19,7 +19,7 @@ LICENSE"""
 
 from otaku_info.test.TestFramework import _TestFramework
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.utils.db.DbQueue import DbQueue
 from otaku_info.enums import MediaType, MediaSubType, ReleasingState, \
     ConsumingState, ListService
@@ -78,10 +78,10 @@ class TestDbQueue(_TestFramework):
         DbQueue.queue_media_item(*params)
 
         self.assertEqual(len(MediaItem.query.all()), 0)
-        self.assertEqual(len(MediaId.query.all()), 0)
+        self.assertEqual(len(MediaIdMappingquery.all()), 0)
         DbQueue.process_queue()
         self.assertEqual(len(MediaItem.query.all()), 1)
-        self.assertEqual(len(MediaId.query.all()), 2)
+        self.assertEqual(len(MediaIdMappingquery.all()), 2)
 
         # Check repeated inserts
         DbQueue.queue_media_item(*params)
@@ -90,7 +90,7 @@ class TestDbQueue(_TestFramework):
         DbQueue.process_queue()
 
         self.assertEqual(len(MediaItem.query.all()), 1)
-        self.assertEqual(len(MediaId.query.all()), 2)
+        self.assertEqual(len(MediaIdMappingquery.all()), 2)
         media_item: MediaItem = MediaItem.query.all()[0]
         self.assertEqual(media_item.english_title, "English")
         self.assertEqual(len(media_item.media_ids), 2)
@@ -100,7 +100,7 @@ class TestDbQueue(_TestFramework):
         DbQueue.queue_media_item(*params)
         DbQueue.process_queue()
         self.assertEqual(len(MediaItem.query.all()), 1)
-        self.assertEqual(len(MediaId.query.all()), 2)
+        self.assertEqual(len(MediaIdMappingquery.all()), 2)
         media_item: MediaItem = MediaItem.query.all()[0]
         self.assertEqual(media_item.english_title, "HAHA")
         self.assertEqual(len(media_item.media_ids), 2)
@@ -119,7 +119,7 @@ class TestDbQueue(_TestFramework):
         DbQueue.queue_media_item(*params)
         DbQueue.process_queue()
         self.assertEqual(len(MediaItem.query.all()), 1)
-        self.assertEqual(len(MediaId.query.all()), 4)
+        self.assertEqual(len(MediaIdMappingquery.all()), 4)
 
         media_item: MediaItem = MediaItem.query.all()[0]
         self.assertEqual(media_item.english_title, "LALA")
@@ -147,7 +147,7 @@ class TestDbQueue(_TestFramework):
         DbQueue.process_queue()
 
         self.assertEqual(len(MediaItem.query.all()), 1)
-        self.assertEqual(len(MediaId.query.all()), 2)
+        self.assertEqual(len(MediaIdMappingquery.all()), 2)
 
         params[2] = {ListService.ANILIST: "10"}
         DbQueue.queue_media_item(*params)
@@ -156,9 +156,9 @@ class TestDbQueue(_TestFramework):
         # TODO handles this more nicely
         # For example: Creating two media items
         self.assertEqual(len(MediaItem.query.all()), 1)
-        self.assertEqual(len(MediaId.query.all()), 2)
+        self.assertEqual(len(MediaIdMappingquery.all()), 2)
         anilist_id = \
-            MediaId.query.filter_by(service=ListService.ANILIST).first()
+            MediaIdMappingquery.filter_by(service=ListService.ANILIST).first()
         self.assertEqual(anilist_id.service_id, "1")
 
     def test_changing_media_subtype(self):
@@ -170,7 +170,7 @@ class TestDbQueue(_TestFramework):
 
         media_item: MediaItem = MediaItem.query.all()[0]
         self.assertEqual(media_item.media_subtype, MediaSubType.SPECIAL)
-        for media_id in MediaId.query.all():  # type: MediaId
+        for media_id in MediaIdMappingquery.all():  # type: MediaId
             self.assertEqual(media_id.media_subtype, MediaSubType.SPECIAL)
 
         params[0]["media_subtype"] = MediaSubType.OVA
@@ -181,7 +181,7 @@ class TestDbQueue(_TestFramework):
 
         # media_item = MediaItem.query.all()[0]
         # self.assertEqual(media_item.media_subtype, MediaSubType.OVA)
-        # for media_id in MediaId.query.all():  # type: MediaId
+        # for media_id in MediaIdMappingquery.all():  # type: MediaId
         #     self.assertEqual(media_id.media_subtype, MediaSubType.OVA)
 
         # Note: This has different bahviour on postgres than it does on sqlite

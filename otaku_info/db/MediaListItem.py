@@ -19,8 +19,6 @@ LICENSE"""
 
 from jerrycan.base import db
 from jerrycan.db.ModelMixin import NoIDModelMixin
-
-from otaku_info.db import MediaItem
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.enums import ListService, MediaType
@@ -43,22 +41,32 @@ class MediaListItem(NoIDModelMixin, db.Model):
     __tablename__ = "media_list_items"
     __table_args__ = (
         db.ForeignKeyConstraint(
-            ("service", "service_id", "media_type", "user_id"),
+            ("user_state_service", "user_state_service_id",
+             "user_state_media_type", "user_state_user_id"),
             (MediaUserState.service, MediaUserState.service_id,
              MediaUserState.media_type, MediaUserState.user_id)
         ),
         db.ForeignKeyConstraint(
-            ("service", "media_type", "user_id", "list_name"),
-            (MediaList.user_id, MediaList.service,
+            ("media_list_service", "media_list_media_type",
+             "media_list_user_id", "media_list_name"),
+            (MediaList.service, MediaList.media_type,
              MediaList.user_id, MediaList.name)
         )
     )
 
-    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
-    service_id: str = db.Column(db.String(255), primary_key=True)
-    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
-    user_id: int = db.Column(db.Integer, primary_key=True)
-    list_name: int = db.Column(db.String(255), primary_key=True)
+    user_state_service: ListService =\
+        db.Column(db.Enum(ListService), primary_key=True)
+    user_state_service_id: str = db.Column(db.String(255), primary_key=True)
+    user_state_media_type: MediaType = \
+        db.Column(db.Enum(MediaType), primary_key=True)
+    user_state_user_id: int = db.Column(db.Integer, primary_key=True)
+
+    media_list_service: ListService = \
+        db.Column(db.Enum(ListService), primary_key=True)
+    media_list_media_type: MediaType = \
+        db.Column(db.Enum(MediaType), primary_key=True)
+    media_list_user_id: int = db.Column(db.Integer, primary_key=True)
+    media_list_name: int = db.Column(db.String(255), primary_key=True)
 
     user_state: MediaUserState = db.relationship(
         "MediaUserState", back_populates="media_list_items"

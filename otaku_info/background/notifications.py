@@ -24,7 +24,7 @@ from jerrycan.db.User import User
 from otaku_info.enums import MediaType, MediaSubType
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaNotification import MediaNotification
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.NotificationSetting import NotificationSetting
 from otaku_info.wrappers.UpdateWrapper import UpdateWrapper
@@ -41,12 +41,12 @@ def send_new_update_notifications():
     user_states: List[MediaUserState] = MediaUserState.query\
         .options(
             db.joinedload(MediaUserState.media_id)
-              .subqueryload(MediaId.media_item)
+              .subqueryload(MediaIdMappingmedia_item)
               .subqueryload(MediaItem.media_ids)
         ) \
         .options(
             db.joinedload(MediaUserState.media_id)
-              .subqueryload(MediaId.chapter_guess)
+              .subqueryload(MediaIdMappingchapter_guess)
         ) \
         .options(
             db.joinedload(MediaUserState.user)

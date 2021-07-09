@@ -20,7 +20,7 @@ LICENSE"""
 from typing import List
 from jerrycan.base import db
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaListItem import MediaListItem
@@ -32,7 +32,7 @@ from otaku_info.db.LnRelease import LnRelease
 
 models: List[db.Model] = [
     MangaChapterGuess,
-    MediaId,
+    MediaIdMapping,
     MediaItem,
     MediaList,
     MediaListItem,

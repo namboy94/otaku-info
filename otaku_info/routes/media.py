@@ -22,7 +22,7 @@ from flask.blueprints import Blueprint
 from flask_login import current_user
 from jerrycan.base import db
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:
@@ -42,7 +42,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         """
         media_item: MediaItem = MediaItem.query\
             .options(db.joinedload(MediaItem.media_ids)
-                     .subqueryload(MediaId.media_user_states)
+                     .subqueryload(MediaIdMapping.media_user_states)
                      ).filter_by(id=media_item_id).first()
 
         if media_item is None:

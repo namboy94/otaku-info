@@ -25,7 +25,7 @@ from otaku_info.enums import MediaType, MediaSubType, ListService, \
     ReleasingState
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MediaListItem import MediaListItem
 from otaku_info.db.MediaUserState import MediaUserState
 
@@ -182,20 +182,20 @@ class UpdateWrapper:
                 db.joinedload(MediaList.media_list_items)
                   .subqueryload(MediaListItem.media_user_state)
                   .subqueryload(MediaUserState.media_id)
-                  .subqueryload(MediaId.chapter_guess)
+                  .subqueryload(MediaIdMappingchapter_guess)
             ) \
             .options(
                 db.joinedload(MediaList.media_list_items)
                   .subqueryload(MediaListItem.media_user_state)
                   .subqueryload(MediaUserState.media_id)
-                  .subqueryload(MediaId.media_item)
+                  .subqueryload(MediaIdMappingmedia_item)
                   .subqueryload(MediaItem.media_ids)
             ) \
             .options(
                 db.joinedload(MediaList.media_list_items)
                   .subqueryload(MediaListItem.media_user_state)
                   .subqueryload(MediaUserState.media_id)
-                  .subqueryload(MediaId.media_item)
+                  .subqueryload(MediaIdMappingmedia_item)
                   .subqueryload(MediaItem.ln_releases)
             ) \
             .all()

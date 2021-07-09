@@ -22,7 +22,7 @@ from jerrycan.base import db
 from jerrycan.db.User import User
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState, ConsumingState
@@ -35,7 +35,7 @@ class TestMediaUserState(_TestFramework):
     """
 
     def generate_sample_media_user_state(self) \
-            -> Tuple[MediaUserState, User, MediaItem, MediaId]:
+            -> Tuple[MediaUserState, User, MediaItem, MediaIdMapping]:
         """
         Generates a media user state
         :return: The media user state, user, media item and media id
@@ -51,7 +51,7 @@ class TestMediaUserState(_TestFramework):
             latest_release=None,
             releasing_state=ReleasingState.RELEASING
         )
-        media_id = MediaId(
+        media_id = MediaIdMapping(
             media_item=media_item,
             service_id="101177",
             service=ListService.ANILIST,
@@ -196,7 +196,7 @@ class TestMediaUserState(_TestFramework):
         media_id_kwargs["service"] = ListService.KITSU
         media_id_kwargs["media_type"] = media_id.media_type
         media_id_kwargs["media_subtype"] = media_id.media_subtype
-        new_media_id = MediaId(**media_id_kwargs)
+        new_media_id = MediaIdMapping(**media_id_kwargs)
         db.session.add(new_media_id)
         db.session.commit()
 

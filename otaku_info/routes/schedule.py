@@ -25,7 +25,7 @@ from flask.blueprints import Blueprint
 from flask_login import current_user, login_required
 from jerrycan.base import db
 from otaku_info.db.MediaUserState import MediaUserState
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:
@@ -46,7 +46,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         media_user_states: List[MediaUserState] = MediaUserState.query\
             .options(
                 db.joinedload(MediaUserState.media_id)
-                .subqueryload(MediaId.media_item)
+                .subqueryload(MediaIdMappingmedia_item)
             )\
             .filter_by(user_id=current_user.id)\
             .all()

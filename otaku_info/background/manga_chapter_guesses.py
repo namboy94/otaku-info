@@ -20,7 +20,7 @@ LICENSE"""
 import time
 from typing import List
 from jerrycan.base import db, app
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info.enums import MediaType, ListService, MediaSubType
 
@@ -33,15 +33,15 @@ def update_manga_chapter_guesses():
     start = time.time()
     app.logger.info("Starting update of manga chapter guesses")
 
-    anilist_ids: List[MediaId] = MediaId.query\
+    anilist_ids: List[MediaIdMapping] = MediaIdMappingquery\
         .filter_by(
             media_type=MediaType.MANGA,
             media_subtype=MediaSubType.MANGA,
             service=ListService.ANILIST
         ) \
-        .options(db.joinedload(MediaId.media_user_states)) \
-        .options(db.joinedload(MediaId.media_item)) \
-        .options(db.joinedload(MediaId.chapter_guess)) \
+        .options(db.joinedload(MediaIdMappingmedia_user_states)) \
+        .options(db.joinedload(MediaIdMappingmedia_item)) \
+        .options(db.joinedload(MediaIdMappingchapter_guess)) \
         .all()
 
     for anilist_id in anilist_ids:

@@ -40,7 +40,7 @@ class MediaIdMapping(NoIDModelMixin, db.Model):
 
     __tablename__ = "media_id_mappings"
     __table_args__ = (db.ForeignKeyConstraint(
-        ("service", "service_id", "media_type"),
+        ("parent_service", "parent_service_id", "media_type"),
         (MediaItem.service, MediaItem.service_id, MediaItem.media_type)
     ),)
 
@@ -53,7 +53,7 @@ class MediaIdMapping(NoIDModelMixin, db.Model):
     service_id: str = db.Column(db.String(255), nullable=False)
 
     media_item: MediaItem = db.relationship(
-        "MediaItem", back_populates="media_user_states"
+        "MediaItem", back_populates="id_mappings"
     )
 
     def service_url(self) -> str:

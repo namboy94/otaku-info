@@ -66,7 +66,7 @@ class MediaUserState(NoIDModelMixin, db.Model):
         = db.Column(db.Enum(ConsumingState), nullable=False)
 
     media_item: MediaItem = db.relationship(
-        "MediaItem", back_populates="media_user_states"
+        "MediaItem", back_populates="user_states"
     )
     user: User = db.relationship(
         "User",

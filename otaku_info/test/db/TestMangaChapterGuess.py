@@ -22,7 +22,7 @@ from unittest.mock import patch
 from jerrycan.base import db
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState
@@ -51,7 +51,7 @@ class TestMangaChapterGuess(_TestFramework):
             latest_release=None,
             releasing_state=ReleasingState.RELEASING
         )
-        media_id = MediaId(
+        media_id = MediaIdMapping(
             media_item=media_item,
             service_id="101177",
             service=ListService.ANILIST,
@@ -134,7 +134,7 @@ class TestMangaChapterGuess(_TestFramework):
         media_id_kwargs["service"] = ListService.ANIMEPLANET
         media_id_kwargs["media_type"] = media_id.media_type
         media_id_kwargs["media_subtype"] = media_id.media_subtype
-        new_media_id = MediaId(**media_id_kwargs)
+        new_media_id = MediaIdMapping(**media_id_kwargs)
         db.session.add(new_media_id)
         db.session.commit()
 
@@ -164,7 +164,7 @@ class TestMangaChapterGuess(_TestFramework):
         media_id_kwargs["service"] = ListService.ANIMEPLANET
         media_id_kwargs["media_type"] = media_id.media_type
         media_id_kwargs["media_subtype"] = media_id.media_subtype
-        new_media_id = MediaId(**media_id_kwargs)
+        new_media_id = MediaIdMapping(**media_id_kwargs)
         db.session.add(new_media_id)
         db.session.commit()
 

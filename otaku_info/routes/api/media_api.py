@@ -22,7 +22,7 @@ from flask.blueprints import Blueprint
 from jerrycan.routes.decorators import api
 from jerrycan.exceptions import ApiException
 from otaku_info.Config import Config
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, ListService
 
@@ -51,7 +51,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
 
         matching_ids: List[MediaItem] = [
             x for x in
-            MediaId.query
+            MediaIdMappingquery
             .filter_by(service_id=service_id, service=service).all()
             if x.media_item.media_type == media_type
         ]
@@ -63,7 +63,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
 
         id_mappings = {
             x.service.value: x.service_id
-            for x in MediaId.query.filter_by(media_item_id=media_item.id).all()
+            for x in MediaIdMappingquery.filter_by(media_item_id=media_item.id).all()
         }
         id_mappings["otaku_info"] = str(media_item.id)
 
@@ -75,7 +75,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         Dumps all the ID mappings currently stored in the database
         :return: None
         """
-        all_ids: List[MediaId] = MediaId.query.all()
+        all_ids: List[MediaIdMapping] = MediaIdMappingquery.all()
 
         item_map = {}
         for media_id in all_ids:

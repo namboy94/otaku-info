@@ -52,7 +52,7 @@ class MangaChapterGuess(NoIDModelMixin, db.Model):
     last_update: int = db.Column(db.Integer, nullable=False, default=0)
 
     media_item: MediaItem = db.relationship(
-        "MediaItem", back_populates="media_user_states"
+        "MediaItem", back_populates="chapter_guess"
     )
 
     def update_guess(self):

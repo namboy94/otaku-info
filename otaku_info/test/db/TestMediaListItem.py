@@ -22,7 +22,7 @@ from jerrycan.base import db
 from jerrycan.db.User import User
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaListItem import MediaListItem
@@ -55,7 +55,7 @@ class TestMediaListItem(_TestFramework):
             latest_release=None,
             releasing_state=ReleasingState.RELEASING
         )
-        media_id = MediaId(
+        media_id = MediaIdMapping(
             media_item=media_item,
             service_id="101177",
             service=ListService.ANILIST,

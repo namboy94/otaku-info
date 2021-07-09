@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.enums import MediaType, ListService
 from otaku_info.external.reddit import load_ln_releases
 from otaku_info.external.myanimelist import load_myanimelist_item
@@ -34,7 +34,7 @@ def update_ln_releases():
 
     mal_ids = [
         x.service_id for x in
-        MediaId.query.filter_by(
+        MediaIdMappingquery.filter_by(
             media_type=MediaType.MANGA,
             service=ListService.MYANIMELIST
         ).all()

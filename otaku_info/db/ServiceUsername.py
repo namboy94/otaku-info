@@ -28,23 +28,6 @@ class ServiceUsername(ModelMixin, db.Model):
     Database model that stores an external service username for a user
     """
 
-    __tablename__ = "service_usernames"
-    """
-    The name of the database table
-    """
-
-    __table_args__ = (
-        db.UniqueConstraint(
-            "user_id",
-            "username",
-            "service",
-            name="unique_service_username"
-        ),
-    )
-    """
-    Makes sure that objects that should be unique are unique
-    """
-
     def __init__(self, *args, **kwargs):
         """
         Initializes the Model
@@ -53,16 +36,18 @@ class ServiceUsername(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
+    __tablename__ = "service_usernames"
+
     user_id: int = db.Column(
         db.Integer,
         db.ForeignKey(
             "users.id", ondelete="CASCADE", onupdate="CASCADE"
         ),
-        nullable=False
+        primary_key=True
     )
-    """
-    The ID of the user associated with this service username
-    """
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
+
+    username: str = db.Column(db.String(255), nullable=False)
 
     user: User = db.relationship(
         "User",
@@ -70,16 +55,3 @@ class ServiceUsername(ModelMixin, db.Model):
             "service_usernames", lazy=True, cascade="all,delete"
         )
     )
-    """
-    The user associated with this service username
-    """
-
-    username: str = db.Column(db.String(255), nullable=False)
-    """
-    The service username
-    """
-
-    service: ListService = db.Column(db.Enum(ListService), nullable=False)
-    """
-    The external service this item is a username for
-    """

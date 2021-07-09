@@ -28,11 +28,6 @@ class NotificationSetting(ModelMixin, db.Model):
     Database model that stores notification settings for a user
     """
 
-    __tablename__ = "notification_settings"
-    """
-    The name of the database table
-    """
-
     def __init__(self, *args, **kwargs):
         """
         Initializes the Model
@@ -41,6 +36,8 @@ class NotificationSetting(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
+    __tablename__ = "notification_settings"
+
     user_id: int = db.Column(
         db.Integer,
         db.ForeignKey(
@@ -48,9 +45,10 @@ class NotificationSetting(ModelMixin, db.Model):
         ),
         nullable=False
     )
-    """
-    The ID of the user associated with this notification setting
-    """
+    notification_type: str = \
+        db.Column(db.Enum(NotificationType), nullable=False)
+    minimum_score: int = db.Column(db.Integer, default=0, nullable=False)
+    value: bool = db.Column(db.Boolean, nullable=False, default=False)
 
     user: User = db.relationship(
         "User",
@@ -58,22 +56,3 @@ class NotificationSetting(ModelMixin, db.Model):
             "notification_settings", lazy=True, cascade="all,delete"
         )
     )
-    """
-    The user associated with this notification setting
-    """
-
-    notification_type: str = \
-        db.Column(db.Enum(NotificationType), nullable=False)
-    """
-    The notification type
-    """
-
-    minimum_score: int = db.Column(db.Integer, default=0, nullable=False)
-    """
-    The minimum score for notification items
-    """
-
-    value: bool = db.Column(db.Boolean, nullable=False, default=False)
-    """
-    Whether or not the notification is active or not
-    """

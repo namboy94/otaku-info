@@ -18,16 +18,17 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import Optional, Dict
+from typing import Optional
 from jerrycan.base import app, db
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
-from otaku_info.enums import ListService, MediaType, MediaSubType
+from otaku_info.db.MediaIdMapping import MediaIdMapping
+from otaku_info.enums import ListService, MediaType
 from otaku_info.external.entities.AnimeListItem import AnimeListItem
 from otaku_info.external.mangadex import fetch_all_mangadex_items
 from otaku_info.external.anilist import load_anilist_info
 from otaku_info.external.myanimelist import load_myanimelist_item
-from otaku_info.utils.db.DbQueue import DbQueue
+from otaku_info.utils.object_conversion import anime_list_item_to_media_item, \
+    mangadex_item_to_media_item
 
 
 def update_mangadex_data():
@@ -39,65 +40,65 @@ def update_mangadex_data():
     start_time = time.time()
     app.logger.info("Starting Mangadex Update")
 
-    existing_media_items: Dict[str, MediaItem] = {
-        x.service_id: x.media_item
-        for x in MediaId.query
-        .filter_by(service=ListService.MANGADEX)
-        .options(db.joinedload(MediaId.media_item))
-        .all()
+    existing_items = MediaItem.query.all()
+    existing_ids = {
+        service: [x.id for x in existing_items if x.service == service]
+        for service in ListService
     }
 
     for mangadex_item in fetch_all_mangadex_items():
 
-        media_item_params = {
-            "media_type": MediaType.MANGA,
-            "media_subtype": MediaSubType.MANGA,
-            "english_title": mangadex_item.title,
-            "romaji_title": mangadex_item.title,
-            "cover_url": mangadex_item.cover_url,
-            "latest_release": mangadex_item.total_chapters,
-            "releasing_state": mangadex_item.releasing_state
-        }
-        service = ListService.MANGADEX
-        service_ids = mangadex_item.external_ids
-        service_ids[ListService.MANGADEX] = mangadex_item.mangadex_id
+        media_item = mangadex_item_to_media_item(mangadex_item)
+        app.logger.debug(f"Upserting mangadex item {media_item.title}")
+        media_item = db.session.merge(media_item)
 
-        # Skip existing items
-        existing_item = existing_media_items.get(mangadex_item.mangadex_id)
-        if existing_item is not None:
-            all_ids_in_db = True
-            for service in service_ids.keys():
-                if service not in existing_item.media_id_mapping.keys():
-                    all_ids_in_db = False
-            if all_ids_in_db:
+        ids = mangadex_item.external_ids
+        ids[ListService.MANGADEX] = mangadex_item.mangadex_id
+
+        items = [media_item]
+
+        for service in [ListService.ANILIST, ListService.MYANIMELIST]:
+
+            service_id = ids.get(service)
+            service_item: Optional[MediaItem] = None
+            existing = existing_ids[service]
+
+            if service_id is not None and service_id not in existing:
+
+                data: Optional[AnimeListItem] = None
+                if service == ListService.ANILIST:
+                    data = load_anilist_info(
+                        int(service_id), MediaType.MANGA
+                    )
+                elif service == ListService.MYANIMELIST:
+                    data = load_myanimelist_item(
+                        int(service_id), MediaType.MANGA
+                    )
+                if data is not None:
+                    anime_item = anime_list_item_to_media_item(data)
+                    title = anime_item.title
+                    app.logger.debug(f"Upserting {service.value} item {title}")
+                    anime_item = db.session.merge(anime_item)
+                    existing_ids[service].append(service_id)
+                    items.append(anime_item)
+
+        for item in items:
+            if item is None:
                 continue
 
-        better_item: Optional[AnimeListItem] = None
-        if ListService.ANILIST in service_ids:
-            better_item = load_anilist_info(
-                int(service_ids[ListService.ANILIST]),
-                MediaType.MANGA
-            )
-            service = ListService.ANILIST
-        elif ListService.MYANIMELIST in service_ids:
-            better_item = load_myanimelist_item(
-                int(service_ids[ListService.MYANIMELIST]),
-                MediaType.MANGA
-            )
-            service = ListService.MYANIMELIST
+            for service, _id in ids.items():
+                if service == item.service:
+                    continue
 
-        if better_item is not None:
-            media_item_params = {
-                "media_type": MediaType.MANGA,
-                "media_subtype": better_item.media_subtype,
-                "english_title": better_item.english_title,
-                "romaji_title": better_item.romaji_title,
-                "cover_url": better_item.cover_url,
-                "latest_release": better_item.latest_release,
-                "releasing_state": better_item.releasing_state
-            }
+                mapping = MediaIdMapping(
+                    media_item=item, service=service, service_id=_id
+                )
+                app.logger.debug(f"Upserting ID mapping "
+                                 f"{item.service.value}:{item.service_id} -> "
+                                 f"{service.value}:{_id}")
+                db.session.merge(mapping)
 
-        DbQueue.queue_media_item(media_item_params, service, service_ids)
+        db.session.commit()
 
     app.logger.info(f"Finished Mangadex Update in "
                     f"{time.time() - start_time}s.")

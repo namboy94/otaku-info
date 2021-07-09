@@ -18,13 +18,12 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict
 from jerrycan.base import app, db
 from otaku_info.enums import ListService, MediaType
-from otaku_info.utils.db.DbQueue import DbQueue
+from otaku_info.utils.object_conversion import anime_list_item_to_media_item, \
+    anilist_user_item_to_media_user_state
 from otaku_info.db.ServiceUsername import ServiceUsername
-from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.external.anilist import load_anilist
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
 
@@ -43,6 +42,16 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
         usernames = ServiceUsername.query\
             .filter_by(service=ListService.ANILIST).all()
 
+    from jerrycan.db.User import User
+    user = User(username="A", email="A", confirmed=True, confirmation_hash="", password_hash="")
+    db.session.add(user)
+    s = ServiceUsername(username="namboy94", user=user, service=ListService.ANILIST)
+    db.session.add(s)
+    db.session.commit()
+    usernames = [s]
+
+    ServiceUsername()
+
     anilist_data: Dict[
         ServiceUsername,
         Dict[MediaType, List[AnilistUserItem]]
@@ -57,60 +66,13 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
     for username, anilist_info in anilist_data.items():
         for media_type, anilist_items in anilist_info.items():
             for anilist_item in anilist_items:
-                media_item = anilist_item.generate_media_item()
-                media_item = db.session.merge(media_item)
-                user_state = anilist_item.generate_user_state(
-                    media_item, username.user_id
+                media_item = anime_list_item_to_media_item(anilist_item)
+                user_state = anilist_user_item_to_media_user_state(
+                    anilist_item, username.user_id
                 )
-                db.session.merge()
+                app.logger.debug(f"Upserting anilist item {media_item.title}")
+                db.session.merge(media_item)
+                db.session.merge(user_state)
+
     db.session.commit()
-
     app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
-
-def __perform_update(
-        anilist_item: AnilistUserItem,
-        username: ServiceUsername
-):
-    """
-    Inserts or updates the contents of a single anilist user item
-    :param anilist_item: The anilist user item
-    :param username: The service username
-    :return: None
-    """
-    media_item_params = {
-        "media_type": anilist_item.media_type,
-        "media_subtype": anilist_item.media_subtype,
-        "english_title": anilist_item.english_title,
-        "romaji_title": anilist_item.romaji_title,
-        "cover_url": anilist_item.cover_url,
-        "latest_release": anilist_item.latest_release,
-        "latest_volume_release": anilist_item.volumes,
-        "releasing_state": anilist_item.releasing_state,
-        "next_episode": anilist_item.next_episode,
-        "next_episode_airing_time": anilist_item.next_episode_airing_time
-    }
-    service_ids = {
-        ListService.ANILIST: str(anilist_item.id)
-    }
-    if anilist_item.myanimelist_id is not None:
-        service_ids[ListService.MYANIMELIST] = str(anilist_item.myanimelist_id)
-    user_state_params = {
-        "user_id": username.user_id,
-        "progress": anilist_item.progress,
-        "volume_progress": anilist_item.volume_progress,
-        "score": anilist_item.score,
-        "consuming_state": anilist_item.consuming_state
-    }
-    media_list_params = {
-        "user_id": username.user_id,
-        "name": anilist_item.list_name,
-        "service": ListService.ANILIST,
-        "media_type": anilist_item.media_type
-    }
-    DbQueue.queue_media_item(
-        media_item_params,
-        ListService.ANILIST,
-        service_ids,
-        user_state_params,
-        media_list_params
-    )

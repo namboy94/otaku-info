@@ -22,7 +22,6 @@ from datetime import datetime
 from typing import Dict, Optional, List, TYPE_CHECKING
 from jerrycan.base import db
 from jerrycan.db.ModelMixin import NoIDModelMixin
-from otaku_info.db import MediaUserState, MangaChapterGuess
 from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
     ListService
 from otaku_info.utils.urls import generate_service_url, \
@@ -30,6 +29,8 @@ from otaku_info.utils.urls import generate_service_url, \
 if TYPE_CHECKING:
     from otaku_info.db.MediaIdMapping import MediaIdMapping
     from otaku_info.db.LnRelease import LnRelease
+    from otaku_info.db.MediaUserState import MediaUserState
+    from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 
 
 class MediaItem(NoIDModelMixin, db.Model):
@@ -65,10 +66,10 @@ class MediaItem(NoIDModelMixin, db.Model):
     releasing_state: ReleasingState = \
         db.Column(db.Enum(ReleasingState), nullable=False)
 
-    media_id_mappings: List["MediaIdMapping"] = db.relationship(
+    id_mappings: List["MediaIdMapping"] = db.relationship(
         "MediaIdMapping", back_populates="media_item", cascade="all, delete"
     )
-    media_user_states: List["MediaUserState"] = db.relationship(
+    user_states: List["MediaUserState"] = db.relationship(
         "MediaUserState", back_populates="media_item", cascade="all, delete"
     )
     ln_releases: List["LnRelease"] = db.relationship(
@@ -77,7 +78,7 @@ class MediaItem(NoIDModelMixin, db.Model):
     chapter_guess: Optional["MangaChapterGuess"] = db.relationship(
         "MangaChapterGuess",
         uselist=False,
-        back_populates="media_id",
+        back_populates="media_item",
         cascade="all, delete"
     )
 

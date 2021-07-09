@@ -21,7 +21,7 @@ from threading import Lock
 from jerrycan.base import db, app
 from typing import List, Dict, Any, Tuple, Optional
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaListItem import MediaListItem
@@ -119,11 +119,11 @@ class DbQueue:
                 .options(db.joinedload(MediaItem.media_ids))
                 .all()
             }
-            media_ids: Dict[Tuple, MediaId] = {
+            media_ids: Dict[Tuple, MediaIdMapping] = {
                 x.identifier_tuple: x for x in
-                MediaId.query
-                .options(db.joinedload(MediaId.media_item))
-                .options(db.joinedload(MediaId.media_user_states))
+                MediaIdMappingquery
+                .options(db.joinedload(MediaIdMappingmedia_item))
+                .options(db.joinedload(MediaIdMappingmedia_user_states))
                 .all()
             }
             media_lists: Dict[Tuple, MediaList] = {
@@ -137,7 +137,7 @@ class DbQueue:
                 LnRelease.query.all()
             }
 
-            media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]] = {
+            media_item_mapped_ids: Dict[int, Dict[ListService, MediaIdMapping]] = {
                 x.id: {
                     y.service: y for y in x.media_ids
                 } for x in media_items.values()
@@ -156,9 +156,9 @@ class DbQueue:
     @staticmethod
     def __process_media_items(
             media_items: Dict[Tuple, MediaItem],
-            media_ids: Dict[Tuple, MediaId],
+            media_ids: Dict[Tuple, MediaIdMapping],
             media_lists: Dict[Tuple, MediaList],
-            media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]]
+            media_item_mapped_ids: Dict[int, Dict[ListService, MediaIdMapping]]
     ):
 
         while len(DbQueue.__media_item_queue) > 0:
@@ -210,7 +210,7 @@ class DbQueue:
     @staticmethod
     def __process_ln_releases(
             ln_releases: Dict[Tuple, LnRelease],
-            media_ids: Dict[Tuple, MediaId]
+            media_ids: Dict[Tuple, MediaIdMapping]
     ):
         """
         Adds and/or updates light novel releases
@@ -260,8 +260,8 @@ class DbQueue:
             base_service: ListService,
             service_ids: Dict[ListService, str],
             media_items: Dict[Tuple, MediaItem],
-            media_ids: Dict[Tuple, MediaId],
-            media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]]
+            media_ids: Dict[Tuple, MediaIdMapping],
+            media_item_mapped_ids: Dict[int, Dict[ListService, MediaIdMapping]]
     ) -> MediaItem:
         """
         Inserts or updates media items
@@ -314,8 +314,8 @@ class DbQueue:
             media_item: MediaItem,
             base_service: ListService,
             service_ids: Dict[ListService, str],
-            media_ids: Dict[Tuple, MediaId],
-            media_item_mapped_ids: Dict[int, Dict[ListService, MediaId]]
+            media_ids: Dict[Tuple, MediaIdMapping],
+            media_item_mapped_ids: Dict[int, Dict[ListService, MediaIdMapping]]
     ) -> MediaId:
         """
         Inserts/Updates media IDs
@@ -336,7 +336,7 @@ class DbQueue:
                 associated = existing_ids.get(service)
 
             if associated is None:
-                media_id = MediaId(
+                media_id = MediaIdMapping(
                     media_item=media_item,
                     service=service,
                     service_id=service_id

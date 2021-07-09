@@ -21,19 +21,19 @@ from typing import Tuple
 from jerrycan.base import db
 from sqlalchemy.exc import IntegrityError
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.enums import ListService, MediaType, MediaSubType, \
     ReleasingState
 from otaku_info.test.TestFramework import _TestFramework
 
 
-class TestMediaId(_TestFramework):
+class TestMediaIdMapping(_TestFramework):
     """
     Class that tests the MediaId database model
     """
 
     @staticmethod
-    def generate_sample_media_id() -> Tuple[MediaItem, MediaId]:
+    def generate_sample_media_id() -> Tuple[MediaItem, MediaIdMapping]:
         """
         Generates a media id
         :return: The media item and media id
@@ -48,7 +48,7 @@ class TestMediaId(_TestFramework):
             latest_release=None,
             releasing_state=ReleasingState.RELEASING
         )
-        media_id = MediaId(
+        media_id = MediaIdMapping(
             media_item=media_item,
             service_id="101177",
             service=ListService.ANILIST,
@@ -125,7 +125,7 @@ class TestMediaId(_TestFramework):
         :return: None
         """
         media_item, media_id = self.generate_sample_media_id()
-        media_id_2 = MediaId(
+        media_id_2 = MediaIdMapping(
             media_item=media_item,
             service_id="101178",
             service=ListService.KITSU
@@ -145,7 +145,7 @@ class TestMediaId(_TestFramework):
         :return: None
         """
         media_item, media_id = self.generate_sample_media_id()
-        media_id_2 = MediaId(
+        media_id_2 = MediaIdMapping(
             media_item=media_item,
             service_id="101178",
             service=ListService.KITSU
@@ -203,7 +203,7 @@ class TestMediaId(_TestFramework):
         standard_kwargs["media_subtype"] = media_id.media_subtype
 
         try:
-            duplicate = MediaId(**standard_kwargs)
+            duplicate = MediaIdMapping(**standard_kwargs)
             db.session.add(duplicate)
             db.session.commit()
             self.fail()
@@ -218,7 +218,7 @@ class TestMediaId(_TestFramework):
             kwargs = dict(standard_kwargs)
             kwargs[key] = value
             try:
-                generated = MediaId(**kwargs)
+                generated = MediaIdMapping(**kwargs)
                 db.session.add(generated)
                 db.session.commit()
                 if error_expected:

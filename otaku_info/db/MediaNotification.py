@@ -42,7 +42,7 @@ class MediaNotification(NoIDModelMixin, db.Model):
             ("service", "service_id", "media_type", "user_id"),
             (MediaUserState.service, MediaUserState.service_id,
              MediaUserState.media_type, MediaUserState.user_id)
-        )
+        ),
     )
 
     service: ListService = db.Column(db.Enum(ListService), primary_key=True)
