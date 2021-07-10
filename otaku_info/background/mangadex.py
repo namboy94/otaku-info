@@ -55,7 +55,7 @@ def update_mangadex_data():
     mangadex_items: List[Tuple[MediaItem, MangadexItem]] = []
     for mangadex_item in fetched_items:
         media_item = mangadex_item_to_media_item(mangadex_item)
-        app.logger.debug(f"Upserting mangadex item {media_item.title}")
+        app.logger.debug(f"Upserting mangadex item {media_item.english_title}")
         media_item = db.session.merge(media_item)
         __add_id_mappings(media_item, mangadex_item)
         mangadex_items.append((media_item, mangadex_item))
@@ -114,7 +114,7 @@ def __add_id_mappings(media_item: MediaItem, mangadex_item: MangadexItem):
             parent_service=media_item.service,
             parent_service_id=media_item.service_id,
             media_type=media_item.media_type,
-            service=mangadex_item,
+            service=service,
             service_id=_id
         )
         app.logger.debug(f"Upserting ID mapping "

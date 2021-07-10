@@ -21,12 +21,12 @@ import re
 from datetime import datetime
 from typing import Optional
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, ListService
 
 
-class LnRelease(NoIDModelMixin, db.Model):
+class LnRelease(ModelMixin, db.Model):
     """
     Database model that keeps track of light novel releases
     """

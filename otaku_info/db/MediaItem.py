@@ -21,7 +21,7 @@ from flask import url_for
 from datetime import datetime
 from typing import Dict, Optional, List, TYPE_CHECKING
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.enums import ReleasingState, MediaType, MediaSubType, \
     ListService
 from otaku_info.utils.urls import generate_service_url, \
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from otaku_info.db.MangaChapterGuess import MangaChapterGuess
 
 
-class MediaItem(NoIDModelMixin, db.Model):
+class MediaItem(ModelMixin, db.Model):
     """
     Database model for media items.
     These model a representation of a series specific to one list service

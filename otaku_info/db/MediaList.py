@@ -20,13 +20,13 @@ LICENSE"""
 from typing import List, TYPE_CHECKING
 from jerrycan.base import db
 from jerrycan.db.User import User
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.enums import ListService, MediaType
 if TYPE_CHECKING:
     from otaku_info.db.MediaListItem import MediaListItem
 
 
-class MediaList(NoIDModelMixin, db.Model):
+class MediaList(ModelMixin, db.Model):
     """
     Database model for user-specific media lists.
     """

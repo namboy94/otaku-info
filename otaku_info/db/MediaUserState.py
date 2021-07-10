@@ -20,7 +20,7 @@ LICENSE"""
 from typing import Optional, TYPE_CHECKING, List
 from jerrycan.base import db
 from jerrycan.db.User import User
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import ConsumingState, ListService, MediaType
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from otaku_info.db.MediaListItem import MediaListItem
 
 
-class MediaUserState(NoIDModelMixin, db.Model):
+class MediaUserState(ModelMixin, db.Model):
     """
     Database model that keeps track of a user's entries on external services
     for a media item

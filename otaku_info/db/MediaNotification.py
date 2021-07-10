@@ -18,12 +18,12 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.enums import ListService, MediaType
 
 
-class MediaNotification(NoIDModelMixin, db.Model):
+class MediaNotification(ModelMixin, db.Model):
     """
     Database model that stores a media notification for a user
     """

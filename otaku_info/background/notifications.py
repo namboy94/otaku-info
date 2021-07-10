@@ -18,9 +18,9 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from jerrycan.base import db, app
-from otaku_info.enums import MediaType, MediaSubType
+from otaku_info.enums import MediaType, MediaSubType, NotificationType
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaNotification import MediaNotification
 from otaku_info.db.NotificationSetting import NotificationSetting
@@ -38,14 +38,25 @@ def send_new_update_notifications():
     user_states: List[MediaUserState] = MediaUserState.query.options(
         db.joinedload(MediaUserState.media_notification)
     ).all()
-    notification_settings: Dict[int, NotificationSetting] = {
-        x.user_id: x
+
+    notification_settings: Dict[
+        Tuple[int, NotificationType],
+        NotificationSetting
+    ] = {
+        (x.user_id, x.notification_type): x
         for x in NotificationSetting.query.all()
     }
 
     for user_state in user_states:
 
-        settings = notification_settings.get(user_state.user_id)
+        target_type = {
+            MediaType.ANIME: NotificationType.NEW_ANIME_EPISODES,
+            MediaType.MANGA: NotificationType.NEW_MANGA_CHAPTERS
+        }.get(user_state.media_type)
+
+        settings = notification_settings.get((
+            user_state.user_id, target_type
+        ))
         if settings is None or not settings.value:
             continue
         else:
@@ -94,7 +105,7 @@ def handle_notification(
             or settings.minimum_score == 0
 
         if show_update:
-            media_item = media_user_state.media_id.media_item
+            media_item = media_user_state.media_item
             if media_item.media_type == MediaType.ANIME:
                 keyword = "Episode"
             elif media_item.media_subtype == MediaSubType.NOVEL:

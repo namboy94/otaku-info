@@ -18,12 +18,12 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, ListService
 
 
-class MangaChapterGuess(NoIDModelMixin, db.Model):
+class MangaChapterGuess(ModelMixin, db.Model):
     """
     Database model that keeps track of manga chapter guesses.
     """

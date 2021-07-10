@@ -79,8 +79,8 @@ def mangadex_item_to_media_item(mangadex_item: MangadexItem) -> MediaItem:
         service_id=mangadex_item.mangadex_id,
         media_type=MediaType.MANGA,
         media_subtype=MediaSubType.MANGA,
-        english_title=mangadex_item.title,
-        romaji_title=mangadex_item.title,
+        english_title=mangadex_item.english_title,
+        romaji_title=mangadex_item.romaji_title,
         cover_url=mangadex_item.cover_url,
         latest_release=mangadex_item.total_chapters,
         releasing_state=mangadex_item.releasing_state

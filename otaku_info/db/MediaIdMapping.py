@@ -18,14 +18,14 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.enums import ListService, MediaType
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.utils.urls import generate_service_icon_url,\
     generate_service_url
 
 
-class MediaIdMapping(NoIDModelMixin, db.Model):
+class MediaIdMapping(ModelMixin, db.Model):
     """
     Database model to map media IDs to each other across services
     """

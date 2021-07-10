@@ -19,11 +19,11 @@ LICENSE"""
 
 from jerrycan.base import db
 from jerrycan.db.User import User
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.enums import ListService
 
 
-class ServiceUsername(NoIDModelMixin, db.Model):
+class ServiceUsername(ModelMixin, db.Model):
     """
     Database model that stores an external service username for a user
     """

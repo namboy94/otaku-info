@@ -18,6 +18,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import json
+import logging
+
 import requests
 from jerrycan.base import app
 from typing import Optional, List, Dict, Any, Union
@@ -31,7 +33,7 @@ def fetch_all_mangadex_items() -> List[MangadexItem]:
     """
     url = "https://api.mangadex.org/manga"
     items: List[Dict[str, Any]] = []
-    mangadex_items = []
+    mangadex_items: List[MangadexItem] = []
     page = 0
     last_date = "1970-01-01T00:00:00"
 
@@ -60,13 +62,15 @@ def fetch_all_mangadex_items() -> List[MangadexItem]:
             break
 
         items += data["results"]
-        mangadex_items += [
-            MangadexItem.from_json(x["data"])
+        new_items = [
+            MangadexItem.from_json(x)
             for x in data["results"]
         ]
+        add_covers(new_items)
+        mangadex_items += new_items
         page += 1
 
-    mangadex_items.sort(key=lambda x: x.title)
+    mangadex_items.sort(key=lambda x: x.english_title)
     return mangadex_items
 
 
@@ -82,3 +86,34 @@ def fetch_mangadex_item(mangadex_id: str) -> Optional[MangadexItem]:
 
     data = json.loads(response.text)["results"][0]["data"]
     return MangadexItem.from_json(data)
+
+
+def add_covers(mangadex_items: List[MangadexItem]):
+    """
+    Adds cover URLs to mangadex items
+    :param mangadex_items:
+    :return:
+    """
+    url = "https://api.mangadex.org/cover"
+    ids = [
+        x.cover_url
+        for x in mangadex_items
+        if x.cover_url is not None and len(x.cover_url) == 36
+    ]
+    params = {"ids[]": [ids], "limit": 100}
+    response = requests.get(url, params=params)
+    data = json.loads(response.text)
+    results = data["results"]
+
+    covers = {}
+    for result in results:
+        relations = {x["type"]: x["id"] for x in result["relationships"]}
+        covers[relations["manga"]] = result["data"]["attributes"]["fileName"]
+
+    for mangadex_item in mangadex_items:
+        filename = covers.get(mangadex_item.mangadex_id)
+        if filename is None:
+            mangadex_item.cover_url = ""
+        else:
+            mangadex_item.cover_url = f"https://uploads.mangadex.org/covers/" \
+                                      f"{mangadex_item.mangadex_id}/{filename}"

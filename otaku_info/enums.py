@@ -40,6 +40,7 @@ class MediaSubType(Enum):
     ONA = "ona"
     MUSIC = "music"
     MANGA = "manga"
+    MANHWA = "manhwa"
     NOVEL = "novel"
     ONE_SHOT = "one_shot"
     UNKNOWN = "unknown"

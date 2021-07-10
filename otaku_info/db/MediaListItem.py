@@ -18,13 +18,13 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 from jerrycan.base import db
-from jerrycan.db.ModelMixin import NoIDModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.enums import ListService, MediaType
 
 
-class MediaListItem(NoIDModelMixin, db.Model):
+class MediaListItem(ModelMixin, db.Model):
     """
     Database model for media list items.
     This model maps MediaLists and MediaUserStates

@@ -20,7 +20,10 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 {% extends "core/base_layout.html" %}
 {% block head %}
     <meta property="og:title" content="{{ media_item.title }}">
+    <meta property="og:site_name" content="otaku-info">
+    <meta property="og:type" content="website">
     <meta property="og:image" content="{{ media_item.cover_url }}">
+    <meta property="og:url" content="{{ media_item.own_url }}">
 {% endblock %}
 
 {% block body %}
@@ -38,7 +41,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
             </div>
             <div class="columns has-text-centered">
                 <div class="column">
-                    {% for id_mapping in media_item.id_mappings.values() %}
+                    {% for id_mapping in [media_item] + media_item.id_mappings %}
                         <span style="padding-right:3px; padding-top: 3px; display:inline-block;">
                             <a href="{{ id_mapping.service_url }}">
                                 <img class="media-service-image"
@@ -89,6 +92,10 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
                         <tr>
                             <td>Progress</td>
                             <td>{{ user_state.progress }}</td>
+                        </tr>
+                        <tr>
+                            <td>Score</td>
+                            <td>{{ user_state.score }}</td>
                         </tr>
                     </tbody>
                 </table>

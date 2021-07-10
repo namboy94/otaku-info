@@ -43,10 +43,10 @@ class NotificationSetting(ModelMixin, db.Model):
         db.ForeignKey(
             "users.id", ondelete="CASCADE", onupdate="CASCADE"
         ),
-        nullable=False
+        primary_key=True
     )
     notification_type: str = \
-        db.Column(db.Enum(NotificationType), nullable=False)
+        db.Column(db.Enum(NotificationType), primary_key=True)
     minimum_score: int = db.Column(db.Integer, default=0, nullable=False)
     value: bool = db.Column(db.Boolean, nullable=False, default=False)
 

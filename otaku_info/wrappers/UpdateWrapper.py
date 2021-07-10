@@ -21,8 +21,6 @@ from datetime import datetime
 from typing import List, Optional
 from jerrycan.base import db
 from jerrycan.db.User import User
-
-from otaku_info.db import MediaIdMapping
 from otaku_info.enums import MediaType, MediaSubType, ListService, \
     ReleasingState
 from otaku_info.db.MediaList import MediaList
@@ -80,6 +78,7 @@ class UpdateWrapper:
         """
         media_type = self.media_item.media_type
         subtype = self.media_item.media_subtype
+
         if media_type == MediaType.MANGA and subtype == MediaSubType.NOVEL:
             now = datetime.utcnow()
             volumes = [
@@ -97,6 +96,11 @@ class UpdateWrapper:
                 latest = self.media_item.latest_release
             else:
                 latest = chapter_guess.guess
+        elif media_type == MediaType.ANIME \
+                and self.media_item.releasing_state == \
+                ReleasingState.RELEASING \
+                and self.media_item.next_episode is not None:
+            latest = max(0, self.media_item.next_episode - 1)
         else:
             latest = self.media_item.latest_release
         if latest is None:
