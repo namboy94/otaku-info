@@ -20,12 +20,9 @@ LICENSE"""
 import time
 from typing import Dict, List
 from jerrycan.base import db, app
-from jerrycan.db.User import User
 from otaku_info.enums import MediaType, MediaSubType
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaNotification import MediaNotification
-from otaku_info.db.MediaIdMapping import MediaIdMapping
-from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.NotificationSetting import NotificationSetting
 from otaku_info.wrappers.UpdateWrapper import UpdateWrapper
 
@@ -38,23 +35,9 @@ def send_new_update_notifications():
     start = time.time()
     app.logger.info("Starting check for notifications")
 
-    user_states: List[MediaUserState] = MediaUserState.query\
-        .options(
-            db.joinedload(MediaUserState.media_id)
-              .subqueryload(MediaIdMappingmedia_item)
-              .subqueryload(MediaItem.media_ids)
-        ) \
-        .options(
-            db.joinedload(MediaUserState.media_id)
-              .subqueryload(MediaIdMappingchapter_guess)
-        ) \
-        .options(
-            db.joinedload(MediaUserState.user)
-              .subqueryload(User.telegram_chat_id)
-        ) \
-        .options(db.joinedload(MediaUserState.media_notification)) \
-        .all()
-
+    user_states: List[MediaUserState] = MediaUserState.query.options(
+        db.joinedload(MediaUserState.media_notification)
+    ).all()
     notification_settings: Dict[int, NotificationSetting] = {
         x.user_id: x
         for x in NotificationSetting.query.all()
@@ -91,7 +74,11 @@ def handle_notification(
     notification = media_user_state.media_notification
     if notification is None:
         notification = MediaNotification(
-            media_user_state=media_user_state, last_update=update.latest
+            service=media_user_state.service,
+            service_id=media_user_state.service_id,
+            media_type=media_user_state.media_type,
+            user_id=media_user_state.user_id,
+            last_update=update.latest
         )
         db.session.add(notification)
 
@@ -101,8 +88,12 @@ def handle_notification(
     if notification.last_update < update.latest:
         notification.last_update = update.latest
 
-        if update.score is not None and update.score >= settings.minimum_score:
+        show_update = \
+            (update.score is not None
+             and update.score >= settings.minimum_score) \
+            or settings.minimum_score == 0
 
+        if show_update:
             media_item = media_user_state.media_id.media_item
             if media_item.media_type == MediaType.ANIME:
                 keyword = "Episode"

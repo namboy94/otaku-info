@@ -21,11 +21,12 @@ from datetime import datetime
 from typing import List, Optional
 from jerrycan.base import db
 from jerrycan.db.User import User
+
+from otaku_info.db import MediaIdMapping
 from otaku_info.enums import MediaType, MediaSubType, ListService, \
     ReleasingState
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaItem import MediaItem
-from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.db.MediaListItem import MediaListItem
 from otaku_info.db.MediaUserState import MediaUserState
 
@@ -43,11 +44,12 @@ class UpdateWrapper:
                                  that all relations have been loaded already.
         """
         self.user_state = media_user_state
-        self.title = self.user_state.media_id.media_item.title
-        self.cover_url = self.user_state.media_id.media_item.cover_url
-        self.url = self.user_state.media_id.media_item.own_url
-        self.related_ids = self.user_state.media_id.media_item.media_ids
-        self.related_ids.sort(key=lambda x: x.service.value)
+        self.media_item = self.user_state.media_item
+        self.title = self.media_item.title
+        self.cover_url = self.media_item.cover_url
+        self.url = self.media_item.own_url
+        self.related_ids = list(self.media_item.ids.values())
+        self.related_ids.sort(key=lambda x: x.service.name)
 
         self.score = self.user_state.score
         self.progress = self.calculate_progress()
@@ -62,8 +64,8 @@ class UpdateWrapper:
         """
         :return: The user's current progress
         """
-        media_type = self.user_state.media_id.media_type
-        subtype = self.user_state.media_id.media_item.media_subtype
+        media_type = self.media_item.media_type
+        subtype = self.media_item.media_subtype
         if media_type == MediaType.MANGA and subtype == MediaSubType.NOVEL:
             progress = self.user_state.volume_progress
         else:
@@ -76,28 +78,27 @@ class UpdateWrapper:
         """
         :return: The latest release number
         """
-        media_item = self.user_state.media_id.media_item
-        media_type = media_item.media_type
-        subtype = self.user_state.media_id.media_item.media_subtype
+        media_type = self.media_item.media_type
+        subtype = self.media_item.media_subtype
         if media_type == MediaType.MANGA and subtype == MediaSubType.NOVEL:
             now = datetime.utcnow()
             volumes = [
                 x.volume_number
-                for x in self.user_state.media_id.media_item.ln_releases
+                for x in self.media_item.ln_releases
                 if x.release_date < now
             ]
             if len(volumes) == 0:
-                latest = media_item.latest_volume_release
+                latest = self.media_item.latest_volume_release
             else:
                 latest = max(volumes)
         elif media_type == MediaType.MANGA:
-            chapter_guess = self.user_state.media_id.chapter_guess
+            chapter_guess = self.media_item.chapter_guess
             if chapter_guess is None:
-                latest = self.user_state.media_id.media_item.latest_release
+                latest = self.media_item.latest_release
             else:
                 latest = chapter_guess.guess
         else:
-            latest = self.user_state.media_id.media_item.latest_release
+            latest = self.media_item.latest_release
         if latest is None:
             latest = 0
         return latest
@@ -125,9 +126,9 @@ class UpdateWrapper:
         """
         updates = []
         for media_list in media_lists:
-            for media_list_item in media_list.media_list_items:
-                user_state = media_list_item.media_user_state
-                media_item = user_state.media_id.media_item
+            for list_item in media_list.list_items:
+                user_state = list_item.user_state
+                media_item = user_state.media_item
                 subtype = media_item.media_subtype
                 state = media_item.releasing_state
                 if not include_complete and state == ReleasingState.FINISHED:
@@ -179,23 +180,21 @@ class UpdateWrapper:
                 media_type=media_type
             ) \
             .options(
-                db.joinedload(MediaList.media_list_items)
-                  .subqueryload(MediaListItem.media_user_state)
-                  .subqueryload(MediaUserState.media_id)
-                  .subqueryload(MediaIdMappingchapter_guess)
+                db.joinedload(MediaList.list_items)
+                  .subqueryload(MediaListItem.user_state)
+                  .subqueryload(MediaUserState.media_item)
+                  .subqueryload(MediaItem.chapter_guess)
             ) \
             .options(
-                db.joinedload(MediaList.media_list_items)
-                  .subqueryload(MediaListItem.media_user_state)
-                  .subqueryload(MediaUserState.media_id)
-                  .subqueryload(MediaIdMappingmedia_item)
-                  .subqueryload(MediaItem.media_ids)
+                db.joinedload(MediaList.list_items)
+                  .subqueryload(MediaListItem.user_state)
+                  .subqueryload(MediaUserState.media_item)
+                  .subqueryload(MediaItem.id_mappings)
             ) \
             .options(
-                db.joinedload(MediaList.media_list_items)
-                  .subqueryload(MediaListItem.media_user_state)
-                  .subqueryload(MediaUserState.media_id)
-                  .subqueryload(MediaIdMappingmedia_item)
+                db.joinedload(MediaList.list_items)
+                  .subqueryload(MediaListItem.user_state)
+                  .subqueryload(MediaUserState.media_item)
                   .subqueryload(MediaItem.ln_releases)
             ) \
             .all()

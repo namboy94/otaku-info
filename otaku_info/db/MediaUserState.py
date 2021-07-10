@@ -25,7 +25,7 @@ from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import ConsumingState, ListService, MediaType
 if TYPE_CHECKING:
     from otaku_info.db.MediaNotification import MediaNotification
-    from otaku_info.db import MediaListItem
+    from otaku_info.db.MediaListItem import MediaListItem
 
 
 class MediaUserState(NoIDModelMixin, db.Model):

@@ -31,15 +31,19 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
         <div class="column is-4">
             <div class="columns has-text-centered">
                 <div class="column">
-                <img class="media-cover" src="{{ media_item.cover_url }}" alt="{{ media_item.title }}">
-                    </div>
+                    <img class="media-cover"
+                         src="{{ media_item.cover_url }}"
+                         alt="{{ media_item.title }}">
+                </div>
             </div>
             <div class="columns has-text-centered">
                 <div class="column">
-                    {% for media_id in media_item.media_ids %}
+                    {% for id_mapping in media_item.id_mappings.values() %}
                         <span style="padding-right:3px; padding-top: 3px; display:inline-block;">
-                            <a href="{{ media_id.service_url }}">
-                                <img class="media-service-image" src="{{ media_id.service_icon }}" alt="{{ media_id.service.value }}"/>
+                            <a href="{{ id_mapping.service_url }}">
+                                <img class="media-service-image"
+                                     src="{{ id_mapping.service_icon }}"
+                                     alt="{{ id_mapping.service.value }}"/>
                             </a>
                         </span>
                     {% endfor %}
@@ -78,8 +82,8 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
                 </tbody>
             </table>
             <hr>
-            {% for user_state in media_user_states %}
-                <h3>{{ user_state.media_id.service.value.title() }}</h3>
+            {% if user_state is not none %}
+                <h3>{{ user_state.service.value.title() }}</h3>
                     <table class="table">
                     <tbody>
                         <tr>
@@ -88,7 +92,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
                         </tr>
                     </tbody>
                 </table>
-            {% endfor %}
+            {% endif %}
         </div>
     </div>
 {% endblock %}

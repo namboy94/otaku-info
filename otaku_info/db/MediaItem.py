@@ -116,14 +116,23 @@ class MediaItem(NoIDModelMixin, db.Model):
             return None
 
     @property
-    def related_ids(self) -> Dict[ListService, str]:
+    def ids(self) -> Dict[ListService, "MediaIdMapping"]:
         """
         :return: A dictionary mapping list services to IDs for this media item
         """
-        return {
-            x.secondary_media_item.service: x.secondary_media_item.service_id
-            for x in self.media_id_mappings
+        from otaku_info.db.MediaIdMapping import MediaIdMapping
+        related = {
+            x.service: x
+            for x in self.id_mappings
         }
+        related[self.service] = MediaIdMapping(
+            service=self.service,
+            service_id=self.service_id,
+            media_type=self.media_type,
+            parent_service=self.service,
+            parent_service_id=self.service_id
+        )
+        return related
 
     @property
     def title(self) -> str:
@@ -140,7 +149,12 @@ class MediaItem(NoIDModelMixin, db.Model):
         """
         :return: The URL to the item's page on the otaku-info site
         """
-        return url_for("media.media", media_item_id=self.id)
+        return url_for(
+            "media.media",
+            service=self.service.value,
+            service_id=self.service_id,
+            media_type=self.media_type.value
+        )
 
     @property
     def next_episode_datetime(self) -> Optional[datetime]:

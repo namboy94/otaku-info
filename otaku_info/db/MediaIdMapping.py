@@ -56,6 +56,7 @@ class MediaIdMapping(NoIDModelMixin, db.Model):
         "MediaItem", back_populates="id_mappings"
     )
 
+    @property
     def service_url(self) -> str:
         """
         :return: The URL to the series for the given service

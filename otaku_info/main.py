@@ -23,7 +23,7 @@ from jerrycan.wsgi import start_server
 from otaku_info import sentry_dsn, root_path
 from otaku_info.background import bg_tasks
 from otaku_info.Config import Config
-# from otaku_info.routes import blueprint_generators
+from otaku_info.routes import blueprint_generators
 from otaku_info.db import models
 
 
@@ -39,7 +39,7 @@ def main():
         root_path,
         Config,
         models,
-        []
+        blueprint_generators
     )
 
     start_server(Config, bg_tasks)

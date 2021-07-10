@@ -17,12 +17,10 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-import time
 from jerrycan.base import db
 from jerrycan.db.ModelMixin import NoIDModelMixin
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, ListService
-from otaku_info.external.anilist import guess_latest_manga_chapter
 
 
 class MangaChapterGuess(NoIDModelMixin, db.Model):
@@ -54,16 +52,3 @@ class MangaChapterGuess(NoIDModelMixin, db.Model):
     media_item: MediaItem = db.relationship(
         "MediaItem", back_populates="chapter_guess"
     )
-
-    def update_guess(self):
-        """
-        Updates the manga chapter guess
-        (if the latest guess is older than an hour)
-        :return: None
-        """
-        delta = time.time() - self.last_update
-        if delta > 60 * 60:
-            self.last_update = int(time.time())
-            self.guess = guess_latest_manga_chapter(
-                int(self.media_id.service_id)
-            )

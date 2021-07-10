@@ -21,8 +21,11 @@ from flask import render_template, abort
 from flask.blueprints import Blueprint
 from flask_login import current_user
 from jerrycan.base import db
+
+from otaku_info.db import MediaUserState
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaIdMapping import MediaIdMapping
+from otaku_info.enums import ListService, MediaType
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:
@@ -33,37 +36,39 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
     """
     blueprint = Blueprint(blueprint_name, __name__)
 
-    @blueprint.route("/media/<media_item_id>", methods=["GET"])
-    def media(media_item_id: int):
+    @blueprint.route(
+        f"/media/<service>/<media_type>/<service_id>",
+        methods=["GET"]
+    )
+    def media(service: str, media_type: str, service_id: str):
         """
         Displays information on a media item
-        :param media_item_id: The ID of the media item
-        :return: None
+        :param service: The service of the media item
+        :param media_type: The media type of the item
+        :param service_id: The service ID of the item
+        :return: The page displaying information on the media item
         """
-        media_item: MediaItem = MediaItem.query\
-            .options(db.joinedload(MediaItem.media_ids)
-                     .subqueryload(MediaIdMapping.media_user_states)
-                     ).filter_by(id=media_item_id).first()
-
+        media_item: MediaItem = MediaItem.query.filter_by(
+            service=ListService(service),
+            media_type=MediaType(media_type),
+            service_id=service_id
+        ).first()
         if media_item is None:
             abort(404)
 
-        if current_user is not None:
-            media_user_states = []
-            for media_id in media_item.media_ids:
-                user_states = [
-                    x for x in media_id.media_user_states
-                    if x.user_id == current_user.id
-                ]
-                media_user_states += user_states
-            media_user_states.sort(key=lambda x: x.media_id.service.value)
-        else:
-            media_user_states = []
+        user_state = None
+        if current_user.is_authenticated:
+            user_state = MediaUserState.query.filter_by(
+                service=ListService(service),
+                media_type=MediaType(media_type),
+                service_id=service_id,
+                user_id=current_user.id
+            ).first()
 
         return render_template(
             "media/media.html",
             media_item=media_item,
-            media_user_states=media_user_states
+            user_state=user_state
         )
 
     return blueprint

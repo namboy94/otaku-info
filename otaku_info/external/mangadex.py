@@ -20,7 +20,7 @@ LICENSE"""
 import json
 import requests
 from jerrycan.base import app
-from typing import Optional, List
+from typing import Optional, List, Dict, Any, Union
 from otaku_info.external.entities.MangadexItem import MangadexItem
 
 
@@ -30,13 +30,13 @@ def fetch_all_mangadex_items() -> List[MangadexItem]:
     :return: The mangadex items
     """
     url = "https://api.mangadex.org/manga"
-    items = []
+    items: List[Dict[str, Any]] = []
     mangadex_items = []
     page = 0
     last_date = "1970-01-01T00:00:00"
 
     while True:
-        params = {
+        params: Dict[str, Union[int, str]] = {
             "createdAtSince": last_date,
             "order[createdAt]": "asc",
             "limit": 100,

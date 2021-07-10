@@ -40,9 +40,13 @@ def update_mangadex_data():
     start_time = time.time()
     app.logger.info("Starting Mangadex Update")
 
-    existing_items = MediaItem.query.all()
-    existing_ids = {
-        service: [x.id for x in existing_items if x.service == service]
+    _existing_items = MediaItem.query.all()
+    existing_items = {
+        service: {
+            x.service_id: x
+            for x in _existing_items
+            if x.service == service
+        }
         for service in ListService
     }
 
@@ -57,30 +61,33 @@ def update_mangadex_data():
 
         items = [media_item]
 
-        for service in [ListService.ANILIST, ListService.MYANIMELIST]:
+        for service in [ListService.ANILIST]:  # ListService.MYANIMELIST
 
             service_id = ids.get(service)
-            service_item: Optional[MediaItem] = None
-            existing = existing_ids[service]
+            existing = existing_items[service].get(service_id)
 
-            if service_id is not None and service_id not in existing:
+            if service_id is None:
+                continue
+            if existing is not None:
+                items.append(existing)
+                continue
 
-                data: Optional[AnimeListItem] = None
-                if service == ListService.ANILIST:
-                    data = load_anilist_info(
-                        int(service_id), MediaType.MANGA
-                    )
-                elif service == ListService.MYANIMELIST:
-                    data = load_myanimelist_item(
-                        int(service_id), MediaType.MANGA
-                    )
-                if data is not None:
-                    anime_item = anime_list_item_to_media_item(data)
-                    title = anime_item.title
-                    app.logger.debug(f"Upserting {service.value} item {title}")
-                    anime_item = db.session.merge(anime_item)
-                    existing_ids[service].append(service_id)
-                    items.append(anime_item)
+            data: Optional[AnimeListItem] = None
+            if service == ListService.ANILIST:
+                data = load_anilist_info(
+                    int(service_id), MediaType.MANGA
+                )
+            elif service == ListService.MYANIMELIST:
+                data = load_myanimelist_item(
+                    int(service_id), MediaType.MANGA
+                )
+            if data is not None:
+                anime_item = anime_list_item_to_media_item(data)
+                title = anime_item.title
+                app.logger.debug(f"Upserting {service.value} item {title}")
+                anime_item = db.session.merge(anime_item)
+                existing_items[service][service_id] = anime_item
+                items.append(anime_item)
 
         for item in items:
             if item is None:
@@ -91,7 +98,11 @@ def update_mangadex_data():
                     continue
 
                 mapping = MediaIdMapping(
-                    media_item=item, service=service, service_id=_id
+                    parent_service=item.service,
+                    parent_service_id=item.service_id,
+                    media_type=item.media_type,
+                    service=service,
+                    service_id=_id
                 )
                 app.logger.debug(f"Upserting ID mapping "
                                  f"{item.service.value}:{item.service_id} -> "
