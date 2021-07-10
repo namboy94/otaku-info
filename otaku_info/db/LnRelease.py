@@ -45,19 +45,22 @@ class LnRelease(ModelMixin, db.Model):
         (MediaItem.service, MediaItem.service_id, MediaItem.media_type)
     ),)
 
-    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
-    service_id: str = db.Column(db.String(255), primary_key=True)
-    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
+    series_name: str = db.Column(db.String(255), primary_key=True)
     volume: str = db.Column(db.String(255), primary_key=True)
+    digital: bool = db.Column(db.Boolean, primary_key=True)
+    physical: bool = db.Column(db.Boolean, primary_key=True)
 
     release_date_string: str = db.Column(db.String(10), nullable=False)
-    series_name: str = db.Column(db.String(255), nullable=False)
     publisher: Optional[str] = db.Column(db.String(255), nullable=True)
     purchase_link: Optional[str] = db.Column(db.String(255), nullable=True)
-    digital: bool = db.Column(db.Boolean, nullable=False)
-    physical: bool = db.Column(db.Boolean, nullable=False)
 
-    media_item: MediaItem = db.relationship(
+    service: Optional[ListService] = \
+        db.Column(db.Enum(ListService), nullable=True)
+    service_id: Optional[str] = db.Column(db.String(255), nullable=True)
+    media_type: Optional[MediaType] = \
+        db.Column(db.Enum(MediaType), nullable=True)
+
+    media_item: Optional[MediaItem] = db.relationship(
         "MediaItem", back_populates="ln_releases"
     )
 

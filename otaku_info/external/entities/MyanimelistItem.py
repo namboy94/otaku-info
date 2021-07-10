@@ -87,7 +87,9 @@ class MyanimelistItem(AnimeListItem):
         })
         relation = base.get(relation_string.lower())
         if relation is None:
-            logging.error(f"Missing MAL mapping: {relation_string}")
+            logging.error(
+                f"Missing MAL mapping: 'relation_type:{relation_string}'"
+            )
             return MediaRelationType.OTHER
         else:
             return relation
@@ -106,11 +108,15 @@ class MyanimelistItem(AnimeListItem):
         base.update({
             "finished airing": ReleasingState.FINISHED,
             "publishing": ReleasingState.RELEASING,
-            "airing": ReleasingState.RELEASING
+            "airing": ReleasingState.RELEASING,
+            "discontinued": ReleasingState.CANCELLED,
+            "on hiatus": ReleasingState.UNKNOWN
         })
         state = base.get(releasing_string.lower())
         if state is None:
-            logging.error(f"Missing MAL mapping: {releasing_string}")
+            logging.error(
+                f"Missing MAL mapping: 'releasing_state:{releasing_string}'"
+            )
             return ReleasingState.UNKNOWN
         else:
             return state
@@ -127,11 +133,14 @@ class MyanimelistItem(AnimeListItem):
             for x in MediaSubType
         }
         base.update({
-            "one-shot": MediaSubType.ONE_SHOT
+            "one-shot": MediaSubType.ONE_SHOT,
+            "light novel": MediaSubType.NOVEL
         })
         subtype = base.get(subtype_string.lower())
         if subtype is None:
-            logging.error(f"Missing MAL mapping: {subtype_string}")
+            logging.error(
+                f"Missing MAL mapping: subtype:'{subtype_string}'"
+            )
             return MediaSubType.UNKNOWN
         else:
             return subtype

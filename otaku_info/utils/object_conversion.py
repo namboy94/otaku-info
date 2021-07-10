@@ -16,12 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
+from typing import Optional
 
-from otaku_info.db import MediaItem, MediaUserState
+from otaku_info.db import MediaItem, MediaUserState, LnRelease
 from otaku_info.enums import ListService, MediaType, MediaSubType
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
 from otaku_info.external.entities.AnimeListItem import AnimeListItem
 from otaku_info.external.entities.MangadexItem import MangadexItem
+from otaku_info.external.entities.RedditLnRelease import RedditLnRelease
 
 
 def anime_list_item_to_media_item(item: AnimeListItem) -> MediaItem:
@@ -85,3 +87,29 @@ def mangadex_item_to_media_item(mangadex_item: MangadexItem) -> MediaItem:
         latest_release=mangadex_item.total_chapters,
         releasing_state=mangadex_item.releasing_state
     )
+
+
+def reddit_ln_release_to_ln_release(
+        reddit_item: RedditLnRelease,
+        media_item: Optional[MediaItem]
+) -> LnRelease:
+    """
+    Converts a reddit LN release to a LNRelease object
+    :param reddit_item: The reddit item to convert
+    :param media_item: Optional linked media item
+    :return: The generated LNRelease
+    """
+    release = LnRelease(
+        series_name=reddit_item.series_name,
+        volume=reddit_item.volume,
+        physical=reddit_item.physical,
+        digital=reddit_item.digital,
+        release_date_string=reddit_item.release_date_string,
+        publisher=reddit_item.publisher,
+        purchase_link=reddit_item.purchase_link
+    )
+    if media_item is not None:
+        release.service = media_item.service
+        release.service_id = media_item.service_id
+        release.media_type = media_item.media_type
+    return release

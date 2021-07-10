@@ -18,8 +18,6 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import json
-import logging
-
 import requests
 from jerrycan.base import app
 from typing import Optional, List, Dict, Any, Union
@@ -84,15 +82,15 @@ def fetch_mangadex_item(mangadex_id: str) -> Optional[MangadexItem]:
     if response.status_code >= 300:
         return None
 
-    data = json.loads(response.text)["results"][0]["data"]
+    data = json.loads(response.text)["results"][0]
     return MangadexItem.from_json(data)
 
 
 def add_covers(mangadex_items: List[MangadexItem]):
     """
     Adds cover URLs to mangadex items
-    :param mangadex_items:
-    :return:
+    :param mangadex_items: The mangadex items
+    :return: None
     """
     url = "https://api.mangadex.org/cover"
     ids = [
@@ -100,7 +98,7 @@ def add_covers(mangadex_items: List[MangadexItem]):
         for x in mangadex_items
         if x.cover_url is not None and len(x.cover_url) == 36
     ]
-    params = {"ids[]": [ids], "limit": 100}
+    params: Dict[str, Union[int, list]] = {"ids[]": [ids], "limit": 100}
     response = requests.get(url, params=params)
     data = json.loads(response.text)
     results = data["results"]

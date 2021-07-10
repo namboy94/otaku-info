@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from otaku_info.external.mangadex import fetch_mangadex_item
+from otaku_info.external.mangadex import fetch_mangadex_item, add_covers
 from otaku_info.test.TestFramework import _TestFramework
 
 
@@ -33,4 +33,8 @@ class TestMangadex(_TestFramework):
         """
         item = fetch_mangadex_item("30f3ac69-21b6-45ad-a110-d011b7aaadaa")
         self.assertIsNotNone(item)
-        self.assertEqual(item.title, "Tonikaku Kawaii")
+        self.assertEqual(item.english_title, "Tonikaku Kawaii")
+        self.assertEqual(len(item.cover_url), 36)
+        add_covers([item])
+        self.assertGreater(len(item.cover_url), 36)
+        self.assertTrue(item.cover_url.startswith("http"))
