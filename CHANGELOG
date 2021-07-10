@@ -1,6 +1,8 @@
 V 0.6.0:
   - Improved database models
   - Adjusted to new mangadex API
+  - Fixed notifications
+  - Fixed airing anime episode counts
 V 0.5.0:
   - Temporarily disabled light novel updating
   - Put database insertions into separate thread
