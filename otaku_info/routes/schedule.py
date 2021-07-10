@@ -25,7 +25,8 @@ from flask.blueprints import Blueprint
 from flask_login import current_user, login_required
 from jerrycan.base import db
 from otaku_info.db.MediaUserState import MediaUserState
-from otaku_info.db.MediaId import MediaId
+from otaku_info.db.MediaIdMapping import MediaIdMapping
+from otaku_info.enums import MediaType
 
 
 def define_blueprint(blueprint_name: str) -> Blueprint:
@@ -44,18 +45,15 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         :return: None
         """
         media_user_states: List[MediaUserState] = MediaUserState.query\
-            .options(
-                db.joinedload(MediaUserState.media_id)
-                .subqueryload(MediaId.media_item)
-            )\
-            .filter_by(user_id=current_user.id)\
+            .filter_by(media_type=MediaType.ANIME, user_id=current_user.id)\
+            .options(db.joinedload(MediaUserState.media_item))\
             .all()
 
         time_limit = datetime.fromtimestamp(time.time() + 7 * 24 * 60 * 60)
         media_user_states = [
             x for x in media_user_states
-            if x.media_id.media_item.next_episode_airing_time is not None
-            and time_limit > x.media_id.media_item.next_episode_datetime
+            if x.media_item.next_episode_airing_time is not None
+            and time_limit > x.media_item.next_episode_datetime
         ]
 
         weekdays = {
@@ -73,11 +71,11 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             entries = []
             for user_state in media_user_states:
                 next_airing = \
-                    user_state.media_id.media_item.next_episode_datetime
+                    user_state.media_item.next_episode_datetime
                 if next_airing.isoweekday() == weekday:
                     entries.append(user_state)
             entries.sort(
-                key=lambda x: x.media_id.media_item.next_episode_airing_time
+                key=lambda x: x.media_item.next_episode_airing_time
             )
             entries_by_weekday.append((weekday_name, entries))
 

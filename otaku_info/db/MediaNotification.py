@@ -17,20 +17,15 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Tuple
 from jerrycan.base import db
-from otaku_info.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaUserState import MediaUserState
+from otaku_info.enums import ListService, MediaType
 
 
 class MediaNotification(ModelMixin, db.Model):
     """
     Database model that stores a media notification for a user
-    """
-
-    __tablename__ = "media_notifications"
-    """
-    The name of the database table
     """
 
     def __init__(self, *args, **kwargs):
@@ -41,40 +36,22 @@ class MediaNotification(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_user_state_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey("media_user_states.id"),
-        nullable=False,
-        unique=True
+    __tablename__ = "media_notifications"
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ("service", "service_id", "media_type", "user_id"),
+            (MediaUserState.service, MediaUserState.service_id,
+             MediaUserState.media_type, MediaUserState.user_id)
+        ),
     )
-    """
-    The ID of the media user state this notification references
-    """
+
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
+    service_id: str = db.Column(db.String(255), primary_key=True)
+    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
+    user_id: int = db.Column(db.Integer, primary_key=True)
+
+    last_update = db.Column(db.Integer, nullable=False)
 
     media_user_state: MediaUserState = db.relationship(
         "MediaUserState", back_populates="media_notification"
     )
-    """
-    The media user state this notification references
-    """
-
-    last_update = db.Column(db.Integer, nullable=False)
-    """
-    The last update value sent to the user
-    """
-
-    @property
-    def identifier_tuple(self) -> Tuple[int]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.media_user_state_id,
-
-    def update(self, new_data: "MediaNotification"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.media_user_state_id = new_data.media_user_state_id
-        self.last_update = new_data.last_update

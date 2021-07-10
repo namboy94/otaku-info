@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
-
+import logging
 from typing import Dict, Any
 from otaku_info.enums import MediaType, MediaSubType, \
     ReleasingState, ListService, MediaRelationType
@@ -81,9 +81,18 @@ class MyanimelistItem(AnimeListItem):
         }
         base.update({
             "parent story": MediaRelationType.PARENT,
-            "alternative setting": MediaRelationType.ALTERNATIVE
+            "alternative setting": MediaRelationType.ALTERNATIVE,
+            "alternative version": MediaRelationType.ALTERNATIVE,
+            "spin-off": MediaRelationType.SPIN_OFF
         })
-        return base[relation_string.lower()]
+        relation = base.get(relation_string.lower())
+        if relation is None:
+            logging.error(
+                f"Missing MAL mapping: 'relation_type:{relation_string}'"
+            )
+            return MediaRelationType.OTHER
+        else:
+            return relation
 
     @staticmethod
     def resolve_releasing_state(releasing_string: str) -> ReleasingState:
@@ -99,9 +108,18 @@ class MyanimelistItem(AnimeListItem):
         base.update({
             "finished airing": ReleasingState.FINISHED,
             "publishing": ReleasingState.RELEASING,
-            "airing": ReleasingState.RELEASING
+            "airing": ReleasingState.RELEASING,
+            "discontinued": ReleasingState.CANCELLED,
+            "on hiatus": ReleasingState.UNKNOWN
         })
-        return base[releasing_string.lower()]
+        state = base.get(releasing_string.lower())
+        if state is None:
+            logging.error(
+                f"Missing MAL mapping: 'releasing_state:{releasing_string}'"
+            )
+            return ReleasingState.UNKNOWN
+        else:
+            return state
 
     @staticmethod
     def resolve_media_subtype(subtype_string: str) -> MediaSubType:
@@ -115,6 +133,14 @@ class MyanimelistItem(AnimeListItem):
             for x in MediaSubType
         }
         base.update({
-            "one-shot": MediaSubType.ONE_SHOT
+            "one-shot": MediaSubType.ONE_SHOT,
+            "light novel": MediaSubType.NOVEL
         })
-        return base[subtype_string.lower()]
+        subtype = base.get(subtype_string.lower())
+        if subtype is None:
+            logging.error(
+                f"Missing MAL mapping: subtype:'{subtype_string}'"
+            )
+            return MediaSubType.UNKNOWN
+        else:
+            return subtype

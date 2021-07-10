@@ -17,43 +17,24 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from unittest.mock import patch
+from otaku_info.external.mangadex import fetch_mangadex_item, add_covers
 from otaku_info.test.TestFramework import _TestFramework
-from otaku_info.main import main
 
 
-class TestServer(_TestFramework):
+class TestMangadex(_TestFramework):
     """
-    Class that tests starting the server
+    Class that tests the mangadex functionality
     """
 
-    def test_starting_server(self):
+    def test_retrieving_mangadex_item(self):
         """
-        Tests starting the server
+        Tests retrieving a mangadex item
         :return: None
         """
-        class Server:
-            """
-            Dummy Server
-            """
-            def __init__(self, *arg, **kwargs):
-                pass
-
-            def start(self):
-                """
-                :return: None
-                """
-                raise KeyboardInterrupt()
-
-            def stop(self):
-                """
-                :return: None
-                """
-                pass
-
-        def nop(*_, **__):
-            pass
-
-        with patch("jerrycan.wsgi.Server", Server):
-            with patch("jerrycan.wsgi.__start_background_tasks", nop):
-                main()
+        item = fetch_mangadex_item("30f3ac69-21b6-45ad-a110-d011b7aaadaa")
+        self.assertIsNotNone(item)
+        self.assertEqual(item.english_title, "Tonikaku Kawaii")
+        self.assertEqual(len(item.cover_url), 36)
+        add_covers([item])
+        self.assertGreater(len(item.cover_url), 36)
+        self.assertTrue(item.cover_url.startswith("http"))

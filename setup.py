@@ -67,7 +67,7 @@ if __name__ == "__main__":
             "flask_login",
             "puffotter[crypto]",
             "requests",
-            "sqlalchemy",
+            "sqlalchemy==1.3.19",
             "bokkichat",
             "beautifulsoup4",
             "jerrycan"

@@ -1,4 +1,4 @@
-{#
+"""LICENSE
 Copyright 2020 Hermann Krumrey <hermann@krumreyh.com>
 
 This file is part of otaku-info.
@@ -15,19 +15,25 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
-#}
+LICENSE"""
 
-<div class="columns has-text-centered">
-    <div class="column">
-        <div class="update-grid-cover-image">
-            <img src="{{ update.cover_url }}" alt="{{ update.title }}" class="cover-image">
-            <span class="tag is-danger top-right">{{ update.diff }}</span>
-            <span class="tag is-info top-left">{{ update.score }}</span>
-        </div>
-    </div>
-</div>
-<div class="columns has-text-centered">
-    <div class="column">
-        {{ update.title }}
-    </div>
-</div>
+from otaku_info.external.reddit import load_ln_releases
+from otaku_info.test.TestFramework import _TestFramework
+
+
+class TestReddit(_TestFramework):
+    """
+    Class that tests the reddit functionality
+    """
+
+    def test_retrieving_ln_releases(self):
+        """
+        Tests retrieving an reddit item
+        :return: None
+        """
+        items = load_ln_releases(2019)
+        self.assertGreater(len(items), 0)
+        self.assertEqual(
+            items[0].series_name,
+            "The Master of Ragnarok & Blesser of Einherjar"
+        )

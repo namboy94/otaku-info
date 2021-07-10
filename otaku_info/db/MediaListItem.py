@@ -17,33 +17,17 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Tuple
 from jerrycan.base import db
-from otaku_info.db.ModelMixin import ModelMixin
+from jerrycan.db.ModelMixin import ModelMixin
 from otaku_info.db.MediaList import MediaList
 from otaku_info.db.MediaUserState import MediaUserState
+from otaku_info.enums import ListService, MediaType
 
 
 class MediaListItem(ModelMixin, db.Model):
     """
     Database model for media list items.
     This model maps MediaLists and MediaUserStates
-    """
-
-    __tablename__ = "media_list_items"
-    """
-    The name of the database table
-    """
-
-    __table_args__ = (
-        db.UniqueConstraint(
-            "media_list_id",
-            "media_user_state_id",
-            name="unique_media_list_item"
-        ),
-    )
-    """
-    Makes sure that objects that should be unique are unique
     """
 
     def __init__(self, *args, **kwargs):
@@ -54,54 +38,39 @@ class MediaListItem(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_list_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey("media_lists.id"),
-        nullable=False
-    )
-    """
-    The ID of the media list this list item is a part of
-    """
-
-    media_list: MediaList = db.relationship(
-        "MediaList",
-        back_populates="media_list_items"
-    )
-    """
-    The media list this list item is a part of
-    """
-
-    media_user_state_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey(
-            "media_user_states.id", ondelete="CASCADE", onupdate="CASCADE"
+    __tablename__ = "media_list_items"
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ("user_state_service", "user_state_service_id",
+             "user_state_media_type", "user_state_user_id"),
+            (MediaUserState.service, MediaUserState.service_id,
+             MediaUserState.media_type, MediaUserState.user_id)
         ),
-        nullable=False
+        db.ForeignKeyConstraint(
+            ("media_list_service", "media_list_media_type",
+             "media_list_user_id", "media_list_name"),
+            (MediaList.service, MediaList.media_type,
+             MediaList.user_id, MediaList.name)
+        )
     )
-    """
-    The ID of the media user state this list item references
-    """
 
-    media_user_state: MediaUserState = db.relationship(
-        "MediaUserState",
-        backref=db.backref("media_list_items", lazy=True, cascade="all,delete")
+    user_state_service: ListService =\
+        db.Column(db.Enum(ListService), primary_key=True)
+    user_state_service_id: str = db.Column(db.String(255), primary_key=True)
+    user_state_media_type: MediaType = \
+        db.Column(db.Enum(MediaType), primary_key=True)
+    user_state_user_id: int = db.Column(db.Integer, primary_key=True)
+
+    media_list_service: ListService = \
+        db.Column(db.Enum(ListService), primary_key=True)
+    media_list_media_type: MediaType = \
+        db.Column(db.Enum(MediaType), primary_key=True)
+    media_list_user_id: int = db.Column(db.Integer, primary_key=True)
+    media_list_name: int = db.Column(db.String(255), primary_key=True)
+
+    user_state: MediaUserState = db.relationship(
+        "MediaUserState", back_populates="media_list_items"
     )
-    """
-    The media user state this list item references
-    """
-
-    @property
-    def identifier_tuple(self) -> Tuple[int, int]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.media_list_id, self.media_user_state_id
-
-    def update(self, new_data: "MediaListItem"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.media_list_id = new_data.media_list_id
-        self.media_user_state_id = new_data.media_user_state_id
+    media_list: MediaList = db.relationship(
+        "MediaList", back_populates="list_items"
+    )

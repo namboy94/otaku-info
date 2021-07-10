@@ -47,15 +47,15 @@ def load_myanimelist_item(myanimelist_id: int, media_type: MediaType) \
         # Sometimes jikan temporarily loses connection to myanimelist
         time.sleep(2)
         response = requests.get(url)
-    if response.status_code < 300:
+    elif response.status_code >= 300:
         return None
 
     data = json.loads(response.text)
     if data["type"] == "BadResponseException":
         return None
     elif data["type"] == "RateLimitException":
-        time.sleep(30)
         app.logger.warning("Rate limited by jikan")
+        time.sleep(30)
         return load_myanimelist_item(myanimelist_id, media_type)
 
     mal_item = MyanimelistItem.from_query(media_type, data)

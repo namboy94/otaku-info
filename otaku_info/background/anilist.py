@@ -19,12 +19,15 @@ LICENSE"""
 
 import time
 from typing import List, Optional, Dict
-from jerrycan.base import app
-from otaku_info.background.db_inserter import queue_media_item_insert
+from jerrycan.base import app, db
+
+from otaku_info.db import MediaList, MediaListItem, MediaIdMapping
+from otaku_info.enums import ListService, MediaType
+from otaku_info.utils.object_conversion import anime_list_item_to_media_item, \
+    anilist_user_item_to_media_user_state
 from otaku_info.db.ServiceUsername import ServiceUsername
 from otaku_info.external.anilist import load_anilist
 from otaku_info.external.entities.AnilistUserItem import AnilistUserItem
-from otaku_info.enums import ListService, MediaType
 
 
 def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
@@ -51,62 +54,87 @@ def update_anilist_data(usernames: Optional[List[ServiceUsername]] = None):
         }
         for username in usernames
     }
+    __update_data(anilist_data)
+    app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
+
+
+def __update_data(
+        anilist_data: Dict[
+            ServiceUsername,
+            Dict[MediaType, List[AnilistUserItem]]
+        ]
+):
+    """
+    Updates the anilist data in the database
+    :param anilist_data: The anilist data to enter
+    :return: None
+    """
+    media_items = {}
+    user_states = []
+    user_lists = {}
+    user_list_items = []
+    mal_mappings = []
 
     for username, anilist_info in anilist_data.items():
         for media_type, anilist_items in anilist_info.items():
             for anilist_item in anilist_items:
-                __perform_update(
-                    anilist_item,
-                    username
+                media_item = anime_list_item_to_media_item(anilist_item)
+                user_state = anilist_user_item_to_media_user_state(
+                    anilist_item, username.user_id
                 )
+                media_list = MediaList(
+                    service=ListService.ANILIST,
+                    media_type=anilist_item.media_type,
+                    user_id=username.user_id,
+                    name=anilist_item.list_name
+                )
+                media_list_item = MediaListItem(
+                    media_list_service=media_list.service,
+                    media_list_media_type=media_list.media_type,
+                    media_list_user_id=media_list.user_id,
+                    media_list_name=media_list.name,
+                    user_state_service=user_state.service,
+                    user_state_media_type=user_state.media_type,
+                    user_state_user_id=user_state.user_id,
+                    user_state_service_id=user_state.service_id
+                )
+                media_item_tuple = (
+                    media_item.service,
+                    media_item.service_id,
+                    media_item.media_type
+                )
+                media_list_tuple = (
+                    media_list.service,
+                    media_list.media_type,
+                    media_list.user_id,
+                    media_list.name
+                )
+                media_items[media_item_tuple] = media_item
+                user_states.append(user_state)
+                user_lists[media_list_tuple] = media_list
+                user_list_items.append(media_list_item)
+                if anilist_item.myanimelist_id is not None:
+                    mal_mapping = MediaIdMapping(
+                        service=ListService.MYANIMELIST,
+                        service_id=str(anilist_item.myanimelist_id),
+                        parent_service=ListService.ANILIST,
+                        parent_service_id=media_item.service_id,
+                        media_type=media_item.media_type
+                    )
+                    mal_mappings.append(mal_mapping)
 
-    app.logger.info(f"Finished Anilist Update in {time.time() - start}s.")
-
-
-def __perform_update(
-        anilist_item: AnilistUserItem,
-        username: ServiceUsername
-):
-    """
-    Inserts or updates the contents of a single anilist user item
-    :param anilist_item: The anilist user item
-    :param username: The service username
-    :return: None
-    """
-    media_item_params = {
-        "media_type": anilist_item.media_type,
-        "media_subtype": anilist_item.media_subtype,
-        "english_title": anilist_item.english_title,
-        "romaji_title": anilist_item.romaji_title,
-        "cover_url": anilist_item.cover_url,
-        "latest_release": anilist_item.latest_release,
-        "latest_volume_release": anilist_item.volumes,
-        "releasing_state": anilist_item.releasing_state,
-        "next_episode": anilist_item.next_episode,
-        "next_episode_airing_time": anilist_item.next_episode_airing_time
-    }
-    service_ids = {
-        ListService.ANILIST: str(anilist_item.id)
-    }
-    if anilist_item.myanimelist_id is not None:
-        service_ids[ListService.MYANIMELIST] = str(anilist_item.myanimelist_id)
-    user_state_params = {
-        "user_id": username.user_id,
-        "progress": anilist_item.progress,
-        "volume_progress": anilist_item.volume_progress,
-        "score": anilist_item.score,
-        "consuming_state": anilist_item.consuming_state
-    }
-    media_list_params = {
-        "user_id": username.user_id,
-        "name": anilist_item.list_name,
-        "service": ListService.ANILIST,
-        "media_type": anilist_item.media_type
-    }
-    queue_media_item_insert(
-        media_item_params,
-        ListService.ANILIST,
-        service_ids,
-        user_state_params,
-        media_list_params
-    )
+    for media_item in media_items.values():
+        app.logger.debug(f"Upserting anilist item {media_item.title}")
+        db.session.merge(media_item)
+    for user_state in user_states:
+        db.session.merge(user_state)
+    for media_list in user_lists.values():
+        db.session.merge(media_list)
+    for media_list_item in user_list_items:
+        db.session.merge(media_list_item)
+    for mal_mapping in mal_mappings:
+        db.session.merge(mal_mapping)
+        app.logger.debug(f"Upserting id mapping: "
+                         f"anilist:{mal_mapping.parent_service_id} "
+                         f"-> myanimelist:{mal_mapping.service_id}")
+    db.session.commit()

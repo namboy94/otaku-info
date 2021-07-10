@@ -17,36 +17,21 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Dict, Any, Optional, Tuple, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, List
 from jerrycan.base import db
 from jerrycan.db.User import User
-from otaku_info.db.ModelMixin import ModelMixin
-from otaku_info.db.MediaId import MediaId
-from otaku_info.enums import ConsumingState
+from jerrycan.db.ModelMixin import ModelMixin
+from otaku_info.db.MediaItem import MediaItem
+from otaku_info.enums import ConsumingState, ListService, MediaType
 if TYPE_CHECKING:
     from otaku_info.db.MediaNotification import MediaNotification
+    from otaku_info.db.MediaListItem import MediaListItem
 
 
 class MediaUserState(ModelMixin, db.Model):
     """
     Database model that keeps track of a user's entries on external services
     for a media item
-    """
-
-    __tablename__ = "media_user_states"
-    """
-    The name of the database table
-    """
-
-    __table_args__ = (
-        db.UniqueConstraint(
-            "media_id_id",
-            "user_id",
-            name="unique_media_user_state"
-        ),
-    )
-    """
-    Makes sure that objects that should be unique are unique
     """
 
     def __init__(self, *args, **kwargs):
@@ -57,91 +42,44 @@ class MediaUserState(ModelMixin, db.Model):
         """
         super().__init__(*args, **kwargs)
 
-    media_id_id: int = db.Column(
-        db.Integer,
-        db.ForeignKey("media_ids.id"),
-        nullable=False
-    )
-    """
-    The ID of the media ID referenced by this user state
-    """
+    __tablename__ = "media_user_states"
+    __table_args__ = (db.ForeignKeyConstraint(
+        ("service", "service_id", "media_type"),
+        (MediaItem.service, MediaItem.service_id, MediaItem.media_type)
+    ),)
 
-    media_id: MediaId = db.relationship(
-        "MediaId",
-        back_populates="media_user_states"
-    )
-    """
-    The media ID referenced by this user state
-    """
-
+    service: ListService = db.Column(db.Enum(ListService), primary_key=True)
+    service_id: str = db.Column(db.String(255), primary_key=True)
+    media_type: MediaType = db.Column(db.Enum(MediaType), primary_key=True)
     user_id: int = db.Column(
         db.Integer,
         db.ForeignKey(
             "users.id", ondelete="CASCADE", onupdate="CASCADE"
         ),
-        nullable=False
+        primary_key=True
     )
-    """
-    The ID of the user associated with this user state
-    """
 
+    progress: Optional[int] = db.Column(db.Integer, nullable=True)
+    volume_progress: Optional[int] = db.Column(db.Integer, nullable=True)
+    score: Optional[int] = db.Column(db.Integer, nullable=True)
+    consuming_state: ConsumingState \
+        = db.Column(db.Enum(ConsumingState), nullable=False)
+
+    media_item: MediaItem = db.relationship(
+        "MediaItem", back_populates="user_states"
+    )
     user: User = db.relationship(
         "User",
         backref=db.backref(
             "media_user_states", lazy=True, cascade="all,delete"
         )
     )
-    """
-    The user associated with this user state
-    """
-
-    progress: Optional[int] = db.Column(db.Integer, nullable=True)
-    """
-    The user's current progress consuming the media item
-    """
-
-    volume_progress: Optional[int] = db.Column(db.Integer, nullable=True)
-    """
-    The user's current 'volume' progress.
-    """
-
-    score: Optional[int] = db.Column(db.Integer, nullable=True)
-    """
-    The user's score for the references media item
-    """
-
-    consuming_state: ConsumingState \
-        = db.Column(db.Enum(ConsumingState), nullable=False)
-    """
-    The current consuming state of the user for this media item
-    """
-
     media_notification: Optional["MediaNotification"] = db.relationship(
         "MediaNotification",
         uselist=False,
         back_populates="media_user_state",
         cascade="all, delete"
     )
-    """
-    Notification object for this user state
-    """
-
-    @property
-    def identifier_tuple(self) -> Tuple[int, int]:
-        """
-        :return: A tuple that uniquely identifies this database entry
-        """
-        return self.media_id_id, self.user_id
-
-    def update(self, new_data: "MediaUserState"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
-        :return: None
-        """
-        self.media_id_id = new_data.media_id_id
-        self.user_id = new_data.user_id
-        self.progress = new_data.progress
-        self.volume_progress = new_data.volume_progress
-        self.score = new_data.score
-        self.consuming_state = new_data.consuming_state
+    media_list_items: List["MediaListItem"] = db.relationship(
+        "MediaListItem", back_populates="user_state", cascade="all, delete"
+    )

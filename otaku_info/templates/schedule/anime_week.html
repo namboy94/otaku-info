@@ -27,9 +27,9 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
             <div class="column schedule-day">
                 <h3>{{ weekday }}</h3>
                 {% for entry in entries %}
-                    <div class="schedule-item"><a href="{{ entry.media_id.media_item.own_url }}">
-                        <img src="{{ entry.media_id.media_item.cover_url }}"
-                             alt="{{ entry.media_id.media_item.title }}"
+                    <div class="schedule-item"><a href="{{ entry.media_item.own_url }}">
+                        <img src="{{ entry.media_item.cover_url }}"
+                             alt="{{ entry.media_item.title }}"
                              class="cover-image">
                     </a></div>
                 {% endfor %}

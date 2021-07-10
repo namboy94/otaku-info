@@ -22,7 +22,6 @@ from flask.blueprints import Blueprint
 from jerrycan.routes.decorators import api
 from jerrycan.exceptions import ApiException
 from otaku_info.Config import Config
-from otaku_info.db.MediaId import MediaId
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.enums import MediaType, ListService
 
@@ -37,53 +36,38 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
     api_base_path = f"/api/v{Config.API_VERSION}"
 
     @blueprint.route(
-        f"{api_base_path}/media_ids/<_service>/<_media_type>/<service_id>",
+        f"{api_base_path}/media_ids/<service>/<media_type>/<service_id>",
         methods=["GET"]
     )
     @api
-    def media_ids(_service: str, _media_type: str, service_id: str):
+    def media_ids(service: str, media_type: str, service_id: str):
         """
-        Retrieves all media IDs for a media ID
-        :return: The response
+        Retrieves all media IDs for a media item
+        :return: The IDs for the media item
         """
-        service = ListService(_service)
-        media_type = MediaType(_media_type)
-
-        matching_ids: List[MediaItem] = [
-            x for x in
-            MediaId.query
-            .filter_by(service_id=service_id, service=service).all()
-            if x.media_item.media_type == media_type
-        ]
-
-        if len(matching_ids) < 1:
+        media_item: MediaItem = MediaItem.query.filter_by(
+            service=ListService(service),
+            media_type=MediaType(media_type),
+            service_id=service_id
+        ).first()
+        if media_item is None:
             raise ApiException("ID does not exist", 404)
 
-        media_item = matching_ids[0].media_item
-
-        id_mappings = {
-            x.service.value: x.service_id
-            for x in MediaId.query.filter_by(media_item_id=media_item.id).all()
-        }
-        id_mappings["otaku_info"] = str(media_item.id)
-
-        return id_mappings
+        return {x: y.service_id for x, y in media_item.ids.items()}
 
     @blueprint.route(f"{api_base_path}/id_mappings")
     def all_id_mappings():
         """
         Dumps all the ID mappings currently stored in the database
-        :return: None
+        :return: The ID Mappings
         """
-        all_ids: List[MediaId] = MediaId.query.all()
+        all_items: List[MediaItem] = MediaItem.query.all()
 
-        item_map = {}
-        for media_id in all_ids:
-            if media_id.media_item_id not in item_map:
-                item_map[media_id.media_item_id] = {}
-            item_map[media_id.media_item_id][media_id.service.name] = \
-                media_id.service_id
+        item_map = {x: {y: {} for y in MediaType} for x in ListService}
+        for media_item in all_items:
+            for service, mapping in media_item.ids.items():
+                item_map[service][media_item.media_type] = mapping.service_id
 
-        return {"mappings": list(item_map.values())}
+        return {"mappings": item_map}
 
     return blueprint

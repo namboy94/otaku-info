@@ -65,12 +65,6 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         Sets the notification settings
         :return: Redirect to notifications page
         """
-        print(request.form)
-        existing_settings = {
-            x.notification_type: x
-            for x in
-            NotificationSetting.query.filter_by(user_id=current_user.id).all()
-        }
         for notification_type in NotificationType:
             active_input = request.form.get(notification_type.value, "off")
             active_value = active_input == "on"
@@ -84,14 +78,13 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             except IndexError:
                 min_score = 0
 
-            setting = existing_settings.get(notification_type)
-            if setting is None:
-                setting = NotificationSetting(
-                    user=current_user,
-                    notification_type=notification_type,
-                    minimum_score=min_score
-                )
-                db.session.add(setting)
+            setting = NotificationSetting(
+                user_id=current_user.id,
+                notification_type=notification_type,
+                minimum_score=min_score,
+                value=active_value
+            )
+            setting = db.session.merge(setting)
 
             setting.value = active_value
             setting.minimum_score = min_score

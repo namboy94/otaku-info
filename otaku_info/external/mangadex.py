@@ -19,22 +19,99 @@ LICENSE"""
 
 import json
 import requests
-from typing import Optional
-from requests.exceptions import ConnectionError
+from jerrycan.base import app
+from typing import Optional, List, Dict, Any, Union
 from otaku_info.external.entities.MangadexItem import MangadexItem
 
 
-def fetch_mangadex_item(mangadex_id: int) -> Optional[MangadexItem]:
+def fetch_all_mangadex_items() -> List[MangadexItem]:
+    """
+    Fetches all available mangadex items
+    :return: The mangadex items
+    """
+    url = "https://api.mangadex.org/manga"
+    items: List[Dict[str, Any]] = []
+    mangadex_items: List[MangadexItem] = []
+    page = 0
+    last_date = "1970-01-01T00:00:00"
+
+    while True:
+        params: Dict[str, Union[int, str]] = {
+            "createdAtSince": last_date,
+            "order[createdAt]": "asc",
+            "limit": 100,
+            "offset": 100 * page
+        }
+        app.logger.debug(f"Mangadex: {params}")
+        response = requests.get(url, params=params)
+        data = json.loads(response.text)
+
+        if "results" not in data:
+            new_date = items[-1]["data"]["attributes"]["createdAt"]
+            new_date = new_date.split("T")[0] + "T00:00:00"
+
+            if new_date == last_date:
+                break
+            else:
+                last_date = new_date
+                page = 0
+                continue
+        elif len(data["results"]) == 0:
+            break
+
+        items += data["results"]
+        new_items = [
+            MangadexItem.from_json(x)
+            for x in data["results"]
+        ]
+        add_covers(new_items)
+        mangadex_items += new_items
+        page += 1
+
+    mangadex_items.sort(key=lambda x: x.english_title)
+    return mangadex_items
+
+
+def fetch_mangadex_item(mangadex_id: str) -> Optional[MangadexItem]:
     """
     Fetches information for a mangadex
     """
-    endpoint = "https://mangadex.org/api/manga/{}".format(mangadex_id)
-    try:
-        with requests.get(endpoint) as response:
-            data = json.loads(response.text)
-            if data["status"] == "OK":
-                return MangadexItem.from_json(mangadex_id, data)
-            else:
-                return None
-    except (json.JSONDecodeError, ConnectionError):
+    url = "https://api.mangadex.org/manga"
+    response = requests.get(url, params={"ids[]": mangadex_id})
+
+    if response.status_code >= 300:
         return None
+
+    data = json.loads(response.text)["results"][0]
+    return MangadexItem.from_json(data)
+
+
+def add_covers(mangadex_items: List[MangadexItem]):
+    """
+    Adds cover URLs to mangadex items
+    :param mangadex_items: The mangadex items
+    :return: None
+    """
+    url = "https://api.mangadex.org/cover"
+    ids = [
+        x.cover_url
+        for x in mangadex_items
+        if x.cover_url is not None and len(x.cover_url) == 36
+    ]
+    params: Dict[str, Union[int, list]] = {"ids[]": [ids], "limit": 100}
+    response = requests.get(url, params=params)
+    data = json.loads(response.text)
+    results = data["results"]
+
+    covers = {}
+    for result in results:
+        relations = {x["type"]: x["id"] for x in result["relationships"]}
+        covers[relations["manga"]] = result["data"]["attributes"]["fileName"]
+
+    for mangadex_item in mangadex_items:
+        filename = covers.get(mangadex_item.mangadex_id)
+        if filename is None:
+            mangadex_item.cover_url = ""
+        else:
+            mangadex_item.cover_url = f"https://uploads.mangadex.org/covers/" \
+                                      f"{mangadex_item.mangadex_id}/{filename}"

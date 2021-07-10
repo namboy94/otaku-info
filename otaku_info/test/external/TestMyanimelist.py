@@ -17,27 +17,21 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from typing import Tuple
-from jerrycan.db.ModelMixin import ModelMixin as PuffotterModelMixin
+from otaku_info.enums import MediaType
+from otaku_info.external.myanimelist import load_myanimelist_item
+from otaku_info.test.TestFramework import _TestFramework
 
 
-class ModelMixin(PuffotterModelMixin):
+class TestMyanimelist(_TestFramework):
     """
-    Class that define methods that greatly ease working with existing database
-    entries
+    Class that tests the myanimelist functionality
     """
 
-    @property
-    def identifier_tuple(self) -> Tuple:
+    def test_retrieving_myanimelist_item(self):
         """
-        :return: A tuple that's unique to this database entry
-        """
-        raise NotImplementedError()
-
-    def update(self, new_data: "ModelMixin"):
-        """
-        Updates the data in this record based on another object
-        :param new_data: The object from which to use the new values
+        Tests retrieving an myanimelist item
         :return: None
         """
-        raise NotImplementedError()
+        item = load_myanimelist_item(9253, MediaType.ANIME)
+        self.assertIsNotNone(item)
+        self.assertEqual(item.english_title, "Steins;Gate")
