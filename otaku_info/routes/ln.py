@@ -20,6 +20,9 @@ LICENSE"""
 from datetime import datetime
 from flask import request, render_template, redirect, url_for
 from flask.blueprints import Blueprint
+from jerrycan.base import db
+
+from otaku_info.db import MediaItem
 from otaku_info.db.LnRelease import LnRelease
 from otaku_info.utils.dates import MONTHS, map_month_name_to_month_number, \
     map_month_number_to_month_name
@@ -61,7 +64,10 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
             if month is None:
                 month = now.month
 
-        all_releases = LnRelease.query.all()
+        all_releases = LnRelease.query.options(
+            db.joinedload(LnRelease.media_item)
+            .subqueryload(MediaItem.id_mappings)
+        ).all()
         years = list(set([x.release_date.year for x in all_releases]))
         years.sort()
 
