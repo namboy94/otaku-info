@@ -65,7 +65,6 @@ def fetch_all_mangadex_items() -> List[MangadexItem]:
             for x in data["results"]
         ]
         page += 1
-        break  # TODO REMOVE
 
     mangadex_items.sort(key=lambda x: x.title)
     return mangadex_items
@@ -81,5 +80,5 @@ def fetch_mangadex_item(mangadex_id: str) -> Optional[MangadexItem]:
     if response.status_code >= 300:
         return None
 
-    data = json.loads(response.text)["data"]
+    data = json.loads(response.text)["results"][0]["data"]
     return MangadexItem.from_json(data)

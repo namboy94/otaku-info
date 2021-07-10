@@ -81,7 +81,8 @@ class MyanimelistItem(AnimeListItem):
         }
         base.update({
             "parent story": MediaRelationType.PARENT,
-            "alternative setting": MediaRelationType.ALTERNATIVE
+            "alternative setting": MediaRelationType.ALTERNATIVE,
+            "alternative version": MediaRelationType.ALTERNATIVE
         })
         return base[relation_string.lower()]
 

@@ -43,6 +43,12 @@ type_check:
   script:
     - python-static-type-check
 
+pylint:
+  stage: test
+  tags: [docker]
+  script:
+    - pylint --disable=all --enable=missing-docstring otaku_info
+
 gitstats:
   stage: stats
   tags: [docker]

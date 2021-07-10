@@ -99,8 +99,14 @@ class TestConfig(_TestFramework):
         :return: None
         """
         class Mocker:
+            """
+            Mocker class
+            """
             @staticmethod
             def get_json():
+                """
+                :return: {}["test"]
+                """
                 print({}["test"])
 
         with patch("jerrycan.routes.api.user_management.request",

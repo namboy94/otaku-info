@@ -17,43 +17,23 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from unittest.mock import patch
+from otaku_info.external.reddit import load_ln_releases
 from otaku_info.test.TestFramework import _TestFramework
-from otaku_info.main import main
 
 
-class TestServer(_TestFramework):
+class TestReddit(_TestFramework):
     """
-    Class that tests starting the server
+    Class that tests the reddit functionality
     """
 
-    def test_starting_server(self):
+    def test_retrieving_ln_releases(self):
         """
-        Tests starting the server
+        Tests retrieving an reddit item
         :return: None
         """
-        class Server:
-            """
-            Dummy Server
-            """
-            def __init__(self, *arg, **kwargs):
-                pass
-
-            def start(self):
-                """
-                :return: None
-                """
-                raise KeyboardInterrupt()
-
-            def stop(self):
-                """
-                :return: None
-                """
-                pass
-
-        def nop(*_, **__):
-            pass
-
-        with patch("jerrycan.wsgi.Server", Server):
-            with patch("jerrycan.wsgi.__start_background_tasks", nop):
-                main()
+        items = load_ln_releases(2019)
+        self.assertGreater(len(items), 0)
+        self.assertEqual(
+            items[0].series_name,
+            "The Master of Ragnarok & Blesser of Einherjar"
+        )

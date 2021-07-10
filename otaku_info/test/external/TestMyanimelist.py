@@ -17,43 +17,21 @@ You should have received a copy of the GNU General Public License
 along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
-from unittest.mock import patch
+from otaku_info.enums import MediaType
+from otaku_info.external.myanimelist import load_myanimelist_item
 from otaku_info.test.TestFramework import _TestFramework
-from otaku_info.main import main
 
 
-class TestServer(_TestFramework):
+class TestMyanimelist(_TestFramework):
     """
-    Class that tests starting the server
+    Class that tests the myanimelist functionality
     """
 
-    def test_starting_server(self):
+    def test_retrieving_myanimelist_item(self):
         """
-        Tests starting the server
+        Tests retrieving an myanimelist item
         :return: None
         """
-        class Server:
-            """
-            Dummy Server
-            """
-            def __init__(self, *arg, **kwargs):
-                pass
-
-            def start(self):
-                """
-                :return: None
-                """
-                raise KeyboardInterrupt()
-
-            def stop(self):
-                """
-                :return: None
-                """
-                pass
-
-        def nop(*_, **__):
-            pass
-
-        with patch("jerrycan.wsgi.Server", Server):
-            with patch("jerrycan.wsgi.__start_background_tasks", nop):
-                main()
+        item = load_myanimelist_item(9253, MediaType.ANIME)
+        self.assertIsNotNone(item)
+        self.assertEqual(item.english_title, "Steins;Gate")
