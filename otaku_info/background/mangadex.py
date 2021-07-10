@@ -18,12 +18,13 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import time
-from typing import Optional
+from typing import Optional, List, Tuple
 from jerrycan.base import app, db
 from otaku_info.db.MediaItem import MediaItem
 from otaku_info.db.MediaIdMapping import MediaIdMapping
 from otaku_info.enums import ListService, MediaType
 from otaku_info.external.entities.AnimeListItem import AnimeListItem
+from otaku_info.external.entities.MangadexItem import MangadexItem
 from otaku_info.external.mangadex import fetch_all_mangadex_items
 from otaku_info.external.anilist import load_anilist_info
 from otaku_info.external.myanimelist import load_myanimelist_item
@@ -49,27 +50,28 @@ def update_mangadex_data():
         }
         for service in ListService
     }
+    fetched_items = fetch_all_mangadex_items()
 
-    for mangadex_item in fetch_all_mangadex_items():
-
+    mangadex_items: List[Tuple[MediaItem, MangadexItem]] = []
+    for mangadex_item in fetched_items:
         media_item = mangadex_item_to_media_item(mangadex_item)
         app.logger.debug(f"Upserting mangadex item {media_item.title}")
         media_item = db.session.merge(media_item)
+        __add_id_mappings(media_item, mangadex_item)
+        mangadex_items.append((media_item, mangadex_item))
+    db.session.commit()
 
-        ids = mangadex_item.external_ids
-        ids[ListService.MANGADEX] = mangadex_item.mangadex_id
+    for media_item, mangadex_item in mangadex_items:
 
-        items = [media_item]
+        for service in [ListService.ANILIST, ListService.MYANIMELIST]:
 
-        for service in [ListService.ANILIST]:  # ListService.MYANIMELIST
-
-            service_id = ids.get(service)
+            service_id = mangadex_item.external_ids.get(service)
             existing = existing_items[service].get(service_id)
 
             if service_id is None:
                 continue
             if existing is not None:
-                items.append(existing)
+                __add_id_mappings(existing, mangadex_item)
                 continue
 
             data: Optional[AnimeListItem] = None
@@ -87,29 +89,35 @@ def update_mangadex_data():
                 app.logger.debug(f"Upserting {service.value} item {title}")
                 anime_item = db.session.merge(anime_item)
                 existing_items[service][service_id] = anime_item
-                items.append(anime_item)
-
-        for item in items:
-            if item is None:
-                continue
-
-            for service, _id in ids.items():
-                if service == item.service:
-                    continue
-
-                mapping = MediaIdMapping(
-                    parent_service=item.service,
-                    parent_service_id=item.service_id,
-                    media_type=item.media_type,
-                    service=service,
-                    service_id=_id
-                )
-                app.logger.debug(f"Upserting ID mapping "
-                                 f"{item.service.value}:{item.service_id} -> "
-                                 f"{service.value}:{_id}")
-                db.session.merge(mapping)
-
+                __add_id_mappings(anime_item, mangadex_item)
         db.session.commit()
 
     app.logger.info(f"Finished Mangadex Update in "
                     f"{time.time() - start_time}s.")
+
+
+def __add_id_mappings(media_item: MediaItem, mangadex_item: MangadexItem):
+    """
+    Adds ID mappings to a media item
+    :param media_item: The media item for which to add the mapping
+    :param mangadex_item: The mangadex ID containing the mapping information
+    :return: None
+    """
+    ids = mangadex_item.external_ids
+    ids[ListService.MANGADEX] = mangadex_item.mangadex_id
+
+    for service, _id in ids.items():
+        if service == media_item.service:
+            continue
+
+        mapping = MediaIdMapping(
+            parent_service=media_item.service,
+            parent_service_id=media_item.service_id,
+            media_type=media_item.media_type,
+            service=mangadex_item,
+            service_id=_id
+        )
+        app.logger.debug(f"Upserting ID mapping "
+                         f"{media_item.service.value}:{media_item.service_id} "
+                         f"-> {service.value}:{_id}")
+        db.session.merge(mapping)
