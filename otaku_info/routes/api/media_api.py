@@ -19,6 +19,7 @@ LICENSE"""
 
 from typing import List
 from flask.blueprints import Blueprint
+from jerrycan.base import db
 from jerrycan.routes.decorators import api
 from jerrycan.exceptions import ApiException
 from otaku_info.Config import Config
@@ -61,7 +62,9 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         Dumps all the ID mappings currently stored in the database
         :return: The ID Mappings
         """
-        all_items: List[MediaItem] = MediaItem.query.all()
+        all_items: List[MediaItem] = MediaItem.query.options(
+            db.joinedload(MediaItem.id_mappings)
+        ).all()
 
         item_map = {
             x.name: {y.name: {} for y in MediaType}
