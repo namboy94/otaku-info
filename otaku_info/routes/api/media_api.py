@@ -53,7 +53,7 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         if media_item is None:
             raise ApiException("ID does not exist", 404)
 
-        return {x: y.service_id for x, y in media_item.ids.items()}
+        return {x.name: y.service_id for x, y in media_item.ids.items()}
 
     @blueprint.route(f"{api_base_path}/id_mappings")
     def all_id_mappings():
@@ -63,10 +63,14 @@ def define_blueprint(blueprint_name: str) -> Blueprint:
         """
         all_items: List[MediaItem] = MediaItem.query.all()
 
-        item_map = {x: {y: {} for y in MediaType} for x in ListService}
+        item_map = {
+            x.name: {y.name: {} for y in MediaType}
+            for x in ListService
+        }
         for media_item in all_items:
             for service, mapping in media_item.ids.items():
-                item_map[service][media_item.media_type] = mapping.service_id
+                item_map[service.name][media_item.media_type.name] = \
+                    mapping.service_id
 
         return {"mappings": item_map}
 
