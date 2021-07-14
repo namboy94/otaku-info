@@ -19,7 +19,14 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 
 <!DOCTYPE html>
 <html lang="de" class="has-navbar-fixed-top">
-    {% include "core/header.html" %}
+    <head>
+        <meta charset="UTF-8">
+        <title>
+            Otaku-Info{% if title is defined %} - {{ title }}{% endif %}
+        </title>
+        {% include "core/header.html" %}
+        {% block head %}{% endblock %}
+    </head>
     <body>
         <div id="navbar">{% include "core/navbar.html" %}</div>
         <div class="container is-widescreen main-container">

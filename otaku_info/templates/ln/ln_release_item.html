@@ -24,21 +24,23 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
         {% endif %}
     </div>
     <div class="column">
-        {% for media_id in release.get_ids() %}
-            <span class="service-button">
-                <a href="{{ media_id.service_url }}">
-                    <img class="service-image" src="{{ media_id.service_icon }}"
-                         alt="{{ media_id.service.name }}"/>
-                </a>
-            </span>
-        {% endfor %}
+        {% if release.media_item is not none %}
+            {% for id_mapping in release.media_item.ids.values() %}
+                <span class="service-button">
+                    <a href="{{ id_mapping.service_url }}">
+                        <img class="service-image" src="{{ id_mapping.service_icon }}"
+                             alt="{{ id_mapping.service.name }}"/>
+                    </a>
+                </span>
+            {% endfor %}
+        {% endif %}
     </div>
     <div class="column">
         {{ release.release_date_string }}
     </div>
     <div class="column">
         {% if release.media_item is not none %}
-            <a href="{{ url_for('media.media', media_item_id=release.media_item_id) }}">{{ release.series_name }}</a>
+            <a href="{{ release.media_item.own_url }}">{{ release.series_name }}</a>
         {% else %}
             {{ release.series_name }}
         {% endif %}

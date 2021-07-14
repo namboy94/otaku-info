@@ -1,3 +1,7 @@
+V 0.6.2:
+  - Fixed opengraph metadata
+V 0.6.1:
+  - Fixed light novel page
 V 0.6.0:
   - Improved database models
   - Adjusted to new mangadex API

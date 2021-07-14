@@ -18,6 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
 {% extends "core/base_layout.html" %}
+{% set title=media_item.title %}
 {% block head %}
     <meta property="og:title" content="{{ media_item.title }}">
     <meta property="og:site_name" content="otaku-info">
