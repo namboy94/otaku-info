@@ -1,3 +1,5 @@
+V 0.6.3:
+  - Now only sends notifications for currently reading/watching series
 V 0.6.2:
   - Fixed opengraph metadata
 V 0.6.1:

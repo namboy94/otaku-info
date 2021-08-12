@@ -20,11 +20,12 @@ LICENSE"""
 import time
 from typing import Dict, List, Tuple
 from jerrycan.base import db, app
-from otaku_info.enums import MediaType, MediaSubType, NotificationType
 from otaku_info.db.MediaUserState import MediaUserState
 from otaku_info.db.MediaNotification import MediaNotification
 from otaku_info.db.NotificationSetting import NotificationSetting
 from otaku_info.wrappers.UpdateWrapper import UpdateWrapper
+from otaku_info.enums import MediaType, MediaSubType, NotificationType, \
+    ConsumingState
 
 
 def send_new_update_notifications():
@@ -35,7 +36,9 @@ def send_new_update_notifications():
     start = time.time()
     app.logger.info("Starting check for notifications")
 
-    user_states: List[MediaUserState] = MediaUserState.query.options(
+    user_states: List[MediaUserState] = MediaUserState.query.filter_by(
+        consuming_state=ConsumingState.CURRENT
+    ).options(
         db.joinedload(MediaUserState.media_notification)
     ).all()
 
