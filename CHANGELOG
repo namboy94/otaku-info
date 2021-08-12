@@ -1,5 +1,6 @@
 V 0.6.3:
   - Now only sends notifications for currently reading/watching series
+  - Added twitter tags to media pages
 V 0.6.2:
   - Fixed opengraph metadata
 V 0.6.1:
