@@ -18,6 +18,7 @@ along with otaku-info.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 import json
+import time
 import requests
 from jerrycan.base import app
 from typing import Optional, List, Dict, Any, Union
@@ -45,6 +46,7 @@ def fetch_all_mangadex_items() -> List[MangadexItem]:
         app.logger.debug(f"Mangadex: {params}")
         response = requests.get(url, params=params)
         data = json.loads(response.text)
+        time.sleep(1)
 
         if data["result"] == "error":
             # TODO understand what's happening here
@@ -79,6 +81,7 @@ def fetch_mangadex_item(mangadex_id: str) -> Optional[MangadexItem]:
     """
     url = "https://api.mangadex.org/manga"
     response = requests.get(url, params={"ids[]": mangadex_id})
+    time.sleep(1)
 
     if response.status_code >= 300:
         return None
@@ -103,6 +106,7 @@ def add_covers(mangadex_items: List[MangadexItem]):
     response = requests.get(url, params=params)
     data = json.loads(response.text)
     results = data["data"]
+    time.sleep(1)
 
     covers = {}
     for result in results:

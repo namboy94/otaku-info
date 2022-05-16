@@ -59,7 +59,7 @@ docgen:
   stage: stats
   tags: [docker]
   script:
-    - pip install flask sphinx==3.0.1
+    - pip install flask jinja2
     - sphinx-docgen
 
 deploy_production:
