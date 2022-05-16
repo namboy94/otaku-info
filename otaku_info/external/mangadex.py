@@ -46,8 +46,9 @@ def fetch_all_mangadex_items() -> List[MangadexItem]:
         response = requests.get(url, params=params)
         data = json.loads(response.text)
 
-        if "results" not in data:
-            new_date = items[-1]["data"]["attributes"]["createdAt"]
+        if data["result"] == "error":
+            # TODO understand what's happening here
+            new_date = items[-1]["attributes"]["createdAt"]
             new_date = new_date.split("T")[0] + "T00:00:00"
 
             if new_date == last_date:
@@ -56,13 +57,13 @@ def fetch_all_mangadex_items() -> List[MangadexItem]:
                 last_date = new_date
                 page = 0
                 continue
-        elif len(data["results"]) == 0:
+        elif len(data["data"]) == 0:
             break
 
-        items += data["results"]
+        items += data["data"]
         new_items = [
             MangadexItem.from_json(x)
-            for x in data["results"]
+            for x in data["data"]
         ]
         add_covers(new_items)
         mangadex_items += new_items
@@ -82,7 +83,7 @@ def fetch_mangadex_item(mangadex_id: str) -> Optional[MangadexItem]:
     if response.status_code >= 300:
         return None
 
-    data = json.loads(response.text)["results"][0]
+    data = json.loads(response.text)["data"][0]
     return MangadexItem.from_json(data)
 
 
@@ -101,12 +102,12 @@ def add_covers(mangadex_items: List[MangadexItem]):
     params: Dict[str, Union[int, list]] = {"ids[]": [ids], "limit": 100}
     response = requests.get(url, params=params)
     data = json.loads(response.text)
-    results = data["results"]
+    results = data["data"]
 
     covers = {}
     for result in results:
         relations = {x["type"]: x["id"] for x in result["relationships"]}
-        covers[relations["manga"]] = result["data"]["attributes"]["fileName"]
+        covers[relations["manga"]] = result["attributes"]["fileName"]
 
     for mangadex_item in mangadex_items:
         filename = covers.get(mangadex_item.mangadex_id)
